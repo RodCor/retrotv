@@ -1,18 +1,24 @@
 import type { Metadata } from "next";
-import { Baloo_2, Nunito } from "next/font/google";
+import { Bricolage_Grotesque, Plus_Jakarta_Sans, Pixelify_Sans } from "next/font/google";
 import "./globals.css";
 import { config } from "@/lib/config";
 
-const display = Baloo_2({
+const display = Bricolage_Grotesque({
   variable: "--font-display",
   subsets: ["latin"],
   weight: ["600", "700", "800"],
 });
 
-const body = Nunito({
+const body = Plus_Jakarta_Sans({
   variable: "--font-body",
   subsets: ["latin"],
-  weight: ["400", "600", "700", "800"],
+  weight: ["400", "500", "600", "700", "800"],
+});
+
+const pixel = Pixelify_Sans({
+  variable: "--font-pixel",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -28,9 +34,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${display.variable} ${body.variable} h-full antialiased`}
+      className={`${display.variable} ${body.variable} ${pixel.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full">{children}</body>
     </html>
   );
 }

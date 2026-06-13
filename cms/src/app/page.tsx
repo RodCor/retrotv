@@ -1,5 +1,5 @@
+import Link from "next/link";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
-import { ButtonLink, Panel } from "@/components/ui";
 import { config } from "@/lib/config";
 import { getSession } from "@/lib/auth";
 import { query } from "@/lib/db";
@@ -34,21 +34,9 @@ const SAMPLE_LOOKS = [
 ];
 
 const FEATURES = [
-  {
-    icon: "🏠",
-    title: "Design rooms",
-    body: "Snag furni from the catalog and build the hangout of your dreams — pixel by pixel.",
-  },
-  {
-    icon: "🤝",
-    title: "Make friends",
-    body: "Meet thousands of habbos, throw parties, and grow your friends list every day.",
-  },
-  {
-    icon: "🛋️",
-    title: "Collect furni",
-    body: "Hunt rares, trade smart, and show off the flashiest collection in the hotel.",
-  },
+  { icon: "🏠", color: "var(--amber)", title: "Design rooms", body: "Grab furni from the catalog and build the hangout of your dreams — pixel by pixel." },
+  { icon: "🤝", color: "var(--cyan)", title: "Make friends", body: "Meet habbos from everywhere, throw parties, and grow your friends list every day." },
+  { icon: "💎", color: "var(--pink)", title: "Collect rares", body: "Hunt rares, trade smart, and flex the flashiest collection in the whole hotel." },
 ];
 
 export default async function Home() {
@@ -57,120 +45,115 @@ export default async function Home() {
   const playHref = session ? "/play" : "/register";
 
   return (
-    <div className="flex min-h-screen flex-1 flex-col">
+    <div className="flex min-h-screen flex-col">
       <SiteHeader />
 
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
-        {/* Hero */}
-        <section className="mb-10">
-          <Panel className="overflow-hidden">
-            <div className="grid items-center gap-8 md:grid-cols-[1.3fr_1fr]">
-              <div>
-                <p
-                  className="rt-badge mb-4 inline-block"
-                  style={{ background: "var(--rt-accent)" }}
-                >
-                  ✨ Now boarding new habbos
-                </p>
-                <h1
-                  className="rt-display text-5xl leading-tight md:text-6xl"
-                  style={{ color: "var(--rt-brand)" }}
-                >
-                  Welcome to {config.hotel.name}
-                </h1>
-                <p
-                  className="mt-4 max-w-lg text-lg font-semibold"
-                  style={{ color: "var(--rt-ink-soft)" }}
-                >
-                  Your retro hotel is back on air. Build rooms, collect rare
-                  furni, and party with friends — all in glorious pixel-perfect
-                  style.
-                </p>
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <ButtonLink href={playHref} variant="accent">
-                    ▶ Play Now
-                  </ButtonLink>
-                  <ButtonLink href="/login" variant="ghost">
-                    Login
-                  </ButtonLink>
-                </div>
-              </div>
-
-              <div className="flex justify-center">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  className="rt-avatar"
-                  style={{ height: "240px", width: "auto" }}
-                  src={avatarImageUrl(SAMPLE_LOOKS[1], {
-                    size: "l",
-                    direction: 4,
-                    headDirection: 4,
-                    action: "wav",
-                  })}
-                  alt="A waving habbo avatar"
-                />
-              </div>
+      <main className="relative z-10 flex-1">
+        {/* ---------------------------------- hero ---------------------------------- */}
+        <section className="shell grid items-center gap-10 pt-12 pb-10 md:grid-cols-[1.15fr_0.85fr] md:pt-20 md:pb-16">
+          <div>
+            <p className="eyebrow rise inline-flex items-center gap-2">
+              <span style={{ color: "var(--green)" }}>●</span> Now boarding new habbos
+            </p>
+            <h1 className="rise d1 mt-4 text-[clamp(2.6rem,6vw,4.6rem)]">
+              Your retro hotel,
+              <br />
+              <span className="text-gradient">back on the air.</span>
+            </h1>
+            <p className="rise d2 mt-5 max-w-md text-lg" style={{ color: "var(--ink-soft)" }}>
+              Build rooms, dress your habbo, collect rares and hang out with friends in a
+              pixel-perfect virtual world — right in your browser.
+            </p>
+            <div className="rise d3 mt-7 flex flex-wrap items-center gap-3">
+              <Link href={playHref} className="btn btn-amber" style={{ fontSize: "1.02rem", padding: "0.8rem 1.5rem" }}>
+                ▶ {session ? "Enter the hotel" : "Play free now"}
+              </Link>
+              <Link href="/community" className="btn btn-ghost" style={{ padding: "0.8rem 1.3rem" }}>
+                Explore community
+              </Link>
             </div>
-          </Panel>
+            <div className="rise d4 mt-8 flex items-center gap-6">
+              <MiniStat value={stats.users} label="Habbos" accent="var(--amber)" />
+              <span style={{ width: 1, height: 34, background: "var(--line-strong)" }} />
+              <MiniStat value={stats.online} label="Online now" accent="var(--green)" />
+              <span style={{ width: 1, height: 34, background: "var(--line-strong)" }} />
+              <MiniStat value={stats.rooms} label="Rooms" accent="var(--cyan)" />
+            </div>
+          </div>
+
+          {/* hero avatar with glow stage */}
+          <div className="rise d2 relative grid place-items-center">
+            <div
+              aria-hidden
+              className="absolute h-72 w-72 rounded-full"
+              style={{ background: "radial-gradient(circle, rgba(255,157,47,0.35), transparent 65%)", filter: "blur(8px)" }}
+            />
+            <div
+              aria-hidden
+              className="absolute bottom-6 h-6 w-40 rounded-full"
+              style={{ background: "radial-gradient(ellipse, rgba(0,0,0,0.55), transparent 70%)" }}
+            />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              className="pixel-img floaty relative"
+              style={{ height: "320px", width: "auto", filter: "drop-shadow(0 18px 24px rgba(0,0,0,0.5))" }}
+              src={avatarImageUrl(SAMPLE_LOOKS[1], { size: "l", direction: 2, headDirection: 2, action: "wav" })}
+              alt="A waving habbo avatar"
+            />
+          </div>
         </section>
 
-        {/* Live stats strip */}
-        <section className="mb-10 grid gap-4 sm:grid-cols-3">
-          <StatCard label="Habbos registered" value={stats.users} accent="var(--rt-brand)" />
-          <StatCard label="Online right now" value={stats.online} accent="var(--rt-accent)" />
-          <StatCard label="Rooms built" value={stats.rooms} accent="var(--rt-accent-2)" />
-        </section>
-
-        {/* Features */}
-        <section className="mb-10">
-          <h2
-            className="rt-display mb-4 text-3xl"
-            style={{ color: "var(--rt-brand)" }}
-          >
-            What can you do?
-          </h2>
+        {/* --------------------------------- features ------------------------------- */}
+        <section className="shell pb-12">
+          <div className="mb-5 flex items-end justify-between gap-4">
+            <div>
+              <p className="eyebrow">The good stuff</p>
+              <h2 className="mt-1 text-3xl">Everything Habbo, modernised</h2>
+            </div>
+          </div>
           <div className="grid gap-4 md:grid-cols-3">
-            {FEATURES.map((f) => (
-              <Panel key={f.title} muted className="h-full">
-                <div className="text-4xl">{f.icon}</div>
-                <h3 className="mt-3 text-xl font-extrabold" style={{ color: "var(--rt-ink)" }}>
-                  {f.title}
-                </h3>
-                <p className="mt-2 text-sm font-semibold" style={{ color: "var(--rt-ink-soft)" }}>
-                  {f.body}
-                </p>
-              </Panel>
+            {FEATURES.map((f, i) => (
+              <div key={f.title} className={`panel panel-pad rise d${i + 1} transition-transform hover:-translate-y-1`}>
+                <div
+                  className="grid h-12 w-12 place-items-center rounded-xl text-2xl"
+                  style={{ background: "rgba(8,12,28,0.6)", border: "1px solid var(--line-strong)", boxShadow: `0 0 30px -12px ${f.color}` }}
+                >
+                  {f.icon}
+                </div>
+                <h3 className="mt-4 text-xl">{f.title}</h3>
+                <p className="mt-2 text-sm" style={{ color: "var(--ink-soft)" }}>{f.body}</p>
+              </div>
             ))}
           </div>
         </section>
 
-        {/* Sample avatars */}
-        <section className="mb-4">
-          <Panel>
-            <h2
-              className="rt-display mb-4 text-2xl"
-              style={{ color: "var(--rt-brand)" }}
-            >
-              Join the crowd
-            </h2>
-            <div className="flex flex-wrap items-end justify-center gap-3">
-              {SAMPLE_LOOKS.map((look, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  key={`${look}-${i}`}
-                  className="rt-avatar"
-                  style={{ height: "120px", width: "auto" }}
-                  src={avatarImageUrl(look, { size: "l", direction: 2, headDirection: 2 })}
-                  alt={`Sample habbo avatar ${i + 1}`}
-                />
-              ))}
+        {/* ------------------------------- join the crowd --------------------------- */}
+        <section className="shell pb-6">
+          <div className="panel panel-pad panel-glow-amber overflow-hidden">
+            <div className="grid items-center gap-8 md:grid-cols-[1fr_auto]">
+              <div>
+                <p className="eyebrow">Join the crowd</p>
+                <h2 className="mt-1 text-3xl">Make your habbo in seconds</h2>
+                <p className="mt-3 max-w-md text-sm" style={{ color: "var(--ink-soft)" }}>
+                  Pick a name, customise your look, and step straight into the hotel. It&apos;s free,
+                  it&apos;s fast, and your room is waiting.
+                </p>
+                <Link href={playHref} className="btn btn-amber mt-5">Create your habbo →</Link>
+              </div>
+              <div className="flex flex-wrap items-end justify-center gap-1">
+                {SAMPLE_LOOKS.map((look, i) => (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    key={`${look}-${i}`}
+                    className="pixel-img"
+                    style={{ height: "110px", width: "auto", filter: "drop-shadow(0 8px 10px rgba(0,0,0,0.4))" }}
+                    src={avatarImageUrl(look, { size: "l", direction: 2, headDirection: 2 })}
+                    alt={`Sample habbo avatar ${i + 1}`}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="mt-6 flex justify-center">
-              <ButtonLink href={playHref} variant="brand">
-                Create your habbo →
-              </ButtonLink>
-            </div>
-          </Panel>
+          </div>
         </section>
       </main>
 
@@ -179,23 +162,11 @@ export default async function Home() {
   );
 }
 
-function StatCard({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: number;
-  accent: string;
-}) {
+function MiniStat({ value, label, accent }: { value: number; label: string; accent: string }) {
   return (
-    <Panel className="text-center">
-      <div className="rt-display text-4xl" style={{ color: accent }}>
-        {value.toLocaleString()}
-      </div>
-      <div className="mt-1 text-xs font-bold uppercase tracking-wide" style={{ color: "#8aa3ba" }}>
-        {label}
-      </div>
-    </Panel>
+    <div>
+      <div className="font-pixel text-2xl" style={{ color: accent }}>{value.toLocaleString()}</div>
+      <div className="text-xs font-semibold" style={{ color: "var(--ink-dim)" }}>{label}</div>
+    </div>
   );
 }
