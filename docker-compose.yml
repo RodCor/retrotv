@@ -123,6 +123,10 @@ services:
       - NEXT_PUBLIC_HOTEL_NAME=${HOTEL_NAME:-RetroTV}
       - NEXT_PUBLIC_CLIENT_URL=${CLIENT_URL:-http://127.0.0.1:1080}
       - NEXT_PUBLIC_IMAGING_URL=${IMAGING_URL:-https://www.habbo.com/habbo-imaging}
+      # Furni icon PNGs are loaded by the browser -> must be the public asset host.
+      - NEXT_PUBLIC_FURNI_ICON_URL=${FURNI_ICON_URL:-http://127.0.0.1:8081/dcr/hof_furni/icons}
+      # FigureData is fetched server-side -> use the internal asset service name.
+      - GAMEDATA_URL=${CMS_GAMEDATA_URL:-http://nitro:8080/gamedata}
       - ADMIN_MIN_RANK=${ADMIN_MIN_RANK:-5}
     ports:
       - "3010:3000"

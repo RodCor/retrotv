@@ -6,8 +6,12 @@ import {
   ACard,
   TableWrap,
   Shirt,
+  ImageIcon,
 } from "@/components/admin-ui";
 import { SetLookForm } from "./forms";
+import { MediaThumb } from "@/components/media-thumb";
+import { setTypeMap, buildClothingFigure } from "@/lib/figure-sets";
+import { avatarImageUrl } from "@/lib/habbo-imaging";
 
 export const dynamic = "force-dynamic";
 
@@ -37,6 +41,25 @@ export default async function ClothingAdminPage() {
 
   const { rows: clothing, total: clothingTotal, error: clothingError } = await loadClothing();
 
+  // Resolve clothing sets -> a full avatar figure so each row can be previewed.
+  // If FigureData can't be loaded we simply skip the preview column.
+  let typeMap: Map<string, string> | null = null;
+  try {
+    typeMap = await setTypeMap();
+  } catch {
+    typeMap = null;
+  }
+  const lookFor = (setid: string): string | null => {
+    if (!typeMap) return null;
+    const figure = buildClothingFigure(typeMap, setid);
+    return figure ? avatarImageUrl(figure, { size: "m", direction: 2, gesture: "sml" }) : null;
+  };
+  const lookForLarge = (setid: string): string | null => {
+    if (!typeMap) return null;
+    const figure = buildClothingFigure(typeMap, setid);
+    return figure ? avatarImageUrl(figure, { size: "l", direction: 2, gesture: "sml" }) : null;
+  };
+
   return (
     <div>
       <PageHead eyebrow="Looks" title="Clothing" />
@@ -62,19 +85,24 @@ export default async function ClothingAdminPage() {
               <table className="dtable">
                 <thead>
                   <tr>
+                    <th className="thumb-col"></th>
                     <th className="num">ID</th>
                     <th className="cap">Name</th>
                     <th>Figure sets</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {clothing.map((c) => (
+                  {clothing.map((c) => {
+                    const look = lookFor(c.setid);
+                    return (
                     <tr key={c.id}>
+                      <td className="thumb-col">{look ? <MediaThumb src={look} large={lookForLarge(c.setid) ?? undefined} alt={c.name} /> : <span className="thumb thumb-empty"><ImageIcon size={14} strokeWidth={2} /></span>}</td>
                       <td className="num">{c.id}</td>
                       <td className="cap"><span className="ell">{c.name}</span></td>
                       <td><span className="idchip" title={c.setid}>{c.setid}</span></td>
                     </tr>
-                  ))}
+                    );
+                  })}
                 </tbody>
               </table>
             </TableWrap>

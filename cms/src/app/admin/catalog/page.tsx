@@ -4,10 +4,12 @@ import { query, queryOne } from "@/lib/db";
 import { getSession, isStaff } from "@/lib/auth";
 import {
   ACard, ABtn, PageHead, Tag, TableWrap, ShoppingBag, Sparkles,
-  Eye, EyeOff, Trash2, ChevronRight, Home,
+  Eye, EyeOff, Trash2, ChevronRight, Home, ImageIcon,
 } from "@/components/admin-ui";
 import { CreateItemForm, CreatePageForm, RenamePage } from "./forms";
 import { deleteCatalogItem, deleteCatalogPage, togglePageVisible } from "./actions";
+import { MediaThumb } from "@/components/media-thumb";
+import { config } from "@/lib/config";
 
 export const dynamic = "force-dynamic";
 
@@ -68,6 +70,24 @@ export default async function CatalogAdminPage({
     { pid: currentId },
   );
 
+  // Resolve each item's first base id -> furni classname, for icon previews.
+  const firstBaseId = (v: string) => {
+    const f = String(v ?? "").split(/[,;]/).filter(Boolean)[0];
+    return f && Number.isInteger(Number(f)) ? Number(f) : null;
+  };
+  const classByBase = new Map<number, string>();
+  const baseIds = [...new Set(items.map((it) => firstBaseId(it.item_ids)).filter((n): n is number => n != null))];
+  if (baseIds.length) {
+    for (const r of await query<{ id: number; item_name: string }>(
+      `SELECT id, item_name FROM items_base WHERE id IN (${baseIds.join(",")})`,
+    )) classByBase.set(r.id, r.item_name);
+  }
+  const iconFor = (v: string) => {
+    const id = firstBaseId(v);
+    const cn = id != null ? classByBase.get(id) : undefined;
+    return cn ? `${config.assets.furniIconUrl}/${encodeURIComponent(cn)}_icon.png` : null;
+  };
+
   const hereLabel = current ? current.caption : "Root";
 
   return (
@@ -120,7 +140,6 @@ export default async function CatalogAdminPage({
                       <td>{c.visible === "1" ? <Tag color="green">Visible</Tag> : <Tag color="gray">Hidden</Tag>}</td>
                       <td>
                         <div className="flex flex-wrap items-center gap-1">
-                          <ABtn href={`/admin/catalog?p=${c.id}`} variant="default" size="xs"><ChevronRight size={13} strokeWidth={2} />Open</ABtn>
                           <RenamePage id={c.id} caption={c.caption} />
                           <form action={togglePageVisible.bind(null, c.id)}>
                             <ABtn type="submit" variant="default" size="xs">{c.visible === "1" ? <EyeOff size={13} strokeWidth={2} /> : <Eye size={13} strokeWidth={2} />}</ABtn>
@@ -142,12 +161,15 @@ export default async function CatalogAdminPage({
               actions={<span className="text-xs adim">{items.length} item{items.length === 1 ? "" : "s"}</span>}>
               <TableWrap>
                 <table className="dtable">
-                  <thead><tr><th className="cap">Name</th><th>Base id</th><th className="num">Credits</th><th className="num">Points</th><th className="num">Qty</th><th>Actions</th></tr></thead>
+                  <thead><tr><th className="thumb-col"></th><th className="cap">Name</th><th>Base id</th><th className="num">Credits</th><th className="num">Points</th><th className="num">Qty</th><th>Actions</th></tr></thead>
                   <tbody>
                     {items.length === 0 ? (
-                      <tr><td colSpan={6} className="adim">No items on this page.</td></tr>
-                    ) : items.map((it) => (
+                      <tr><td colSpan={7} className="adim">No items on this page.</td></tr>
+                    ) : items.map((it) => {
+                      const icon = iconFor(it.item_ids);
+                      return (
                       <tr key={it.id}>
+                        <td className="thumb-col">{icon ? <MediaThumb src={icon} alt={classByBase.get(firstBaseId(it.item_ids)!) ?? it.catalog_name} /> : <span className="thumb thumb-empty"><ImageIcon size={14} strokeWidth={2} /></span>}</td>
                         <td className="cap"><span className="ell">{it.catalog_name}</span></td>
                         <td><ItemIds value={it.item_ids} /></td>
                         <td className="num">{it.cost_credits || "—"}</td>
@@ -159,7 +181,8 @@ export default async function CatalogAdminPage({
                           </form>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </TableWrap>

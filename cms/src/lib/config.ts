@@ -31,6 +31,16 @@ export const config = {
     startPixels: Number(process.env.START_PIXELS ?? 5000),
     startPoints: Number(process.env.START_POINTS ?? 100),
   },
+  assets: {
+    // Furni icon PNGs, loaded by the browser (<img>). Point at your public
+    // asset host in production; defaults to the bundled SWF server.
+    furniIconUrl:
+      process.env.NEXT_PUBLIC_FURNI_ICON_URL ??
+      "http://127.0.0.1:8081/dcr/hof_furni/icons",
+    // Game data, fetched server-side to map clothing sets -> figure types.
+    // In docker this is the internal asset service; on host it's the mapped port.
+    gameDataUrl: process.env.GAMEDATA_URL ?? "http://127.0.0.1:8080/gamedata",
+  },
 } as const;
 
 export type AppConfig = typeof config;
