@@ -23,6 +23,8 @@ FROM node:20-alpine AS runtime
 WORKDIR /app
 RUN npm i -g http-server@14
 COPY --from=build /src/Nitro-V3/dist ./dist
+# Bundled translations (e.g. the Spanish UI texts) overlay the client config.
+COPY config/ ./dist/configuration/
 COPY generate-config.mjs ./generate-config.mjs
 COPY entrypoint.sh ./entrypoint.sh
 RUN chmod +x ./entrypoint.sh

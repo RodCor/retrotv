@@ -99,6 +99,7 @@ services:
       - IMAGES_URL=${IMAGES_URL:-http://127.0.0.1:8080/images}
       - CLIENT_URL=${CLIENT_URL:-http://127.0.0.1:1080}
       - HOTEL_NAME=${HOTEL_NAME:-RetroTV}
+      - HOTEL_LANG=${HOTEL_LANG:-es}
     ports:
       - "1080:80"
     depends_on:

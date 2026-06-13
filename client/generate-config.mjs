@@ -15,6 +15,7 @@ const HOF_FURNI_URL = e("HOF_FURNI_URL", "http://127.0.0.1:8081/dcr/hof_furni");
 const IMAGES_URL = e("IMAGES_URL", "http://127.0.0.1:8080/images");
 const CLIENT_URL = e("CLIENT_URL", "http://127.0.0.1:1080");
 const HOTEL_NAME = e("HOTEL_NAME", "RetroTV");
+const HOTEL_LANG = e("HOTEL_LANG", "es");
 
 function patch(file, fn) {
   const p = `${DIR}/${file}`;
@@ -25,14 +26,21 @@ function patch(file, fn) {
   console.log(`[config] wrote ${file}`);
 }
 
-// Nitro-V3's UI texts ship as an example; expose them as served config files.
+// Nitro-V3's UI texts ship as examples; expose them as served config files.
+// (UITexts_es.json5 is a real translation we bundle, not an example.)
 for (const lang of ["en", "es", "it", "nl"]) {
   const src = `${DIR}/UITexts_${lang}.json5.example`;
   const dst = `${DIR}/UITexts_${lang}.json5`;
   if (fs.existsSync(src) && !fs.existsSync(dst)) fs.copyFileSync(src, dst);
 }
-// Default (locale-less) UI texts = English.
-if (fs.existsSync(`${DIR}/UITexts_en.json5`)) fs.copyFileSync(`${DIR}/UITexts_en.json5`, `${DIR}/UITexts.json5`);
+// Default (locale-less) UI texts follow HOTEL_LANG, falling back to English.
+const uiPick = fs.existsSync(`${DIR}/UITexts_${HOTEL_LANG}.json5`)
+  ? `${DIR}/UITexts_${HOTEL_LANG}.json5`
+  : `${DIR}/UITexts_en.json5`;
+if (fs.existsSync(uiPick)) {
+  fs.copyFileSync(uiPick, `${DIR}/UITexts.json5`);
+  console.log(`[config] UI language: ${HOTEL_LANG} (${uiPick.split("/").pop()})`);
+}
 
 patch("client-mode.json", (cm) => {
   cm.distObfuscationEnabled = false;

@@ -48,6 +48,7 @@ export async function SiteHeader() {
                   <Link href="/admin" className="btn btn-ghost btn-sm">CRM</Link>
                 )}
                 <Link href="/play" className="btn btn-amber btn-sm">▶ Play</Link>
+                <Link href="/logout" className="btn btn-ghost btn-sm" title="Log out">⏻</Link>
               </>
             ) : (
               <>
