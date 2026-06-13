@@ -29,7 +29,20 @@ echo "==> Patching the nitro-converter to use the SWF pack's own figuredata..."
 CONV="foundation/nitro/configuration/nitro-converter/configuration.json"
 if [ -f "$CONV" ]; then
   sed -i 's#"figuredata.load.url": "https://www.habbo.com/gamedata/figuredata/1"#"figuredata.load.url": "http://127.0.0.1:8081/gamedata/figuredata.xml"#' "$CONV"
-  echo "    patched $CONV"
+  echo "    patched $CONV (figuredata)"
+fi
+
+# --- Language: HOTEL_LANG (default es) -------------------------------------
+# Translates the in-game text (ExternalTexts) by pointing the converter at the
+# bundled official-language external_flash_texts before `make assets`.
+HOTEL_LANG="${HOTEL_LANG:-es}"
+LANG_FILE="langs/external_flash_texts_${HOTEL_LANG}.txt"
+if [ "$HOTEL_LANG" != "en" ] && [ -f "$LANG_FILE" ] && [ -f "$CONV" ]; then
+  echo "==> Setting hotel language to '$HOTEL_LANG' (in-game texts)..."
+  mkdir -p foundation/nitro/nitro-swf/gamedata
+  cp "$LANG_FILE" "foundation/nitro/nitro-swf/gamedata/external_flash_texts_${HOTEL_LANG}.txt"
+  sed -i "s#\"external.texts.url\": \"http://127.0.0.1:8081/gamedata/external_flash_texts.txt\"#\"external.texts.url\": \"http://127.0.0.1:8081/gamedata/external_flash_texts_${HOTEL_LANG}.txt\"#" "$CONV"
+  echo "    in-game texts -> $HOTEL_LANG (run 'make assets' to apply)"
 fi
 
 if [ ! -f .env ]; then

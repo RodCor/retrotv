@@ -66,6 +66,9 @@ SSO ticket and drops you into the hotel.
 The bundled emulator plugins (Camera, Fun Commands, WordGuesser, Bot Protect) load
 automatically — try `:slime <user>` or `:nuke <user>` in a room.
 
+The hotel ships in **Spanish** (official habbo.es in-game texts) — set `HOTEL_LANG`
+in `.env` to change it. See **[docs/LOCALIZATION.md](docs/LOCALIZATION.md)**.
+
 See **[docs/DEPLOY.md](docs/DEPLOY.md)** for production/another-server deployment, making
 yourself an admin, backups, and troubleshooting, and **[docs/PLUGINS.md](docs/PLUGINS.md)**
 for the emulator plugins and in-game commands.
