@@ -22,7 +22,11 @@ cms/debug-*.mjs
 cms/diag-*.mjs
 cms/verify-client.mjs
 cms/check-*.mjs
+cms/test-*.mjs
 backup-*.sql
+
+# Scratch client build (the client/ Docker image builds Nitro-V3 itself)
+client-build/
 
 # OS
 .DS_Store
