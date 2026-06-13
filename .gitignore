@@ -35,3 +35,4 @@ cms/val.cjs
 cms/shopbig.mjs
 cms/cmsshot.mjs
 cms/uitmp.json5
+cms/verify-pack.mjs
