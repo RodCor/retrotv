@@ -37,3 +37,4 @@ cms/cmsshot.mjs
 cms/uitmp.json5
 cms/verify-pack.mjs
 .claude/
+cms/repro-*.mjs

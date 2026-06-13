@@ -44,7 +44,7 @@ export default async function MePage() {
               </div>
 
               <div className="mt-2 flex flex-wrap items-center gap-3">
-                <ButtonLink href="/play" variant="accent">
+                <ButtonLink href="/play" prefetch={false} variant="accent">
                   Enter Hotel
                 </ButtonLink>
                 <a href="/logout" className="rt-btn rt-btn-ghost">

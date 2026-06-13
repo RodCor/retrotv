@@ -28,15 +28,17 @@ export function ButtonLink({
   variant = "brand",
   className = "",
   href,
+  prefetch,
   children,
 }: {
   variant?: Variant;
   className?: string;
   href: string;
+  prefetch?: boolean;
   children: ReactNode;
 }) {
   return (
-    <Link href={href} className={`rt-btn ${variantClass[variant]} ${className}`}>
+    <Link href={href} prefetch={prefetch} className={`rt-btn ${variantClass[variant]} ${className}`}>
       {children}
     </Link>
   );

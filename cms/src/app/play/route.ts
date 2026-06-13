@@ -9,6 +9,11 @@ import { config } from "@/lib/config";
  * sent to the login page first.
  */
 export async function GET(request: NextRequest) {
+  // Don't issue an SSO ticket on a Next.js <Link> prefetch — only on a real click.
+  if (request.headers.get("Next-Router-Prefetch") === "1") {
+    return NextResponse.redirect(new URL("/me", request.url));
+  }
+
   const session = await getSession();
   if (!session) {
     return NextResponse.redirect(new URL("/login", request.url));
