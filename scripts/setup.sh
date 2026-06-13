@@ -21,6 +21,17 @@ for f in \
   fi
 done
 
+echo "==> Patching the nitro-converter to use the SWF pack's own figuredata..."
+# The stock nitro-docker config pulls figuredata from habbo.com (latest), which
+# does NOT match the older SWF pack's figuremap/bundles — ~63% of figure parts
+# end up uncovered and avatars render broken. Use the pack's figuredata instead
+# so figuredata + figuremap + bundles all come from one consistent revision.
+CONV="foundation/nitro/configuration/nitro-converter/configuration.json"
+if [ -f "$CONV" ]; then
+  sed -i 's#"figuredata.load.url": "https://www.habbo.com/gamedata/figuredata/1"#"figuredata.load.url": "http://127.0.0.1:8081/gamedata/figuredata.xml"#' "$CONV"
+  echo "    patched $CONV"
+fi
+
 if [ ! -f .env ]; then
   cp .env.example .env
   echo "==> Created .env from .env.example — edit SESSION_SECRET before production!"
@@ -28,7 +39,7 @@ fi
 
 echo ""
 echo "Setup complete. Next:"
-echo "  docker compose up -d --build     # first boot ~10 min (Maven + client build)"
+echo "  docker compose up -d --build     # first boot: emulator jar + client build"
 echo "  make assets                      # generate Nitro client assets (once)"
 echo ""
 echo "Then open  http://127.0.0.1:3010  (CMS)  and  http://127.0.0.1:1080  (hotel)."

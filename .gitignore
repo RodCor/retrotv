@@ -18,6 +18,10 @@ foundation/emulator/arcturus/target/
 # Dev verification artifacts
 cms/shot*.png
 cms/shot*.mjs
+cms/debug-*.mjs
+cms/diag-*.mjs
+cms/verify-client.mjs
+cms/check-*.mjs
 backup-*.sql
 
 # OS
