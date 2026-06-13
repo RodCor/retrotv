@@ -1,7 +1,19 @@
-import Link from "next/link";
 import { query, queryOne } from "@/lib/db";
 import { avatarImageUrl } from "@/lib/habbo-imaging";
-import { Panel, Badge } from "@/components/ui";
+import {
+  PageHead,
+  ACard,
+  StatTile,
+  TableWrap,
+  Tag,
+  ABtn,
+  Users,
+  Circle,
+  Home,
+  ShoppingBag,
+  Ban,
+  Pencil,
+} from "@/components/admin-ui";
 
 interface RecentUser {
   id: number;
@@ -24,40 +36,14 @@ async function safeCount(sql: string): Promise<number | null> {
   }
 }
 
+function fmtCount(value: number | null): string {
+  return value === null ? "—" : value.toLocaleString();
+}
+
 function fmtDate(unix: number): string {
   if (!unix) return "—";
   const ms = unix > 1e12 ? unix : unix * 1000;
   return new Date(ms).toLocaleDateString();
-}
-
-function StatCard({
-  label,
-  value,
-  color,
-  href,
-}: {
-  label: string;
-  value: number | null;
-  color: string;
-  href?: string;
-}) {
-  const inner = (
-    <Panel className="flex flex-col gap-1">
-      <span className="text-xs font-bold uppercase tracking-wide opacity-60">
-        {label}
-      </span>
-      <span className="rt-display text-3xl" style={{ color }}>
-        {value === null ? "—" : value.toLocaleString()}
-      </span>
-    </Panel>
-  );
-  return href ? (
-    <Link href={href} className="block transition-transform hover:-translate-y-0.5">
-      {inner}
-    </Link>
-  ) : (
-    inner
-  );
 }
 
 export default async function AdminDashboard() {
@@ -83,75 +69,100 @@ export default async function AdminDashboard() {
   }
 
   return (
-    <div className="flex flex-col gap-5">
-      <h1 className="rt-display text-2xl">Admin Dashboard</h1>
+    <div>
+      <PageHead eyebrow="Overview" title="Dashboard" />
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
-        <StatCard
+        <StatTile
+          icon={<Users size={18} strokeWidth={2} />}
           label="Total users"
-          value={totalUsers}
-          color="var(--rt-brand)"
-          href="/admin/users"
+          value={fmtCount(totalUsers)}
+          accent="var(--cyan)"
         />
-        <StatCard label="Online now" value={onlineNow} color="#3FAE57" />
-        <StatCard
+        <StatTile
+          icon={<Circle size={18} strokeWidth={2} />}
+          label="Online now"
+          value={fmtCount(onlineNow)}
+          accent="var(--green)"
+        />
+        <StatTile
+          icon={<Home size={18} strokeWidth={2} />}
           label="Rooms"
-          value={totalRooms}
-          color="var(--rt-blue)"
-          href="/admin/rooms"
+          value={fmtCount(totalRooms)}
+          accent="var(--amber)"
         />
-        <StatCard label="Catalog items" value={totalCatalog} color="#B07CFF" />
-        <StatCard label="Bans" value={totalBans} color="var(--rt-danger)" />
+        <StatTile
+          icon={<ShoppingBag size={18} strokeWidth={2} />}
+          label="Catalog items"
+          value={fmtCount(totalCatalog)}
+          accent="var(--violet)"
+        />
+        <StatTile
+          icon={<Ban size={18} strokeWidth={2} />}
+          label="Bans"
+          value={fmtCount(totalBans)}
+          accent="var(--red)"
+        />
       </div>
 
-      <Panel>
-        <h2 className="rt-display mb-3 text-xl">Recent registrations</h2>
-        {recent.length === 0 ? (
-          <p className="text-sm opacity-70">No recent registrations.</p>
-        ) : (
-          <table className="rt-table">
-            <thead>
-              <tr>
-                <th>Avatar</th>
-                <th>ID</th>
-                <th>Username</th>
-                <th>Email</th>
-                <th>Joined</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {recent.map((u) => (
-                <tr key={u.id}>
-                  <td>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      className="rt-avatar"
-                      src={avatarImageUrl(u.look, { size: "s", headOnly: true })}
-                      alt={`${u.username} avatar`}
-                      style={{ width: 40, height: 56 }}
-                    />
-                  </td>
-                  <td>{u.id}</td>
-                  <td className="font-bold">{u.username}</td>
-                  <td>{u.mail ?? "—"}</td>
-                  <td>
-                    <Badge color="#e8e8e8">{fmtDate(u.account_created)}</Badge>
-                  </td>
-                  <td>
-                    <Link
-                      href={`/admin/users/${u.id}`}
-                      className="rt-btn rt-btn-blue"
-                    >
-                      Manage
-                    </Link>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </Panel>
+      <div className="mt-4">
+        <ACard
+          title="Recent registrations"
+          icon={<Users size={16} strokeWidth={2} />}
+        >
+          {recent.length === 0 ? (
+            <p className="text-sm opacity-70">No recent registrations.</p>
+          ) : (
+            <TableWrap>
+              <table className="dtable">
+                <thead>
+                  <tr>
+                    <th></th>
+                    <th className="num">ID</th>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Joined</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {recent.map((u) => (
+                    <tr key={u.id}>
+                      <td>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          className="av-head"
+                          src={avatarImageUrl(u.look, {
+                            size: "s",
+                            headOnly: true,
+                          })}
+                          alt={`${u.username} avatar`}
+                        />
+                      </td>
+                      <td className="num">{u.id}</td>
+                      <td className="font-semibold">{u.username}</td>
+                      <td>{u.mail ?? "—"}</td>
+                      <td>
+                        <Tag color="gray">{fmtDate(u.account_created)}</Tag>
+                      </td>
+                      <td>
+                        <ABtn
+                          variant="default"
+                          size="xs"
+                          href={`/admin/users/${u.id}`}
+                        >
+                          <Pencil size={14} strokeWidth={2} />
+                          Manage
+                        </ABtn>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </TableWrap>
+          )}
+        </ACard>
+      </div>
     </div>
   );
 }

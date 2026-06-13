@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Button, FormMessage, Input, Label } from "@/components/ui";
+import { ACard, ABtn, Field, FormMsg, Save, Shirt } from "@/components/admin-ui";
 import { avatarImageUrl } from "@/lib/habbo-imaging";
 import { saveUserLook } from "./actions";
 
@@ -15,52 +15,61 @@ export function SetLookForm() {
   const previewUrl = trimmed ? avatarImageUrl(trimmed, { size: "l" }) : null;
 
   return (
-    <form
-      action={action}
-      className="rt-panel"
-      style={{ padding: "1.25rem", display: "grid", gap: "1rem", gridTemplateColumns: "minmax(0, 1fr) auto" }}
-    >
-      <div style={{ display: "grid", gap: "0.6rem" }}>
-        <h2 style={{ fontWeight: 800, margin: 0 }}>Figure / Look editor</h2>
-        <p style={{ color: "var(--rt-muted, #777)", margin: 0, fontSize: "0.9rem" }}>
-          Paste a figure string and a target username to overwrite their look.
-        </p>
+    <ACard title="Set a user's look" icon={<Shirt size={16} strokeWidth={2} />}>
+      <form action={action} className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto]">
+        <div className="space-y-3">
+          <p className="text-xs" style={{ color: "var(--muted, #777)" }}>
+            Paste a figure string and a target username to overwrite their look.
+          </p>
 
-        <FormMessage message={state} />
+          <Field
+            label="Target username"
+            name="username"
+            required
+            placeholder="CoolHabbo"
+          />
 
-        <div>
-          <Label htmlFor="look-username">Target username</Label>
-          <Input id="look-username" name="username" required placeholder="CoolHabbo" />
-        </div>
-
-        <div>
-          <Label htmlFor="look-figure">Figure string</Label>
-          <Input
-            id="look-figure"
+          <Field
+            label="Figure string"
             name="look"
             required
             value={look}
             onChange={(e) => setLook(e.target.value)}
             placeholder="hr-100-0.hd-180-1.ch-210-66…"
           />
+
+          <div>
+            <ABtn variant="primary" type="submit" disabled={pending}>
+              <Save size={14} strokeWidth={2} />
+              {pending ? "Applying…" : "Apply look"}
+            </ABtn>
+            <FormMsg message={state} />
+          </div>
         </div>
 
-        <Button type="submit" variant="brand" disabled={pending}>
-          {pending ? "Saving…" : "Save look"}
-        </Button>
-      </div>
-
-      <div style={{ display: "grid", placeItems: "center", minWidth: "140px" }}>
-        <Label>Live preview</Label>
-        {previewUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img className="rt-avatar" src={previewUrl} alt="Avatar preview" />
-        ) : (
-          <div className="rt-panel-muted" style={{ padding: "2rem", textAlign: "center" }}>
-            No figure
-          </div>
-        )}
-      </div>
-    </form>
+        <div className="flex flex-col items-center justify-center gap-2 md:min-w-[150px]">
+          <span className="alabel">Live preview</span>
+          {previewUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={previewUrl}
+              alt="Avatar preview"
+              className="rt-avatar"
+              style={{ imageRendering: "pixelated" }}
+            />
+          ) : (
+            <div
+              className="flex items-center justify-center rounded-md px-6 py-8 text-xs"
+              style={{
+                color: "var(--muted, #777)",
+                border: "1px dashed var(--border, #2a2a35)",
+              }}
+            >
+              No figure
+            </div>
+          )}
+        </div>
+      </form>
+    </ACard>
   );
 }

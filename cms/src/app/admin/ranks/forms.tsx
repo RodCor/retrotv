@@ -1,7 +1,16 @@
 "use client";
 
 import { useActionState } from "react";
-import { Input, Button, FormMessage } from "@/components/ui";
+import {
+  Field,
+  ABtn,
+  Tag,
+  FormMsg,
+  Crown,
+  Save,
+  Trash2,
+  Plus,
+} from "@/components/admin-ui";
 import { createRank, updateRank, deleteRank } from "./actions";
 
 interface RankRow {
@@ -17,65 +26,34 @@ export function CreateRankForm() {
   const [state, action, pending] = useActionState(createRank, null);
 
   return (
-    <form action={action} className="flex flex-col gap-3">
-      <FormMessage message={state} />
+    <form action={action} className="space-y-3">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <div className="flex flex-col gap-1">
-          <label className="rt-label" htmlFor="create-rank_name">
-            Rank name
-          </label>
-          <Input id="create-rank_name" name="rank_name" required />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="rt-label" htmlFor="create-level">
-            Level
-          </label>
-          <Input
-            id="create-level"
-            name="level"
-            type="number"
-            min={1}
-            defaultValue={1}
-            required
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="rt-label" htmlFor="create-badge">
-            Badge
-          </label>
-          <Input id="create-badge" name="badge" placeholder="ADM" />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="rt-label" htmlFor="create-prefix">
-            Prefix
-          </label>
-          <Input id="create-prefix" name="prefix" placeholder="[Admin]" />
-        </div>
-        <div className="flex flex-col gap-1">
-          <label className="rt-label" htmlFor="create-prefix_color">
-            Prefix color
-          </label>
-          <Input
-            id="create-prefix_color"
-            name="prefix_color"
-            placeholder="#ff0000"
-          />
-        </div>
+        <Field label="Rank name" name="rank_name" required />
+        <Field
+          label="Level"
+          name="level"
+          type="number"
+          min={1}
+          defaultValue={1}
+          required
+        />
+        <Field label="Badge" name="badge" placeholder="ADM" />
+        <Field label="Prefix" name="prefix" placeholder="[Admin]" />
+        <Field label="Prefix color" name="prefix_color" placeholder="#ff0000" />
       </div>
-      <div>
-        <Button type="submit" variant="brand" disabled={pending}>
-          {pending ? "Creating…" : "Create Rank"}
-        </Button>
+      <div className="flex items-center gap-2">
+        <ABtn type="submit" variant="primary" disabled={pending}>
+          <Plus size={14} strokeWidth={2} />
+          {pending ? "Creating…" : "Create rank"}
+        </ABtn>
+        <FormMsg message={state} />
       </div>
     </form>
   );
 }
 
 export function EditRankRow({ rank }: { rank: RankRow }) {
-  const [editState, editAction, editPending] = useActionState(
-    updateRank,
-    null,
-  );
+  const [editState, editAction, editPending] = useActionState(updateRank, null);
   const [deleteState, deleteAction, deletePending] = useActionState(
     deleteRank,
     null,
@@ -84,7 +62,7 @@ export function EditRankRow({ rank }: { rank: RankRow }) {
   return (
     <>
       <tr>
-        <td>{rank.id}</td>
+        <td className="num">{rank.id}</td>
         <td>
           <form
             id={`edit-rank-${rank.id}`}
@@ -92,15 +70,20 @@ export function EditRankRow({ rank }: { rank: RankRow }) {
             className="contents"
           >
             <input type="hidden" name="id" value={rank.id} />
-            <Input
+            <Field
               name="rank_name"
               defaultValue={rank.rank_name}
               aria-label="Rank name"
+              className="min-w-[8rem]"
             />
           </form>
+          <Tag color="amber" className="mt-1">
+            <Crown size={12} strokeWidth={2} />
+            {rank.rank_name}
+          </Tag>
         </td>
-        <td>
-          <Input
+        <td className="num">
+          <Field
             form={`edit-rank-${rank.id}`}
             name="level"
             type="number"
@@ -111,7 +94,7 @@ export function EditRankRow({ rank }: { rank: RankRow }) {
           />
         </td>
         <td>
-          <Input
+          <Field
             form={`edit-rank-${rank.id}`}
             name="badge"
             defaultValue={rank.badge ?? ""}
@@ -119,31 +102,46 @@ export function EditRankRow({ rank }: { rank: RankRow }) {
             className="w-24"
           />
         </td>
-        <td>{rank.prefix ?? ""}</td>
-        <td>{rank.prefix_color ?? ""}</td>
         <td>
-          <div className="flex flex-wrap gap-1">
-            <Button
+          {rank.prefix ? (
+            <span style={rank.prefix_color ? { color: rank.prefix_color } : undefined}>
+              {rank.prefix}
+            </span>
+          ) : (
+            <span className="opacity-50">—</span>
+          )}
+        </td>
+        <td>
+          <div className="flex flex-wrap items-center gap-1">
+            <ABtn
               type="submit"
               form={`edit-rank-${rank.id}`}
-              variant="accent"
+              variant="primary"
+              size="xs"
               disabled={editPending}
             >
+              <Save size={14} strokeWidth={2} />
               {editPending ? "Saving…" : "Save"}
-            </Button>
-            <form action={deleteAction}>
+            </ABtn>
+            <form action={deleteAction} className="contents">
               <input type="hidden" name="id" value={rank.id} />
-              <Button type="submit" variant="danger" disabled={deletePending}>
+              <ABtn
+                type="submit"
+                variant="danger"
+                size="xs"
+                disabled={deletePending}
+              >
+                <Trash2 size={14} strokeWidth={2} />
                 {deletePending ? "Deleting…" : "Delete"}
-              </Button>
+              </ABtn>
             </form>
           </div>
         </td>
       </tr>
       {(editState || deleteState) && (
         <tr>
-          <td colSpan={7}>
-            <FormMessage message={editState ?? deleteState} />
+          <td colSpan={6}>
+            <FormMsg message={editState ?? deleteState} />
           </td>
         </tr>
       )}

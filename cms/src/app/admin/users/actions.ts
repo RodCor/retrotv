@@ -26,6 +26,10 @@ function toInt(value: FormDataEntryValue | null): number {
   return Number.isFinite(n) ? Math.trunc(n) : 0;
 }
 
+function toNonNegInt(value: FormDataEntryValue | null): number {
+  return Math.max(0, toInt(value));
+}
+
 /* ---------------------------- currency ---------------------------- */
 
 export async function updateUserCurrency(
@@ -36,20 +40,29 @@ export async function updateUserCurrency(
   if (!auth.ok) return auth.result;
 
   const userId = toInt(formData.get("userId"));
-  const credits = toInt(formData.get("credits"));
-  const pixels = toInt(formData.get("pixels"));
-  const points = toInt(formData.get("points"));
+  const credits = toNonNegInt(formData.get("credits"));
+  const duckets = toNonNegInt(formData.get("duckets"));
+  const diamonds = toNonNegInt(formData.get("diamonds"));
+  const points = toNonNegInt(formData.get("points"));
 
   if (!userId) return { type: "error", text: "Invalid user." };
 
   try {
     await execute(
-      "UPDATE users SET credits = :credits, pixels = :pixels, points = :points WHERE id = :userId",
-      { credits, pixels, points, userId },
+      "UPDATE users SET credits = :credits, pixels = :duckets, points = :points WHERE id = :userId",
+      { credits, duckets, points, userId },
     );
+    try {
+      await execute(
+        "UPDATE users_settings SET credits = :credits WHERE user_id = :userId",
+        { credits, userId },
+      );
+    } catch {}
     await execute(
-      "UPDATE users_settings SET credits = :credits WHERE user_id = :userId",
-      { credits, userId },
+      `INSERT INTO users_currency (user_id, type, amount)
+       VALUES (:userId, 5, :diamonds)
+       ON DUPLICATE KEY UPDATE amount = :diamonds`,
+      { userId, diamonds },
     );
   } catch {
     return { type: "error", text: "Failed to update currency." };
@@ -58,7 +71,7 @@ export async function updateUserCurrency(
   revalidatePath(`/admin/users/${userId}`);
   return {
     type: "success",
-    text: `Currency updated: ${credits}c / ${pixels}px / ${points}pts.`,
+    text: `Currency updated: ${credits}c / ${duckets} duckets / ${diamonds} diamonds / ${points} pts.`,
   };
 }
 

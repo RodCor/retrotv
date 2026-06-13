@@ -38,3 +38,7 @@ cms/uitmp.json5
 cms/verify-pack.mjs
 .claude/
 cms/repro-*.mjs
+cms/survey*.mjs
+cms/t-*.mjs
+cms/d-*.png
+cms/s-*.png

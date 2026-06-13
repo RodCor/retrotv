@@ -1,8 +1,20 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
-import { query } from "@/lib/db";
+import { query, queryOne } from "@/lib/db";
 import { getSession, isStaff } from "@/lib/auth";
-import { Badge, Button, Panel } from "@/components/ui";
+import {
+  ACard,
+  ABtn,
+  PageHead,
+  Tag,
+  TableWrap,
+  ShoppingBag,
+  Sparkles,
+  Search,
+  Eye,
+  EyeOff,
+  Trash2,
+  Plus,
+} from "@/components/admin-ui";
 import { CreateItemForm, CreatePageForm } from "./forms";
 import {
   deleteCatalogItem,
@@ -11,6 +23,8 @@ import {
 } from "./actions";
 
 export const dynamic = "force-dynamic";
+
+const PAGE_LIMIT = 25;
 
 interface CatalogPageRow {
   id: number;
@@ -30,16 +44,40 @@ interface CatalogItemRow {
   item_ids: string;
 }
 
-export default async function CatalogAdminPage() {
+export default async function CatalogAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}) {
   const session = await getSession();
   if (!session || !isStaff(session.rank)) {
     redirect("/");
   }
 
+  const { q } = await searchParams;
+  const search = (q ?? "").trim();
+  const like = `%${search}%`;
+
+  const totalRow = await queryOne<{ total: number }>(
+    search
+      ? `SELECT COUNT(*) AS total FROM catalog_pages WHERE caption LIKE :like`
+      : `SELECT COUNT(*) AS total FROM catalog_pages`,
+    search ? { like } : {},
+  );
+  const totalPages = totalRow?.total ?? 0;
+
   const pages = await query<CatalogPageRow>(
     `SELECT id, parent_id, caption, min_rank, visible, order_num
        FROM catalog_pages
-      ORDER BY order_num`,
+      ${search ? "WHERE caption LIKE :like" : ""}
+      ORDER BY order_num
+      LIMIT ${PAGE_LIMIT}`,
+    search ? { like } : {},
+  );
+
+  // For the page_id <Select>, list all pages (caption + id), unfiltered.
+  const allPages = await query<{ id: number; caption: string }>(
+    `SELECT id, caption FROM catalog_pages ORDER BY order_num`,
   );
 
   const items = await query<CatalogItemRow>(
@@ -50,131 +88,172 @@ export default async function CatalogAdminPage() {
       LIMIT 30`,
   );
 
-  const pageOptions = pages.map((p) => ({ id: p.id, caption: p.caption }));
+  const pageOptions = allPages.map((p) => ({ id: p.id, caption: p.caption }));
 
   return (
-    <div style={{ display: "grid", gap: "1.5rem" }}>
-      <header>
-        <h1 className="rt-display" style={{ fontSize: "1.8rem", margin: 0 }}>
-          Catalog
-        </h1>
-        <p style={{ color: "var(--rt-muted, #777)", marginTop: "0.25rem" }}>
-          Manage shop pages and purchasable items.
-        </p>
-      </header>
+    <div>
+      <PageHead eyebrow="Shop" title="Catalog" />
 
-      {/* ------------------------------- pages ------------------------------- */}
-      <section
-        style={{ display: "grid", gap: "1rem", gridTemplateColumns: "minmax(0, 2fr) minmax(0, 1fr)" }}
-      >
-        <Panel>
-          <h2 style={{ fontWeight: 800, marginTop: 0 }}>Catalog pages</h2>
-          <table className="rt-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Caption</th>
-                <th>Parent</th>
-                <th>Min rank</th>
-                <th>Order</th>
-                <th>Visible</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pages.length === 0 ? (
-                <tr>
-                  <td colSpan={7}>No catalog pages yet.</td>
-                </tr>
-              ) : (
-                pages.map((p) => (
-                  <tr key={p.id}>
-                    <td>{p.id}</td>
-                    <td style={{ fontWeight: 700 }}>{p.caption}</td>
-                    <td>{p.parent_id < 0 ? "root" : p.parent_id}</td>
-                    <td>{p.min_rank}</td>
-                    <td>{p.order_num}</td>
-                    <td>
-                      <Badge color={p.visible === "1" ? "#7ed957" : "#bbb"}>
-                        {p.visible === "1" ? "Visible" : "Hidden"}
-                      </Badge>
-                    </td>
-                    <td>
-                      <div style={{ display: "flex", gap: "0.4rem" }}>
-                        <form action={togglePageVisible.bind(null, p.id)}>
-                          <Button type="submit" variant="blue">
-                            {p.visible === "1" ? "Hide" : "Show"}
-                          </Button>
-                        </form>
-                        <form action={deleteCatalogPage.bind(null, p.id)}>
-                          <Button type="submit" variant="danger">
-                            Delete
-                          </Button>
-                        </form>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+      <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
+        {/* ---------------------------- left: lists ---------------------------- */}
+        <div className="space-y-4">
+          <ACard
+            title="Catalog pages"
+            icon={<ShoppingBag size={16} strokeWidth={2} />}
+            pad={false}
+            actions={
+              <span className="text-xs text-[var(--muted,#888)]">
+                showing {pages.length} of {totalPages}
+              </span>
+            }
+          >
+            <form
+              method="get"
+              className="flex items-center gap-2 border-b border-[var(--line,#222)] px-3 py-2"
+            >
+              <Search size={14} strokeWidth={2} className="text-[var(--muted,#888)]" />
+              <input
+                name="q"
+                defaultValue={search}
+                placeholder="Search caption…"
+                className="afield"
+                style={{ flex: 1 }}
+              />
+              <ABtn type="submit" variant="primary" size="xs">
+                Search
+              </ABtn>
+              {search && (
+                <ABtn href="/admin/catalog" variant="default" size="xs">
+                  Clear
+                </ABtn>
               )}
-            </tbody>
-          </table>
-        </Panel>
+            </form>
 
-        <CreatePageForm pages={pageOptions} />
-      </section>
-
-      {/* ------------------------------- items ------------------------------- */}
-      <section
-        style={{ display: "grid", gap: "1rem", gridTemplateColumns: "minmax(0, 2fr) minmax(0, 1fr)" }}
-      >
-        <Panel>
-          <h2 style={{ fontWeight: 800, marginTop: 0 }}>Recent catalog items</h2>
-          <table className="rt-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Base id</th>
-                <th>Page</th>
-                <th>Credits</th>
-                <th>Points</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.length === 0 ? (
-                <tr>
-                  <td colSpan={7}>No catalog items yet.</td>
-                </tr>
-              ) : (
-                items.map((it) => (
-                  <tr key={it.id}>
-                    <td>{it.id}</td>
-                    <td style={{ fontWeight: 700 }}>{it.catalog_name}</td>
-                    <td>{it.item_ids}</td>
-                    <td>
-                      <Link href="#" prefetch={false}>
-                        #{it.page_id}
-                      </Link>
-                    </td>
-                    <td>{it.cost_credits}</td>
-                    <td>{it.cost_points}</td>
-                    <td>
-                      <form action={deleteCatalogItem.bind(null, it.id)}>
-                        <Button type="submit" variant="danger">
-                          Delete
-                        </Button>
-                      </form>
-                    </td>
+            <TableWrap>
+              <table className="dtable">
+                <thead>
+                  <tr>
+                    <th className="num">ID</th>
+                    <th>Caption</th>
+                    <th>Min rank</th>
+                    <th>Visible</th>
+                    <th>Actions</th>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </Panel>
+                </thead>
+                <tbody>
+                  {pages.length === 0 ? (
+                    <tr>
+                      <td colSpan={5}>
+                        {search ? "No pages match that search." : "No catalog pages yet."}
+                      </td>
+                    </tr>
+                  ) : (
+                    pages.map((p) => (
+                      <tr key={p.id}>
+                        <td className="num">{p.id}</td>
+                        <td>{p.caption}</td>
+                        <td>{p.min_rank}</td>
+                        <td>
+                          {p.visible === "1" ? (
+                            <Tag color="green">Visible</Tag>
+                          ) : (
+                            <Tag color="gray">Hidden</Tag>
+                          )}
+                        </td>
+                        <td>
+                          <div className="flex gap-1">
+                            <form action={togglePageVisible.bind(null, p.id)}>
+                              <ABtn type="submit" variant="default" size="xs">
+                                {p.visible === "1" ? (
+                                  <>
+                                    <EyeOff size={14} strokeWidth={2} />
+                                    Hide
+                                  </>
+                                ) : (
+                                  <>
+                                    <Eye size={14} strokeWidth={2} />
+                                    Show
+                                  </>
+                                )}
+                              </ABtn>
+                            </form>
+                            <form action={deleteCatalogPage.bind(null, p.id)}>
+                              <ABtn type="submit" variant="danger" size="xs">
+                                <Trash2 size={14} strokeWidth={2} />
+                              </ABtn>
+                            </form>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </TableWrap>
+          </ACard>
 
-        <CreateItemForm pages={pageOptions} />
-      </section>
+          <ACard
+            title="Catalog items"
+            icon={<Sparkles size={16} strokeWidth={2} />}
+            pad={false}
+            actions={
+              <span className="text-xs text-[var(--muted,#888)]">recent 30</span>
+            }
+          >
+            <TableWrap>
+              <table className="dtable">
+                <thead>
+                  <tr>
+                    <th className="num">ID</th>
+                    <th>Name</th>
+                    <th className="num">Base id</th>
+                    <th className="num">Page</th>
+                    <th className="num">Credits</th>
+                    <th className="num">Points</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {items.length === 0 ? (
+                    <tr>
+                      <td colSpan={7}>No catalog items yet.</td>
+                    </tr>
+                  ) : (
+                    items.map((it) => (
+                      <tr key={it.id}>
+                        <td className="num">{it.id}</td>
+                        <td>{it.catalog_name}</td>
+                        <td className="num">{it.item_ids}</td>
+                        <td className="num">#{it.page_id}</td>
+                        <td className="num">{it.cost_credits}</td>
+                        <td className="num">{it.cost_points}</td>
+                        <td>
+                          <form action={deleteCatalogItem.bind(null, it.id)}>
+                            <ABtn type="submit" variant="danger" size="xs">
+                              <Trash2 size={14} strokeWidth={2} />
+                            </ABtn>
+                          </form>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </TableWrap>
+          </ACard>
+        </div>
+
+        {/* --------------------------- right: create --------------------------- */}
+        <div className="space-y-4">
+          <ACard title="New page" icon={<Plus size={16} strokeWidth={2} />}>
+            <CreatePageForm pages={pageOptions} />
+          </ACard>
+
+          <ACard title="New item" icon={<Plus size={16} strokeWidth={2} />}>
+            <CreateItemForm pages={pageOptions} />
+          </ACard>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,5 +1,5 @@
 import { query } from "@/lib/db";
-import { Panel } from "@/components/ui";
+import { PageHead, ACard, TableWrap, Plus } from "@/components/admin-ui";
 import { CreateRankForm, EditRankRow } from "./forms";
 
 interface RankRow {
@@ -20,38 +20,37 @@ export default async function RanksPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="rt-display text-2xl">Ranks &amp; Permissions</h1>
+      <PageHead eyebrow="Permissions" title="Ranks" />
 
-      <Panel muted>
-        <h2 className="rt-display mb-3 text-lg">Create a new rank</h2>
+      <ACard title="New rank" icon={<Plus size={16} strokeWidth={2} />}>
         <CreateRankForm />
-      </Panel>
+      </ACard>
 
-      <Panel>
-        <h2 className="rt-display mb-3 text-lg">Existing ranks</h2>
+      <ACard title="Existing ranks" pad={false}>
         {ranks.length === 0 ? (
-          <p className="text-sm opacity-70">No ranks defined.</p>
+          <p className="acard-pad text-sm opacity-70">No ranks defined.</p>
         ) : (
-          <table className="rt-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Level</th>
-                <th>Badge</th>
-                <th>Prefix</th>
-                <th>Prefix Color</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ranks.map((rank) => (
-                <EditRankRow key={rank.id} rank={rank} />
-              ))}
-            </tbody>
-          </table>
+          <TableWrap>
+            <table className="dtable">
+              <thead>
+                <tr>
+                  <th className="num">ID</th>
+                  <th>Rank</th>
+                  <th className="num">Level</th>
+                  <th>Badge</th>
+                  <th>Prefix</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ranks.map((rank) => (
+                  <EditRankRow key={rank.id} rank={rank} />
+                ))}
+              </tbody>
+            </table>
+          </TableWrap>
         )}
-      </Panel>
+      </ACard>
     </div>
   );
 }

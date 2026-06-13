@@ -1,9 +1,20 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { query, queryOne } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import { avatarImageUrl } from "@/lib/habbo-imaging";
-import { Panel, Badge, ButtonLink } from "@/components/ui";
+import {
+  PageHead,
+  ACard,
+  ABtn,
+  Tag,
+  ChevronLeft,
+  Crown,
+  Coins,
+  Pencil,
+  KeyRound,
+  Ban,
+  Circle,
+} from "@/components/admin-ui";
 import {
   CurrencyForm,
   RankForm,
@@ -57,6 +68,11 @@ export default async function UserDetailPage({
   );
   if (!user) notFound();
 
+  const dia = await queryOne<{ amount: number }>(
+    "SELECT amount FROM users_currency WHERE user_id = :id AND type = 5",
+    { id: userId },
+  );
+
   const session = await getSession();
   const staffId = session?.userId ?? 0;
 
@@ -69,103 +85,110 @@ export default async function UserDetailPage({
     ranks = [];
   }
 
+  const rankName =
+    ranks.find((r) => r.level === user.rank)?.rank_name ?? `Rank ${user.rank}`;
+  const isOnline = user.online === "1";
+
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="rt-display text-2xl">Manage: {user.username}</h1>
-        <ButtonLink href="/admin/users" variant="ghost">
-          ← Back to users
-        </ButtonLink>
-      </div>
+    <div>
+      <PageHead eyebrow="Manage user" title={user.username}>
+        <ABtn href="/admin/users">
+          <ChevronLeft size={14} strokeWidth={2} />
+          Back
+        </ABtn>
+      </PageHead>
 
       {/* Overview */}
-      <Panel>
-        <div className="flex flex-wrap items-center gap-5">
+      <ACard className="mb-4">
+        <div className="acard-pad flex flex-wrap items-center gap-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            className="rt-avatar"
-            src={avatarImageUrl(user.look, { size: "l" })}
+            className="av-head"
+            style={{ width: 64, height: 64 }}
+            src={avatarImageUrl(user.look, { size: "l", headOnly: true })}
             alt={`${user.username} avatar`}
           />
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-2">
-              <span className="rt-display text-xl">{user.username}</span>
-              {user.online === "1" ? (
-                <Badge color="#7CFC9B">Online</Badge>
+          <div className="flex min-w-0 flex-col gap-1.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-lg font-semibold">{user.username}</span>
+              {isOnline ? (
+                <Tag color="green">
+                  <Circle size={8} fill="currentColor" />
+                  Online
+                </Tag>
               ) : (
-                <Badge color="#d9d9d9">Offline</Badge>
+                <Tag color="gray">Offline</Tag>
               )}
-              <Badge color="#ffd166">Rank {user.rank}</Badge>
+              <Tag color="amber">
+                <Crown size={12} strokeWidth={2} />
+                {rankName}
+              </Tag>
             </div>
-            <p className="text-sm italic opacity-80">
+            <p className="text-sm italic opacity-70">
               {user.motto || "(no motto)"}
             </p>
-            <div className="mt-1 flex flex-wrap gap-3 text-sm">
+            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs opacity-60">
               <span>ID #{user.id}</span>
               <span>{user.mail ?? "(no email)"}</span>
               <span>Gender: {user.gender}</span>
-            </div>
-            <div className="flex flex-wrap gap-3 text-sm opacity-80">
               <span>Joined: {fmtDate(user.account_created)}</span>
               <span>Last online: {fmtDate(user.last_online)}</span>
             </div>
-            <div className="mt-1 flex flex-wrap gap-2">
-              <Badge color="#FFD27F">{user.credits} credits</Badge>
-              <Badge color="#9ED2FF">{user.pixels} pixels</Badge>
-              <Badge color="#D6B8FF">{user.points} points</Badge>
-            </div>
           </div>
         </div>
-      </Panel>
+      </ACard>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <Panel>
-          <CurrencyForm
-            userId={user.id}
-            credits={user.credits}
-            pixels={user.pixels}
-            points={user.points}
-          />
-        </Panel>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        <ACard title="Currency" icon={<Coins size={16} strokeWidth={2} />}>
+          <div className="acard-pad">
+            <CurrencyForm
+              userId={user.id}
+              credits={user.credits}
+              duckets={user.pixels}
+              diamonds={dia?.amount ?? 0}
+              points={user.points}
+            />
+          </div>
+        </ACard>
 
-        <Panel>
-          <RankForm userId={user.id} rank={user.rank} ranks={ranks} />
-        </Panel>
+        <ACard title="Rank" icon={<Crown size={16} strokeWidth={2} />}>
+          <div className="acard-pad">
+            <RankForm userId={user.id} rank={user.rank} ranks={ranks} />
+          </div>
+        </ACard>
 
-        <Panel>
-          <ProfileForm
-            userId={user.id}
-            motto={user.motto}
-            look={user.look}
-            mail={user.mail}
-          />
-        </Panel>
+        <ACard title="Profile" icon={<Pencil size={16} strokeWidth={2} />}>
+          <div className="acard-pad">
+            <ProfileForm
+              userId={user.id}
+              motto={user.motto}
+              look={user.look}
+              mail={user.mail}
+            />
+          </div>
+        </ACard>
 
-        <Panel>
-          <PasswordForm userId={user.id} />
-        </Panel>
+        <ACard
+          title="Reset password"
+          icon={<KeyRound size={16} strokeWidth={2} />}
+        >
+          <div className="acard-pad">
+            <PasswordForm userId={user.id} />
+          </div>
+        </ACard>
       </div>
 
       {/* Danger zone */}
-      <Panel muted>
-        <h2 className="rt-display mb-3 text-xl" style={{ color: "var(--rt-danger)" }}>
-          Danger zone
-        </h2>
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-          <div className="rt-panel" style={{ boxShadow: "none" }}>
-            <BanForm userId={user.id} staffId={staffId} />
-          </div>
-          <div className="rt-panel" style={{ boxShadow: "none" }}>
-            <DeleteForm userId={user.id} />
-          </div>
+      <ACard
+        title="Danger zone"
+        icon={<Ban size={16} strokeWidth={2} />}
+        className="mt-4"
+      >
+        <div className="acard-pad grid grid-cols-1 gap-6 md:grid-cols-2">
+          <BanForm userId={user.id} staffId={staffId} />
+          <DeleteForm userId={user.id} />
         </div>
-        <p className="mt-3 text-xs opacity-60">
-          <Link href="/admin/users" className="underline">
-            Return to user list
-          </Link>{" "}
-          after destructive actions.
-        </p>
-      </Panel>
+      </ACard>
     </div>
   );
 }

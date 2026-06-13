@@ -1,4 +1,13 @@
-import { Panel, Button, Badge } from "@/components/ui";
+import {
+  PageHead,
+  ACard,
+  ABtn,
+  Tag,
+  TableWrap,
+  Ban,
+  UserX,
+  ShieldAlert,
+} from "@/components/admin-ui";
 import { query } from "@/lib/db";
 import { getSession, isStaff } from "@/lib/auth";
 import { BanUserForm } from "./forms";
@@ -57,10 +66,14 @@ export default async function ModerationPage() {
   const session = await getSession();
   if (!session || !isStaff(session.rank)) {
     return (
-      <Panel>
-        <h2 className="rt-display mb-2 text-lg">Moderation</h2>
-        <p>You do not have permission to view this page.</p>
-      </Panel>
+      <>
+        <PageHead eyebrow="Safety" title="Moderation" />
+        <ACard title="Access denied" icon={<ShieldAlert size={16} strokeWidth={2} />}>
+          <p style={{ color: "var(--ink-soft, #98a0b3)" }}>
+            You do not have permission to view this page.
+          </p>
+        </ACard>
+      </>
     );
   }
 
@@ -91,110 +104,116 @@ export default async function ModerationPage() {
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h2 className="rt-display text-2xl">🛡️ Moderation</h2>
-        <p style={{ color: "var(--rt-ink-soft)" }}>
-          Manage active bans, ban users, and review recent chat activity.
-        </p>
-      </div>
+    <>
+      <PageHead eyebrow="Safety" title="Moderation" />
 
-      <Panel>
-        <h3 className="rt-display mb-3 text-lg">Ban a user</h3>
-        <BanUserForm />
-      </Panel>
+      <div className="flex flex-col gap-4">
+        <ACard title="Ban a user" icon={<UserX size={16} strokeWidth={2} />}>
+          <BanUserForm />
+        </ACard>
 
-      <Panel>
-        <h3 className="rt-display mb-3 text-lg">
-          Active bans{" "}
-          <Badge color="var(--rt-danger)">{bans.length}</Badge>
-        </h3>
-        {bans.length === 0 ? (
-          <p style={{ color: "var(--rt-ink-soft)" }}>
-            No bans on record. A peaceful hotel. 🌴
-          </p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="rt-table w-full">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>User</th>
-                  <th>Reason</th>
-                  <th>Type</th>
-                  <th>Banned</th>
-                  <th>Expires</th>
-                  <th></th>
-                </tr>
-              </thead>
-              <tbody>
-                {bans.map((b) => (
-                  <tr key={b.id}>
-                    <td>{b.id}</td>
-                    <td className="font-bold">
-                      {b.username ?? `#${b.user_id}`}
-                    </td>
-                    <td>{b.ban_reason ?? "—"}</td>
-                    <td>
-                      <Badge color="var(--rt-blue)">{b.type}</Badge>
-                    </td>
-                    <td style={{ color: "var(--rt-ink-soft)" }}>
-                      {relativeTime(b.timestamp)}
-                    </td>
-                    <td>
-                      {isPermanent(b.ban_expire) ? (
-                        <Badge color="var(--rt-danger)">permanent</Badge>
-                      ) : (
-                        relativeTime(b.ban_expire)
-                      )}
-                    </td>
-                    <td>
-                      <form action={deleteBan}>
-                        <input type="hidden" name="id" value={b.id} />
-                        <Button type="submit" variant="ghost">
-                          Lift ban
-                        </Button>
-                      </form>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </Panel>
-
-      {chatlogs !== null && (
-        <Panel muted>
-          <h3 className="rt-display mb-3 text-lg">Recent room chat</h3>
-          {chatlogs.length === 0 ? (
-            <p style={{ color: "var(--rt-ink-soft)" }}>No chat logs yet.</p>
+        <ACard
+          title="Active bans"
+          icon={<Ban size={16} strokeWidth={2} />}
+          actions={<Tag color="gray">{bans.length}</Tag>}
+          pad={false}
+        >
+          {bans.length === 0 ? (
+            <div className="acard-pad">
+              <p style={{ color: "var(--ink-soft, #98a0b3)" }}>
+                No bans on record.
+              </p>
+            </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="rt-table w-full">
+            <TableWrap>
+              <table className="dtable">
                 <thead>
                   <tr>
+                    <th className="num">ID</th>
                     <th>User</th>
-                    <th>Message</th>
-                    <th>When</th>
+                    <th>Reason</th>
+                    <th>Type</th>
+                    <th>Banned</th>
+                    <th>Expires</th>
+                    <th></th>
                   </tr>
                 </thead>
                 <tbody>
-                  {chatlogs.map((c, i) => (
-                    <tr key={i}>
-                      <td className="font-bold">#{c.user_id}</td>
-                      <td>{c.message}</td>
-                      <td style={{ color: "var(--rt-ink-soft)" }}>
-                        {relativeTime(c.timestamp)}
+                  {bans.map((b) => (
+                    <tr key={b.id}>
+                      <td className="num">{b.id}</td>
+                      <td>{b.username ?? `#${b.user_id}`}</td>
+                      <td>{b.ban_reason ?? "—"}</td>
+                      <td>
+                        <Tag color="red">{b.type}</Tag>
+                      </td>
+                      <td style={{ color: "var(--ink-soft, #98a0b3)" }}>
+                        {relativeTime(b.timestamp)}
+                      </td>
+                      <td>
+                        {isPermanent(b.ban_expire) ? (
+                          <Tag color="red">Permanent</Tag>
+                        ) : (
+                          <span style={{ color: "var(--ink-soft, #98a0b3)" }}>
+                            {relativeTime(b.ban_expire)}
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        <form action={deleteBan}>
+                          <input type="hidden" name="id" value={b.id} />
+                          <ABtn type="submit" size="xs" variant="primary">
+                            Lift
+                          </ABtn>
+                        </form>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
-            </div>
+            </TableWrap>
           )}
-        </Panel>
-      )}
-    </div>
+        </ACard>
+
+        {chatlogs !== null && (
+          <ACard
+            title="Recent chat"
+            icon={<ShieldAlert size={16} strokeWidth={2} />}
+            pad={false}
+          >
+            {chatlogs.length === 0 ? (
+              <div className="acard-pad">
+                <p style={{ color: "var(--ink-soft, #98a0b3)" }}>
+                  No chat logs yet.
+                </p>
+              </div>
+            ) : (
+              <TableWrap>
+                <table className="dtable">
+                  <thead>
+                    <tr>
+                      <th className="num">User</th>
+                      <th>Message</th>
+                      <th>When</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {chatlogs.map((c, i) => (
+                      <tr key={i}>
+                        <td className="num">#{c.user_id}</td>
+                        <td>{c.message}</td>
+                        <td style={{ color: "var(--ink-soft, #98a0b3)" }}>
+                          {relativeTime(c.timestamp)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </TableWrap>
+            )}
+          </ACard>
+        )}
+      </div>
+    </>
   );
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { Button, Input, Label, FormMessage } from "@/components/ui";
+import { Field, ABtn, FormMsg, Ban } from "@/components/admin-ui";
 import { banUserByName } from "./actions";
 
 type ActionResult = { type: "error" | "success"; text: string };
@@ -21,46 +21,38 @@ export function BanUserForm() {
   const [state, formAction, pending] = useActionState(banAction, null);
 
   return (
-    <form action={formAction} className="flex flex-col gap-3">
-      <FormMessage message={state} />
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="ban-username">Username</Label>
-          <Input
-            id="ban-username"
-            name="username"
-            placeholder="HabboName"
-            autoComplete="off"
-            required
-          />
-        </div>
-        <div className="flex flex-col gap-1">
-          <Label htmlFor="ban-hours">Duration (hours)</Label>
-          <Input
-            id="ban-hours"
-            name="hours"
-            type="number"
-            min={1}
-            step={1}
-            defaultValue={24}
-            required
-          />
-        </div>
-      </div>
-      <div className="flex flex-col gap-1">
-        <Label htmlFor="ban-reason">Reason</Label>
-        <Input
-          id="ban-reason"
+    <form action={formAction} className="space-y-3">
+      <div className="grid gap-3 md:grid-cols-3">
+        <Field
+          label="Username"
+          name="username"
+          placeholder="HabboName"
+          autoComplete="off"
+          required
+        />
+        <Field
+          label="Reason"
           name="reason"
           placeholder="Breaking the rules…"
           autoComplete="off"
         />
+        <Field
+          label="Duration (hours)"
+          name="hours"
+          type="number"
+          min={1}
+          step={1}
+          defaultValue={24}
+          required
+        />
       </div>
-      <div>
-        <Button type="submit" variant="danger" disabled={pending}>
-          {pending ? "Banning…" : "🔨 Ban user"}
-        </Button>
+      <div className="flex items-center gap-3">
+        <ABtn type="submit" variant="danger" disabled={pending}>
+          <Ban size={14} strokeWidth={2} />
+          {pending ? "Banning…" : "Ban"}
+        </ABtn>
       </div>
+      <FormMsg message={state} />
     </form>
   );
 }

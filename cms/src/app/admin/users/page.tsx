@@ -1,7 +1,9 @@
-import Link from "next/link";
 import { query } from "@/lib/db";
 import { avatarImageUrl } from "@/lib/habbo-imaging";
-import { Panel, Input, Button, Badge, ButtonLink } from "@/components/ui";
+import {
+  PageHead, ACard, ABtn, Tag, Field, TableWrap,
+  Users, Search, Pencil, Crown, Circle, ChevronLeft, ChevronRight,
+} from "@/components/admin-ui";
 
 interface UserRow {
   id: number;
@@ -49,106 +51,109 @@ export default async function UsersPage({
   const baseQs = q ? `q=${encodeURIComponent(q)}&` : "";
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="rt-display text-2xl">User Management</h1>
-        <ButtonLink href="/admin" variant="ghost">
-          ← Dashboard
-        </ButtonLink>
-      </div>
+    <div>
+      <PageHead eyebrow="People" title="Users" />
 
-      <Panel muted>
-        <form method="GET" className="flex flex-wrap items-end gap-3">
-          <div className="flex flex-col gap-1">
-            <label className="rt-label" htmlFor="q">
-              Search username or email
-            </label>
-            <Input id="q" name="q" defaultValue={q} placeholder="Username or email…" />
-          </div>
-          <Button type="submit" variant="blue">
-            Search
-          </Button>
-          {q && (
-            <ButtonLink href="/admin/users" variant="ghost">
-              Clear
-            </ButtonLink>
-          )}
-        </form>
-      </Panel>
-
-      <Panel>
+      <ACard
+        title="Directory"
+        icon={<Users size={16} strokeWidth={2} />}
+        actions={
+          <form method="GET" className="flex items-end gap-2">
+            <Field
+              name="q"
+              defaultValue={q}
+              placeholder="Username or email…"
+              aria-label="Search username or email"
+            />
+            <ABtn type="submit" variant="primary" size="xs">
+              <Search size={14} strokeWidth={2} />
+              Search
+            </ABtn>
+            {q && (
+              <ABtn href="/admin/users" size="xs">
+                Clear
+              </ABtn>
+            )}
+          </form>
+        }
+        pad={false}
+      >
         {users.length === 0 ? (
-          <p className="text-sm opacity-70">No users found.</p>
+          <p className="px-4 py-6 text-sm opacity-60">No users found.</p>
         ) : (
-          <table className="rt-table">
-            <thead>
-              <tr>
-                <th>Avatar</th>
-                <th>ID</th>
-                <th>Username</th>
-                <th>Rank</th>
-                <th>Credits</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr key={u.id}>
-                  <td>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      className="rt-avatar"
-                      src={avatarImageUrl(u.look, { size: "s", headOnly: true })}
-                      alt={`${u.username} avatar`}
-                      style={{ width: 40, height: 56 }}
-                    />
-                  </td>
-                  <td>{u.id}</td>
-                  <td className="font-bold">{u.username}</td>
-                  <td>
-                    <Badge color="#ffd166">{u.rank}</Badge>
-                  </td>
-                  <td>{u.credits}</td>
-                  <td>
-                    {u.online === "1" ? (
-                      <Badge color="#7CFC9B">Online</Badge>
-                    ) : (
-                      <Badge color="#d9d9d9">Offline</Badge>
-                    )}
-                  </td>
-                  <td>
-                    <Link href={`/admin/users/${u.id}`} className="rt-btn rt-btn-blue">
-                      Manage
-                    </Link>
-                  </td>
+          <TableWrap>
+            <table className="dtable">
+              <thead>
+                <tr>
+                  <th>Avatar</th>
+                  <th className="num">ID</th>
+                  <th>Username</th>
+                  <th>Rank</th>
+                  <th className="num">Credits</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {users.map((u) => (
+                  <tr key={u.id}>
+                    <td>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        className="av-sm"
+                        src={avatarImageUrl(u.look, { size: "s", headOnly: true })}
+                        alt={`${u.username} avatar`}
+                      />
+                    </td>
+                    <td className="num opacity-60">{u.id}</td>
+                    <td className="font-semibold">{u.username}</td>
+                    <td>
+                      <Tag color="amber">
+                        <Crown size={12} strokeWidth={2} />
+                        {u.rank}
+                      </Tag>
+                    </td>
+                    <td className="num">{u.credits.toLocaleString()}</td>
+                    <td>
+                      {u.online === "1" ? (
+                        <Tag color="green">
+                          <Circle size={8} fill="currentColor" />
+                          Online
+                        </Tag>
+                      ) : (
+                        <Tag color="gray">Offline</Tag>
+                      )}
+                    </td>
+                    <td>
+                      <ABtn size="xs" variant="primary" href={`/admin/users/${u.id}`}>
+                        <Pencil size={12} strokeWidth={2} />
+                        Manage
+                      </ABtn>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </TableWrap>
         )}
-      </Panel>
+      </ACard>
 
-      <div className="flex items-center justify-between">
+      <div className="mt-4 flex items-center justify-between">
         <div>
           {pageNum > 1 && (
-            <ButtonLink
-              href={`/admin/users?${baseQs}page=${pageNum - 1}`}
-              variant="ghost"
-            >
-              ← Previous
-            </ButtonLink>
+            <ABtn href={`/admin/users?${baseQs}page=${pageNum - 1}`} size="xs">
+              <ChevronLeft size={14} strokeWidth={2} />
+              Prev
+            </ABtn>
           )}
         </div>
-        <span className="text-sm opacity-70">Page {pageNum}</span>
+        <span className="text-xs opacity-50">Page {pageNum}</span>
         <div>
           {hasNext && (
-            <ButtonLink
-              href={`/admin/users?${baseQs}page=${pageNum + 1}`}
-              variant="ghost"
-            >
-              Next →
-            </ButtonLink>
+            <ABtn href={`/admin/users?${baseQs}page=${pageNum + 1}`} size="xs">
+              Next
+              <ChevronRight size={14} strokeWidth={2} />
+            </ABtn>
           )}
         </div>
       </div>

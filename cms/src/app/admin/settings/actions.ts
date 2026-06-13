@@ -10,9 +10,21 @@ type ActionResult = { type: "error" | "success"; text: string };
 const ALLOWED_KEYS = new Set<string>([
   "hotel.name",
   "hotel.max.rooms.per.user",
+  "hotel.max.rooms.per.user.hc",
   "hotel.beta.enabled",
   "console.mode",
   "welcome.alert.enabled",
+  "welcome.alert.message",
+  "hotel.room.user.max",
+  "maximum.bots.per.room",
+  "maximum.pets.per.room",
+  "imager.location.output.camera",
+  "camera.url",
+  "hotel.wardrobe.enabled",
+  "rcon.commands.enabled",
+  "chat.flood.protection.length",
+  "message.too.long.length",
+  "floortext.maxlength",
 ]);
 
 /** Update a single emulator_settings value. `key` is a reserved word — backtick it. */

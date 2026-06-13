@@ -1,7 +1,13 @@
 import { redirect } from "next/navigation";
 import { query } from "@/lib/db";
 import { getSession, isStaff } from "@/lib/auth";
-import { Panel } from "@/components/ui";
+import {
+  PageHead,
+  ACard,
+  TableWrap,
+  ShoppingBag,
+  Coins,
+} from "@/components/admin-ui";
 import { SetLookForm } from "./forms";
 
 export const dynamic = "force-dynamic";
@@ -32,50 +38,51 @@ export default async function ClothingAdminPage() {
   const { rows: clothing, error: clothingError } = await loadClothing();
 
   return (
-    <div style={{ display: "grid", gap: "1.5rem" }}>
-      <header>
-        <h1 className="rt-display" style={{ fontSize: "1.8rem", margin: 0 }}>
-          Clothing
-        </h1>
-        <p style={{ color: "var(--rt-muted, #777)", marginTop: "0.25rem" }}>
-          Edit user looks and review purchasable clothing.
-        </p>
-      </header>
+    <div>
+      <PageHead eyebrow="Looks" title="Clothing" />
 
       <SetLookForm />
 
-      <Panel>
-        <h2 style={{ fontWeight: 800, marginTop: 0 }}>Purchasable clothing</h2>
-        {clothingError ? (
-          <p style={{ color: "var(--rt-muted, #777)" }}>
-            Clothing catalog unavailable on this database
-            <span style={{ display: "block", fontSize: "0.8rem", opacity: 0.7 }}>
-              ({clothingError})
-            </span>
-          </p>
-        ) : clothing.length === 0 ? (
-          <p style={{ color: "var(--rt-muted, #777)" }}>No clothing entries found.</p>
-        ) : (
-          <table className="rt-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Set id</th>
-                <th>Price</th>
-              </tr>
-            </thead>
-            <tbody>
-              {clothing.map((c) => (
-                <tr key={c.id}>
-                  <td>{c.id}</td>
-                  <td>{c.setid}</td>
-                  <td>{c.price}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </Panel>
+      <div className="mt-4">
+        <ACard title="Purchasable clothing" icon={<ShoppingBag size={16} strokeWidth={2} />}>
+          {clothingError ? (
+            <p className="text-sm" style={{ color: "var(--muted, #777)" }}>
+              Clothing catalog unavailable on this database.
+              <span className="mt-1 block text-xs opacity-70">{clothingError}</span>
+            </p>
+          ) : clothing.length === 0 ? (
+            <p className="text-sm" style={{ color: "var(--muted, #777)" }}>
+              No clothing entries found.
+            </p>
+          ) : (
+            <TableWrap>
+              <table className="dtable">
+                <thead>
+                  <tr>
+                    <th className="num">ID</th>
+                    <th className="num">Set id</th>
+                    <th className="num">Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {clothing.map((c) => (
+                    <tr key={c.id}>
+                      <td className="num">{c.id}</td>
+                      <td className="num">{c.setid}</td>
+                      <td className="num">
+                        <span className="inline-flex items-center gap-1">
+                          <Coins size={12} strokeWidth={2} />
+                          {c.price}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </TableWrap>
+          )}
+        </ACard>
+      </div>
     </div>
   );
 }
