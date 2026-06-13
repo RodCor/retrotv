@@ -504,3 +504,19 @@ select.afield { appearance: none; cursor: pointer; }
 .stat-ic svg { width: 18px; height: 18px; }
 .stat-val { font-family: var(--font-pixel), monospace; font-size: 1.5rem; line-height: 1; }
 .stat-lbl { font-size: 0.72rem; color: var(--ink-dim); margin-top: 0.15rem; }
+
+/* catalog tree: breadcrumb, truncating caption cells, compact id chips */
+.crumb { display: flex; flex-wrap: wrap; align-items: center; gap: 0.2rem; font-size: 0.82rem; }
+.crumb a { color: var(--ink-soft); padding: 0.18rem 0.45rem; border-radius: 6px; transition: background 0.15s, color 0.15s; }
+.crumb a:hover { background: rgba(124,152,230,0.1); color: var(--ink); }
+.crumb .sep { color: var(--ink-dim); }
+.crumb .cur { color: var(--ink); font-weight: 700; padding: 0.18rem 0.45rem; }
+.dtable td.cap { max-width: 260px; }
+.dtable td.cap .ell { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.idchip {
+  display: inline-block; max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  vertical-align: middle; font-family: var(--font-pixel), monospace; font-size: 0.7rem;
+  padding: 0.08rem 0.42rem; border-radius: 5px; background: rgba(8,12,28,0.5);
+  border: 1px solid var(--line); color: var(--ink-soft);
+}
+.folder-row { cursor: pointer; }

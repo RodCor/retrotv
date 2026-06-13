@@ -1,128 +1,45 @@
 "use client";
 
 import { useActionState } from "react";
-import { ABtn, Field, Select, FormMsg, Plus } from "@/components/admin-ui";
+import { ABtn, Field, FormMsg, Plus } from "@/components/admin-ui";
 import { createCatalogPage, createCatalogItem } from "./actions";
 
-export interface PageOption {
-  id: number;
-  caption: string;
-}
-
-export function CreatePageForm({ pages }: { pages: PageOption[] }) {
+/** Create a sub-page inside the page currently being browsed (parentId). */
+export function CreatePageForm({ parentId, here }: { parentId: number; here: string }) {
   const [state, action, pending] = useActionState(createCatalogPage, null);
-
   return (
     <form action={action} className="space-y-3">
-      <Field
-        label="Caption"
-        name="caption"
-        required
-        placeholder="Super Furni"
-        className="w-full"
-      />
-
-      <Select label="Parent page" name="parent_id" defaultValue="-1" className="w-full">
-        <option value="-1">Root (top level)</option>
-        {pages.map((p) => (
-          <option key={p.id} value={p.id}>
-            {p.caption} (#{p.id})
-          </option>
-        ))}
-      </Select>
-
-      <Field
-        label="Min rank"
-        name="min_rank"
-        type="number"
-        min={1}
-        defaultValue={1}
-        className="w-full"
-      />
-
-      <Field
-        label="Layout"
-        name="page_layout"
-        defaultValue="default"
-        className="w-full"
-      />
-
+      <input type="hidden" name="parent_id" value={parentId} />
+      <p className="text-xs adim">New page inside <span className="amuted font-semibold">{here}</span></p>
+      <Field label="Caption" name="caption" required placeholder="Super Furni" className="w-full" />
+      <Field label="Min rank" name="min_rank" type="number" min={1} defaultValue={1} className="w-full" />
       <ABtn type="submit" variant="primary" disabled={pending}>
         <Plus size={14} strokeWidth={2} />
-        {pending ? "Creating…" : "Create"}
+        {pending ? "Creating…" : "Add page"}
       </ABtn>
-
       <FormMsg message={state} />
     </form>
   );
 }
 
-export function CreateItemForm({ pages }: { pages: PageOption[] }) {
+/** Add a furni offer to the page currently being browsed (pageId). */
+export function CreateItemForm({ pageId, here }: { pageId: number; here: string }) {
   const [state, action, pending] = useActionState(createCatalogItem, null);
-
   return (
     <form action={action} className="space-y-3">
-      <Field
-        label="Catalog name"
-        name="catalog_name"
-        required
-        placeholder="dragon_lamp"
-        className="w-full"
-      />
-
-      <Field
-        label="Base item id (item_ids)"
-        name="item_ids"
-        type="number"
-        min={1}
-        required
-        placeholder="1234"
-        className="w-full"
-      />
-
-      <Select label="Catalog page" name="page_id" required defaultValue="" className="w-full">
-        <option value="" disabled>
-          Select a page…
-        </option>
-        {pages.map((p) => (
-          <option key={p.id} value={p.id}>
-            {p.caption} (#{p.id})
-          </option>
-        ))}
-      </Select>
-
-      <Field
-        label="Cost (credits)"
-        name="cost_credits"
-        type="number"
-        min={0}
-        defaultValue={0}
-        className="w-full"
-      />
-
-      <Field
-        label="Cost (points)"
-        name="cost_points"
-        type="number"
-        min={0}
-        defaultValue={0}
-        className="w-full"
-      />
-
-      <Field
-        label="Amount"
-        name="amount"
-        type="number"
-        min={1}
-        defaultValue={1}
-        className="w-full"
-      />
-
+      <input type="hidden" name="page_id" value={pageId} />
+      <p className="text-xs adim">New item in <span className="amuted font-semibold">{here}</span></p>
+      <Field label="Catalog name" name="catalog_name" required placeholder="dragon_lamp" className="w-full" />
+      <Field label="Base item id" name="item_ids" type="number" min={1} required placeholder="1234" className="w-full" />
+      <div className="grid grid-cols-3 gap-2">
+        <Field label="Credits" name="cost_credits" type="number" min={0} defaultValue={0} />
+        <Field label="Points" name="cost_points" type="number" min={0} defaultValue={0} />
+        <Field label="Amount" name="amount" type="number" min={1} defaultValue={1} />
+      </div>
       <ABtn type="submit" variant="primary" disabled={pending}>
         <Plus size={14} strokeWidth={2} />
-        {pending ? "Creating…" : "Create"}
+        {pending ? "Adding…" : "Add item"}
       </ABtn>
-
       <FormMsg message={state} />
     </form>
   );

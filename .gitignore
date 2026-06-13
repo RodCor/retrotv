@@ -42,3 +42,5 @@ cms/survey*.mjs
 cms/t-*.mjs
 cms/d-*.png
 cms/s-*.png
+cms/catshot.mjs
+cms/c-*.png

@@ -1,257 +1,181 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { query, queryOne } from "@/lib/db";
 import { getSession, isStaff } from "@/lib/auth";
 import {
-  ACard,
-  ABtn,
-  PageHead,
-  Tag,
-  TableWrap,
-  ShoppingBag,
-  Sparkles,
-  Search,
-  Eye,
-  EyeOff,
-  Trash2,
-  Plus,
+  ACard, ABtn, PageHead, Tag, TableWrap, ShoppingBag, Sparkles,
+  Eye, EyeOff, Trash2, ChevronRight, Home,
 } from "@/components/admin-ui";
 import { CreateItemForm, CreatePageForm } from "./forms";
-import {
-  deleteCatalogItem,
-  deleteCatalogPage,
-  togglePageVisible,
-} from "./actions";
+import { deleteCatalogItem, deleteCatalogPage, togglePageVisible } from "./actions";
 
 export const dynamic = "force-dynamic";
 
-const PAGE_LIMIT = 25;
+interface PageRow { id: number; parent_id: number; caption: string; min_rank: number; visible: string; }
+interface ItemRow { id: number; catalog_name: string; cost_credits: number; cost_points: number; item_ids: string; amount: number; }
 
-interface CatalogPageRow {
-  id: number;
-  parent_id: number;
-  caption: string;
-  min_rank: number;
-  visible: string;
-  order_num: number;
-}
-
-interface CatalogItemRow {
-  id: number;
-  catalog_name: string;
-  cost_credits: number;
-  cost_points: number;
-  page_id: number;
-  item_ids: string;
+/** Compact display for an item_ids value that may be one or several base ids. */
+function ItemIds({ value }: { value: string }) {
+  const ids = String(value ?? "").split(/[,;]/).filter(Boolean);
+  const label = ids.length > 1 ? `${ids[0]} +${ids.length - 1}` : (ids[0] ?? "—");
+  return <span className="idchip" title={value}>{label}</span>;
 }
 
 export default async function CatalogAdminPage({
   searchParams,
-}: {
-  searchParams: Promise<{ q?: string }>;
-}) {
+}: { searchParams: Promise<{ p?: string }> }) {
   const session = await getSession();
-  if (!session || !isStaff(session.rank)) {
-    redirect("/");
+  if (!session || !isStaff(session.rank)) redirect("/");
+
+  const { p } = await searchParams;
+  const currentId = p && Number.isInteger(Number(p)) ? Number(p) : -1; // -1 = root
+
+  // Current page (for breadcrumb + items + "add here" labels)
+  const current = currentId === -1 ? null
+    : await queryOne<PageRow>("SELECT id, parent_id, caption, min_rank, visible FROM catalog_pages WHERE id = :id", { id: currentId });
+  if (currentId !== -1 && !current) redirect("/admin/catalog");
+
+  // Breadcrumb: walk parent chain up to root
+  const trail: { id: number; caption: string }[] = [];
+  let walk: number | null = current ? current.id : null;
+  let guard = 0;
+  while (walk != null && walk !== -1 && guard++ < 16) {
+    const row: PageRow | null = await queryOne<PageRow>("SELECT id, parent_id, caption, min_rank, visible FROM catalog_pages WHERE id = :id", { id: walk });
+    if (!row) break;
+    trail.unshift({ id: row.id, caption: row.caption });
+    walk = row.parent_id;
   }
 
-  const { q } = await searchParams;
-  const search = (q ?? "").trim();
-  const like = `%${search}%`;
-
-  const totalRow = await queryOne<{ total: number }>(
-    search
-      ? `SELECT COUNT(*) AS total FROM catalog_pages WHERE caption LIKE :like`
-      : `SELECT COUNT(*) AS total FROM catalog_pages`,
-    search ? { like } : {},
+  // Children of the current node
+  const children = await query<PageRow>(
+    "SELECT id, parent_id, caption, min_rank, visible FROM catalog_pages WHERE parent_id = :pid ORDER BY order_num, caption",
+    { pid: currentId },
   );
-  const totalPages = totalRow?.total ?? 0;
+  const childIds = children.map((c) => c.id);
 
-  const pages = await query<CatalogPageRow>(
-    `SELECT id, parent_id, caption, min_rank, visible, order_num
-       FROM catalog_pages
-      ${search ? "WHERE caption LIKE :like" : ""}
-      ORDER BY order_num
-      LIMIT ${PAGE_LIMIT}`,
-    search ? { like } : {},
-  );
+  // Content counts per child (sub-pages + items), so folders show what's inside
+  const subCounts = new Map<number, number>();
+  const itemCounts = new Map<number, number>();
+  if (childIds.length) {
+    const inList = childIds.join(",");
+    for (const r of await query<{ parent_id: number; n: number }>(`SELECT parent_id, COUNT(*) AS n FROM catalog_pages WHERE parent_id IN (${inList}) GROUP BY parent_id`)) subCounts.set(r.parent_id, r.n);
+    for (const r of await query<{ page_id: number; n: number }>(`SELECT page_id, COUNT(*) AS n FROM catalog_items WHERE page_id IN (${inList}) GROUP BY page_id`)) itemCounts.set(r.page_id, r.n);
+  }
 
-  // For the page_id <Select>, list all pages (caption + id), unfiltered.
-  const allPages = await query<{ id: number; caption: string }>(
-    `SELECT id, caption FROM catalog_pages ORDER BY order_num`,
+  // Items directly on the current page
+  const items = currentId === -1 ? [] : await query<ItemRow>(
+    "SELECT id, catalog_name, cost_credits, cost_points, item_ids, amount FROM catalog_items WHERE page_id = :pid ORDER BY order_number, id",
+    { pid: currentId },
   );
 
-  const items = await query<CatalogItemRow>(
-    `SELECT ci.id, ci.catalog_name, ci.cost_credits, ci.cost_points,
-            ci.page_id, ci.item_ids
-       FROM catalog_items ci
-      ORDER BY ci.id DESC
-      LIMIT 30`,
-  );
-
-  const pageOptions = allPages.map((p) => ({ id: p.id, caption: p.caption }));
+  const hereLabel = current ? current.caption : "Root";
 
   return (
     <div>
-      <PageHead eyebrow="Shop" title="Catalog" />
+      <PageHead eyebrow="Shop" title="Catalog">
+        <ABtn href="/admin/catalog" variant="default" size="xs"><Home size={13} strokeWidth={2} />Root</ABtn>
+      </PageHead>
 
-      <div className="grid gap-4 lg:grid-cols-[1.6fr_1fr]">
-        {/* ---------------------------- left: lists ---------------------------- */}
+      {/* breadcrumb */}
+      <div className="acard acard-pad mb-4">
+        <nav className="crumb">
+          <Link href="/admin/catalog">Root</Link>
+          {trail.map((c, i) => (
+            <span key={c.id} className="contents">
+              <span className="sep">/</span>
+              {i === trail.length - 1
+                ? <span className="cur">{c.caption}</span>
+                : <Link href={`/admin/catalog?p=${c.id}`}>{c.caption}</Link>}
+            </span>
+          ))}
+        </nav>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
+        {/* ---- left: tree + items ---- */}
         <div className="space-y-4">
-          <ACard
-            title="Catalog pages"
-            icon={<ShoppingBag size={16} strokeWidth={2} />}
-            pad={false}
-            actions={
-              <span className="text-xs text-[var(--muted,#888)]">
-                showing {pages.length} of {totalPages}
-              </span>
-            }
-          >
-            <form
-              method="get"
-              className="flex items-center gap-2 border-b border-[var(--line,#222)] px-3 py-2"
-            >
-              <Search size={14} strokeWidth={2} className="text-[var(--muted,#888)]" />
-              <input
-                name="q"
-                defaultValue={search}
-                placeholder="Search caption…"
-                className="afield"
-                style={{ flex: 1 }}
-              />
-              <ABtn type="submit" variant="primary" size="xs">
-                Search
-              </ABtn>
-              {search && (
-                <ABtn href="/admin/catalog" variant="default" size="xs">
-                  Clear
-                </ABtn>
-              )}
-            </form>
-
+          <ACard title={current ? "Pages inside this page" : "Catalog pages"} icon={<ShoppingBag size={16} strokeWidth={2} />} pad={false}
+            actions={<span className="text-xs adim">{children.length} page{children.length === 1 ? "" : "s"}</span>}>
             <TableWrap>
               <table className="dtable">
-                <thead>
-                  <tr>
-                    <th className="num">ID</th>
-                    <th>Caption</th>
-                    <th>Min rank</th>
-                    <th>Visible</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
+                <thead><tr><th className="cap">Page</th><th>Contains</th><th className="num">Rank</th><th>Visible</th><th>Actions</th></tr></thead>
                 <tbody>
-                  {pages.length === 0 ? (
-                    <tr>
-                      <td colSpan={5}>
-                        {search ? "No pages match that search." : "No catalog pages yet."}
+                  {children.length === 0 ? (
+                    <tr><td colSpan={5} className="adim">No sub-pages here.</td></tr>
+                  ) : children.map((c) => (
+                    <tr key={c.id}>
+                      <td className="cap">
+                        <Link href={`/admin/catalog?p=${c.id}`} className="ell flex items-center gap-1.5" style={{ color: "var(--ink)" }}>
+                          <ChevronRight size={13} strokeWidth={2} style={{ color: "var(--cyan)", flexShrink: 0 }} />
+                          <span className="ell">{c.caption}</span>
+                        </Link>
+                      </td>
+                      <td className="adim text-xs">
+                        {subCounts.get(c.id) ? `${subCounts.get(c.id)} pages` : ""}
+                        {subCounts.get(c.id) && itemCounts.get(c.id) ? " · " : ""}
+                        {itemCounts.get(c.id) ? `${itemCounts.get(c.id)} items` : ""}
+                        {!subCounts.get(c.id) && !itemCounts.get(c.id) ? "empty" : ""}
+                      </td>
+                      <td className="num">{c.min_rank}</td>
+                      <td>{c.visible === "1" ? <Tag color="green">Visible</Tag> : <Tag color="gray">Hidden</Tag>}</td>
+                      <td>
+                        <div className="flex gap-1">
+                          <ABtn href={`/admin/catalog?p=${c.id}`} variant="default" size="xs"><ChevronRight size={13} strokeWidth={2} />Open</ABtn>
+                          <form action={togglePageVisible.bind(null, c.id)}>
+                            <ABtn type="submit" variant="default" size="xs">{c.visible === "1" ? <EyeOff size={13} strokeWidth={2} /> : <Eye size={13} strokeWidth={2} />}</ABtn>
+                          </form>
+                          <form action={deleteCatalogPage.bind(null, c.id)}>
+                            <ABtn type="submit" variant="danger" size="xs"><Trash2 size={13} strokeWidth={2} /></ABtn>
+                          </form>
+                        </div>
                       </td>
                     </tr>
-                  ) : (
-                    pages.map((p) => (
-                      <tr key={p.id}>
-                        <td className="num">{p.id}</td>
-                        <td>{p.caption}</td>
-                        <td>{p.min_rank}</td>
-                        <td>
-                          {p.visible === "1" ? (
-                            <Tag color="green">Visible</Tag>
-                          ) : (
-                            <Tag color="gray">Hidden</Tag>
-                          )}
-                        </td>
-                        <td>
-                          <div className="flex gap-1">
-                            <form action={togglePageVisible.bind(null, p.id)}>
-                              <ABtn type="submit" variant="default" size="xs">
-                                {p.visible === "1" ? (
-                                  <>
-                                    <EyeOff size={14} strokeWidth={2} />
-                                    Hide
-                                  </>
-                                ) : (
-                                  <>
-                                    <Eye size={14} strokeWidth={2} />
-                                    Show
-                                  </>
-                                )}
-                              </ABtn>
-                            </form>
-                            <form action={deleteCatalogPage.bind(null, p.id)}>
-                              <ABtn type="submit" variant="danger" size="xs">
-                                <Trash2 size={14} strokeWidth={2} />
-                              </ABtn>
-                            </form>
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
+                  ))}
                 </tbody>
               </table>
             </TableWrap>
           </ACard>
 
-          <ACard
-            title="Catalog items"
-            icon={<Sparkles size={16} strokeWidth={2} />}
-            pad={false}
-            actions={
-              <span className="text-xs text-[var(--muted,#888)]">recent 30</span>
-            }
-          >
-            <TableWrap>
-              <table className="dtable">
-                <thead>
-                  <tr>
-                    <th className="num">ID</th>
-                    <th>Name</th>
-                    <th className="num">Base id</th>
-                    <th className="num">Page</th>
-                    <th className="num">Credits</th>
-                    <th className="num">Points</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.length === 0 ? (
-                    <tr>
-                      <td colSpan={7}>No catalog items yet.</td>
-                    </tr>
-                  ) : (
-                    items.map((it) => (
+          {current && (
+            <ACard title="Items on this page" icon={<Sparkles size={16} strokeWidth={2} />} pad={false}
+              actions={<span className="text-xs adim">{items.length} item{items.length === 1 ? "" : "s"}</span>}>
+              <TableWrap>
+                <table className="dtable">
+                  <thead><tr><th className="cap">Name</th><th>Base id</th><th className="num">Credits</th><th className="num">Points</th><th className="num">Qty</th><th>Actions</th></tr></thead>
+                  <tbody>
+                    {items.length === 0 ? (
+                      <tr><td colSpan={6} className="adim">No items on this page.</td></tr>
+                    ) : items.map((it) => (
                       <tr key={it.id}>
-                        <td className="num">{it.id}</td>
-                        <td>{it.catalog_name}</td>
-                        <td className="num">{it.item_ids}</td>
-                        <td className="num">#{it.page_id}</td>
-                        <td className="num">{it.cost_credits}</td>
-                        <td className="num">{it.cost_points}</td>
+                        <td className="cap"><span className="ell">{it.catalog_name}</span></td>
+                        <td><ItemIds value={it.item_ids} /></td>
+                        <td className="num">{it.cost_credits || "—"}</td>
+                        <td className="num">{it.cost_points || "—"}</td>
+                        <td className="num">{it.amount}</td>
                         <td>
                           <form action={deleteCatalogItem.bind(null, it.id)}>
-                            <ABtn type="submit" variant="danger" size="xs">
-                              <Trash2 size={14} strokeWidth={2} />
-                            </ABtn>
+                            <ABtn type="submit" variant="danger" size="xs"><Trash2 size={13} strokeWidth={2} /></ABtn>
                           </form>
                         </td>
                       </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </TableWrap>
-          </ACard>
+                    ))}
+                  </tbody>
+                </table>
+              </TableWrap>
+            </ACard>
+          )}
         </div>
 
-        {/* --------------------------- right: create --------------------------- */}
+        {/* ---- right: contextual create ---- */}
         <div className="space-y-4">
-          <ACard title="New page" icon={<Plus size={16} strokeWidth={2} />}>
-            <CreatePageForm pages={pageOptions} />
+          <ACard title="Add page" icon={<ShoppingBag size={16} strokeWidth={2} />}>
+            <CreatePageForm parentId={currentId} here={hereLabel} />
           </ACard>
-
-          <ACard title="New item" icon={<Plus size={16} strokeWidth={2} />}>
-            <CreateItemForm pages={pageOptions} />
-          </ACard>
+          {current && (
+            <ACard title="Add item" icon={<Sparkles size={16} strokeWidth={2} />}>
+              <CreateItemForm pageId={current.id} here={hereLabel} />
+            </ACard>
+          )}
         </div>
       </div>
     </div>
