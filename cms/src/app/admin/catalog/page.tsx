@@ -6,7 +6,7 @@ import {
   ACard, ABtn, PageHead, Tag, TableWrap, ShoppingBag, Sparkles,
   Eye, EyeOff, Trash2, ChevronRight, Home,
 } from "@/components/admin-ui";
-import { CreateItemForm, CreatePageForm } from "./forms";
+import { CreateItemForm, CreatePageForm, RenamePage } from "./forms";
 import { deleteCatalogItem, deleteCatalogPage, togglePageVisible } from "./actions";
 
 export const dynamic = "force-dynamic";
@@ -119,8 +119,9 @@ export default async function CatalogAdminPage({
                       <td className="num">{c.min_rank}</td>
                       <td>{c.visible === "1" ? <Tag color="green">Visible</Tag> : <Tag color="gray">Hidden</Tag>}</td>
                       <td>
-                        <div className="flex gap-1">
+                        <div className="flex flex-wrap items-center gap-1">
                           <ABtn href={`/admin/catalog?p=${c.id}`} variant="default" size="xs"><ChevronRight size={13} strokeWidth={2} />Open</ABtn>
+                          <RenamePage id={c.id} caption={c.caption} />
                           <form action={togglePageVisible.bind(null, c.id)}>
                             <ABtn type="submit" variant="default" size="xs">{c.visible === "1" ? <EyeOff size={13} strokeWidth={2} /> : <Eye size={13} strokeWidth={2} />}</ABtn>
                           </form>

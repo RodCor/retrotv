@@ -1,8 +1,31 @@
 "use client";
 
+import { useState } from "react";
 import { useActionState } from "react";
-import { ABtn, Field, FormMsg, Plus } from "@/components/admin-ui";
-import { createCatalogPage, createCatalogItem } from "./actions";
+import { ABtn, Field, FormMsg, Plus, Pencil, Check, X } from "@/components/admin-ui";
+import { createCatalogPage, createCatalogItem, renameCatalogPage } from "./actions";
+
+/** Inline rename for a catalog page (category): pencil -> input + save/cancel. */
+export function RenamePage({ id, caption }: { id: number; caption: string }) {
+  const [editing, setEditing] = useState(false);
+  if (!editing) {
+    return (
+      <ABtn type="button" variant="default" size="xs" onClick={() => setEditing(true)} title="Rename">
+        <Pencil size={13} strokeWidth={2} />
+      </ABtn>
+    );
+  }
+  return (
+    <form action={renameCatalogPage.bind(null, id)} className="flex items-center gap-1">
+      <input
+        name="caption" defaultValue={caption} autoFocus maxLength={120}
+        className="afield" style={{ width: 130, padding: "0.25rem 0.45rem", fontSize: "0.78rem" }}
+      />
+      <ABtn type="submit" variant="primary" size="xs" title="Save"><Check size={13} strokeWidth={2} /></ABtn>
+      <ABtn type="button" variant="default" size="xs" onClick={() => setEditing(false)} title="Cancel"><X size={13} strokeWidth={2} /></ABtn>
+    </form>
+  );
+}
 
 /** Create a sub-page inside the page currently being browsed (parentId). */
 export function CreatePageForm({ parentId, here }: { parentId: number; here: string }) {

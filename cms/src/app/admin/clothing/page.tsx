@@ -5,8 +5,7 @@ import {
   PageHead,
   ACard,
   TableWrap,
-  ShoppingBag,
-  Coins,
+  Shirt,
 } from "@/components/admin-ui";
 import { SetLookForm } from "./forms";
 
@@ -14,18 +13,19 @@ export const dynamic = "force-dynamic";
 
 interface ClothingRow {
   id: number;
-  setid: number;
-  price: number;
+  name: string;
+  setid: string;
 }
 
-async function loadClothing(): Promise<{ rows: ClothingRow[]; error: string | null }> {
+async function loadClothing(): Promise<{ rows: ClothingRow[]; total: number; error: string | null }> {
   try {
     const rows = await query<ClothingRow>(
-      "SELECT id, setid, price FROM catalog_clothing ORDER BY id LIMIT 50",
+      "SELECT id, name, setid FROM catalog_clothing ORDER BY name LIMIT 100",
     );
-    return { rows, error: null };
+    const t = await query<{ n: number }>("SELECT COUNT(*) AS n FROM catalog_clothing");
+    return { rows, total: Number(t[0]?.n ?? rows.length), error: null };
   } catch (err) {
-    return { rows: [], error: (err as Error).message };
+    return { rows: [], total: 0, error: (err as Error).message };
   }
 }
 
@@ -35,7 +35,7 @@ export default async function ClothingAdminPage() {
     redirect("/");
   }
 
-  const { rows: clothing, error: clothingError } = await loadClothing();
+  const { rows: clothing, total: clothingTotal, error: clothingError } = await loadClothing();
 
   return (
     <div>
@@ -44,37 +44,35 @@ export default async function ClothingAdminPage() {
       <SetLookForm />
 
       <div className="mt-4">
-        <ACard title="Purchasable clothing" icon={<ShoppingBag size={16} strokeWidth={2} />}>
+        <ACard
+          title="Purchasable clothing"
+          icon={<Shirt size={16} strokeWidth={2} />}
+          pad={false}
+          actions={!clothingError && <span className="text-xs adim">showing {clothing.length} of {clothingTotal}</span>}
+        >
           {clothingError ? (
-            <p className="text-sm" style={{ color: "var(--muted, #777)" }}>
+            <p className="acard-pad text-sm adim">
               Clothing catalog unavailable on this database.
               <span className="mt-1 block text-xs opacity-70">{clothingError}</span>
             </p>
           ) : clothing.length === 0 ? (
-            <p className="text-sm" style={{ color: "var(--muted, #777)" }}>
-              No clothing entries found.
-            </p>
+            <p className="acard-pad text-sm adim">No purchasable-clothing entries on this hotel yet.</p>
           ) : (
             <TableWrap>
               <table className="dtable">
                 <thead>
                   <tr>
                     <th className="num">ID</th>
-                    <th className="num">Set id</th>
-                    <th className="num">Price</th>
+                    <th className="cap">Name</th>
+                    <th>Figure sets</th>
                   </tr>
                 </thead>
                 <tbody>
                   {clothing.map((c) => (
                     <tr key={c.id}>
                       <td className="num">{c.id}</td>
-                      <td className="num">{c.setid}</td>
-                      <td className="num">
-                        <span className="inline-flex items-center gap-1">
-                          <Coins size={12} strokeWidth={2} />
-                          {c.price}
-                        </span>
-                      </td>
+                      <td className="cap"><span className="ell">{c.name}</span></td>
+                      <td><span className="idchip" title={c.setid}>{c.setid}</span></td>
                     </tr>
                   ))}
                 </tbody>

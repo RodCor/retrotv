@@ -75,6 +75,28 @@ export async function createCatalogPage(
   return { type: "success", text: `Page "${caption}" created.` };
 }
 
+export async function renameCatalogPage(id: number, formData: FormData): Promise<void> {
+  const denied = await requireStaff();
+  if (denied) return;
+  if (!Number.isInteger(id)) return;
+  // Strip characters the legacy utf8mb3 caption column can't store (4-byte
+  // emoji, some symbols) so a rename never crashes the page.
+  const caption = String(formData.get("caption") ?? "")
+    .replace(/[\u{10000}-\u{10FFFF}☀-➿←-⇿⌀-⏿]/gu, "")
+    .trim()
+    .slice(0, 120);
+  if (!caption) return;
+  try {
+    await execute(
+      "UPDATE catalog_pages SET caption = :c, caption_save = :c WHERE id = :id",
+      { c: caption, id },
+    );
+  } catch {
+    /* invalid value for the legacy column — ignore rather than crash */
+  }
+  revalidatePath("/admin/catalog");
+}
+
 export async function togglePageVisible(id: number): Promise<void> {
   const denied = await requireStaff();
   if (denied) return;
