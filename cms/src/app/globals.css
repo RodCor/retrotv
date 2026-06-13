@@ -39,13 +39,20 @@ body {
 }
 
 body {
-  color: var(--rt-ink);
+  /* Default text sits on the dark hotel background, so it is light.
+     White panels below re-assert the dark ink color for their contents. */
+  color: #e8f0f8;
   background:
     radial-gradient(1200px 600px at 50% -10%, #1b3a5b 0%, transparent 60%),
     linear-gradient(180deg, var(--rt-bg) 0%, var(--rt-bg-2) 100%);
   background-attachment: fixed;
   min-height: 100vh;
   font-family: var(--font-body), system-ui, sans-serif;
+}
+
+/* Headings on the dark page default to light; inside panels they go dark. */
+h1, h2, h3 {
+  color: #f3f8fc;
 }
 
 * {
@@ -69,6 +76,11 @@ a {
   border: 3px solid var(--rt-border);
   border-radius: var(--rt-radius);
   box-shadow: var(--rt-shadow);
+  color: var(--rt-ink);
+}
+/* Headings inside white panels are dark again for contrast. */
+.rt-panel h1, .rt-panel h2, .rt-panel h3 {
+  color: var(--rt-ink);
 }
 .rt-panel-muted {
   background: var(--rt-panel-muted);

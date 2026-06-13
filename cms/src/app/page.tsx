@@ -80,7 +80,7 @@ export default async function Home() {
                 </h1>
                 <p
                   className="mt-4 max-w-lg text-lg font-semibold"
-                  style={{ color: "#cfe0ee" }}
+                  style={{ color: "var(--rt-ink-soft)" }}
                 >
                   Your retro hotel is back on air. Build rooms, collect rare
                   furni, and party with friends — all in glorious pixel-perfect
@@ -118,7 +118,7 @@ export default async function Home() {
         <section className="mb-10 grid gap-4 sm:grid-cols-3">
           <StatCard label="Habbos registered" value={stats.users} accent="var(--rt-brand)" />
           <StatCard label="Online right now" value={stats.online} accent="var(--rt-accent)" />
-          <StatCard label="Rooms built" value={stats.rooms} accent="var(--rt-blue)" />
+          <StatCard label="Rooms built" value={stats.rooms} accent="var(--rt-accent-2)" />
         </section>
 
         {/* Features */}
@@ -133,10 +133,10 @@ export default async function Home() {
             {FEATURES.map((f) => (
               <Panel key={f.title} muted className="h-full">
                 <div className="text-4xl">{f.icon}</div>
-                <h3 className="mt-3 text-xl font-extrabold" style={{ color: "#fff" }}>
+                <h3 className="mt-3 text-xl font-extrabold" style={{ color: "var(--rt-ink)" }}>
                   {f.title}
                 </h3>
-                <p className="mt-2 text-sm font-semibold" style={{ color: "#cfe0ee" }}>
+                <p className="mt-2 text-sm font-semibold" style={{ color: "var(--rt-ink-soft)" }}>
                   {f.body}
                 </p>
               </Panel>

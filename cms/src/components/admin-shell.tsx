@@ -48,7 +48,9 @@ export async function AdminShell({ children }: { children: React.ReactNode }) {
           className="flex items-center justify-between px-6 py-3"
           style={{ background: "#fff", borderBottom: "3px solid var(--rt-border)" }}
         >
-          <h1 className="rt-display text-lg">Housekeeping</h1>
+          <h1 className="rt-display text-lg" style={{ color: "var(--rt-ink)" }}>
+            Housekeeping
+          </h1>
           {user && (
             <div className="flex items-center gap-2">
               {/* eslint-disable-next-line @next/next/no-img-element */}

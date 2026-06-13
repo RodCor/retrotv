@@ -1,10 +1,7 @@
-import { config } from "./config";
-
 /**
  * Builds an avatar render URL using the standard habbo-imaging endpoint.
- * Arcturus + Nitro stacks typically proxy this; we point at the client host
- * which serves `/habbo-imaging/avatarimage`. Falls back gracefully if the
- * imaging host is not configured.
+ * Defaults to the public Habbo imager; override with NEXT_PUBLIC_IMAGING_URL
+ * to point at a self-hosted imager on your own domain.
  */
 export function avatarImageUrl(
   look: string,
@@ -17,8 +14,11 @@ export function avatarImageUrl(
     gesture?: string;
   } = {},
 ): string {
+  // CMS avatar thumbnails use an habbo-imaging endpoint. By default we use the
+  // public Habbo imager (renders any standard figure string). Self-host an
+  // imager and set NEXT_PUBLIC_IMAGING_URL to keep everything on your domain.
   const base =
-    process.env.NEXT_PUBLIC_IMAGING_URL ?? `${config.hotel.clientUrl}/habbo-imaging`;
+    process.env.NEXT_PUBLIC_IMAGING_URL ?? "https://www.habbo.com/habbo-imaging";
   const params = new URLSearchParams({
     figure: look,
     direction: String(opts.direction ?? 2),

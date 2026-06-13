@@ -15,6 +15,11 @@ yarn-error.log*
 foundation/emulator/arcturus/target/
 *.log
 
+# Dev verification artifacts
+cms/shot*.png
+cms/shot*.mjs
+backup-*.sql
+
 # OS
 .DS_Store
 Thumbs.db
