@@ -1,0 +1,184 @@
+@import "tailwindcss";
+
+/* ----------------------------------------------------------------------------
+   RetroTV — Habbo-inspired design system
+   Pixel-friendly, chunky, playful panels and buttons.
+---------------------------------------------------------------------------- */
+
+:root {
+  --rt-bg: #0b1d2e;
+  --rt-bg-2: #102a43;
+  --rt-panel: #ffffff;
+  --rt-panel-muted: #f0f4f8;
+  --rt-ink: #1b2733;
+  --rt-ink-soft: #5b6b7b;
+  --rt-brand: #ffce4f;
+  --rt-brand-ink: #4a3b00;
+  --rt-accent: #2f9e44;
+  --rt-accent-2: #1971c2;
+  --rt-danger: #e03131;
+  --rt-border: #0a2540;
+  --rt-radius: 10px;
+  --rt-shadow: 0 6px 0 rgba(10, 37, 64, 0.25);
+}
+
+@theme inline {
+  --color-rt-bg: var(--rt-bg);
+  --color-rt-bg-2: var(--rt-bg-2);
+  --color-rt-panel: var(--rt-panel);
+  --color-rt-brand: var(--rt-brand);
+  --color-rt-accent: var(--rt-accent);
+  --color-rt-danger: var(--rt-danger);
+  --color-rt-ink: var(--rt-ink);
+}
+
+html,
+body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  color: var(--rt-ink);
+  background:
+    radial-gradient(1200px 600px at 50% -10%, #1b3a5b 0%, transparent 60%),
+    linear-gradient(180deg, var(--rt-bg) 0%, var(--rt-bg-2) 100%);
+  background-attachment: fixed;
+  min-height: 100vh;
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.rt-display {
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
+}
+
+/* Panels */
+.rt-panel {
+  background: var(--rt-panel);
+  border: 3px solid var(--rt-border);
+  border-radius: var(--rt-radius);
+  box-shadow: var(--rt-shadow);
+}
+.rt-panel-muted {
+  background: var(--rt-panel-muted);
+}
+
+/* Buttons */
+.rt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 800;
+  padding: 0.6rem 1.1rem;
+  border-radius: 8px;
+  border: 3px solid var(--rt-border);
+  cursor: pointer;
+  transition: transform 0.05s ease, filter 0.15s ease;
+  box-shadow: 0 4px 0 rgba(10, 37, 64, 0.35);
+  user-select: none;
+}
+.rt-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 rgba(10, 37, 64, 0.35);
+}
+.rt-btn-brand {
+  background: var(--rt-brand);
+  color: var(--rt-brand-ink);
+}
+.rt-btn-accent {
+  background: var(--rt-accent);
+  color: #fff;
+}
+.rt-btn-blue {
+  background: var(--rt-accent-2);
+  color: #fff;
+}
+.rt-btn-danger {
+  background: var(--rt-danger);
+  color: #fff;
+}
+.rt-btn-ghost {
+  background: #fff;
+  color: var(--rt-ink);
+}
+.rt-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Inputs */
+.rt-input,
+.rt-select,
+.rt-textarea {
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border: 3px solid #c5d3e0;
+  border-radius: 8px;
+  background: #fff;
+  color: var(--rt-ink);
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.15s ease;
+}
+.rt-input:focus,
+.rt-select:focus,
+.rt-textarea:focus {
+  border-color: var(--rt-accent-2);
+}
+.rt-label {
+  display: block;
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin-bottom: 0.3rem;
+  color: var(--rt-ink-soft);
+}
+
+/* Badges */
+.rt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  border: 2px solid var(--rt-border);
+}
+
+/* Tables */
+.rt-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.rt-table th {
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  background: var(--rt-panel-muted);
+  border-bottom: 2px solid #c5d3e0;
+  font-weight: 800;
+  color: var(--rt-ink-soft);
+}
+.rt-table td {
+  padding: 0.55rem 0.75rem;
+  border-bottom: 1px solid #e3e9ef;
+}
+.rt-table tr:hover td {
+  background: #f7fafc;
+}
+
+.rt-avatar {
+  image-rendering: pixelated;
+}
