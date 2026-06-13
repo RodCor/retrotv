@@ -64,8 +64,14 @@ SSO ticket and drops you into the hotel.
 > The first-run database ships with a default SSO ticket `123`, so http://127.0.0.1:1080?sso=123
 > also works for a quick smoke test before you register.
 
+Optional — install the bundled emulator plugins (in-game **Camera** + **Bot Protect**):
+```bash
+make plugins
+```
+
 See **[docs/DEPLOY.md](docs/DEPLOY.md)** for production/another-server deployment, making
-yourself an admin, backups, and troubleshooting.
+yourself an admin, backups, and troubleshooting, and **[docs/PLUGINS.md](docs/PLUGINS.md)**
+for the emulator plugins (and the Morningstar 4 / Extended note).
 
 ---
 

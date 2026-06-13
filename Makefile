@@ -9,6 +9,7 @@ help:
 	@echo "  make up          - build + start the whole stack (detached)"
 	@echo "  make down        - stop the stack"
 	@echo "  make logs        - follow emulator + nitro + cms logs"
+	@echo "  make plugins     - install the bundled emulator plugins (Camera, Bot Protect)"
 	@echo "  make assets      - generate/convert the Nitro client assets (run once)"
 	@echo "  make emu-restart - restart the emulator"
 	@echo "  make cms-restart - rebuild + restart the CMS"
@@ -30,6 +31,9 @@ build:
 
 logs:
 	$(COMPOSE) logs -f arcturus nitro cms
+
+plugins:
+	bash scripts/install-plugins.sh
 
 assets:
 	docker exec retrotv-nitro bash -c "cp /app/configuration/nitro-converter/configuration.json /app/nitro-converter/configuration.json"

@@ -18,6 +18,8 @@ volumes:
   volume-arcturus-target:
   volume-nitro-converter-node-modules:
   volume-nitro-react-node-modules:
+  # Camera plugin photos — written by the emulator, served by the nitro host.
+  volume-camera:
 
 networks:
   retrotv:
@@ -51,6 +53,7 @@ services:
       - ./foundation/emulator/:/app/
       - volume-arcturus-target:/app/arcturus/target
       - volume-arcturus-maven-repo:/root/.m2
+      - volume-camera:/app/usercontent/camera   # Camera plugin output
     ports:
       - "3000:3000" # classic game socket
       - "3001:3001" # rcon
@@ -70,6 +73,7 @@ services:
       - ./foundation/nitro/:/app/
       - volume-nitro-converter-node-modules:/app/nitro-converter/node_modules
       - volume-nitro-react-node-modules:/app/nitro-react/node_modules
+      - volume-camera:/app/nitro-assets/camera   # serve Camera photos at :8080/camera/
     ports:
       - "1080:5154" # client web
       - "8080:8080" # assets server
