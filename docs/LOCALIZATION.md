@@ -5,10 +5,10 @@ from several independent sources, so "translating the hotel" means handling each
 
 | Source | What it covers | Language | How to translate |
 |--------|----------------|----------|------------------|
-| **ExternalTexts.json** (converter) | In-game UI labels & descriptions, room/game text, badges, achievements, help, system messages, navigator categories | ✅ **Spanish** (bundled) | Already done — see below |
-| **Nitro-V3 UITexts** (client) | Client window chrome (titles, buttons, tooltips, settings) | English by default | Add `UITexts_es.json5` (see below) |
-| **FurnitureData** (furnidata) | Furni names & descriptions | English (matches the SWF pack) | Provide a `FurnitureData_es.json` translation overlay |
-| **Database** (`catalog_pages`, `catalog_items`, `items_base`) | Catalog page/item names | English (MS4 base DB) | Translate the rows (SQL) |
+| **ExternalTexts.json** (converter) | In-game UI labels & descriptions, room/game text, badges, achievements, help, system messages, navigator categories | ✅ **Spanish** (bundled) | Done — `langs/external_flash_texts_es.txt` |
+| **Nitro-V3 UITexts** (client) | Client window chrome (titles, buttons, tooltips, settings) | ✅ **Spanish** | Done — `client/config/UITexts_es.json5` (616 strings) |
+| **Database** catalog captions | The visible shop navigation (Catálogo → Página principal, Furnis, Ropa…) | ✅ **Spanish** | Done — `database/03-catalog-es.sql` |
+| **FurnitureData** (furnidata) | Furni *item* names & descriptions | English (matches the SWF pack) | `FurnitureData_es.json` overlay — see below |
 
 ## What's already Spanish (automatic)
 
@@ -33,11 +33,21 @@ Nitro-V3 ships `UITexts_en.json5`, `UITexts_it.json5`, `UITexts_nl.json5` in its
 (The bulk of what players read — furni descriptions, room text, badges — is in
 ExternalTexts and is already Spanish, so the UI chrome is the main remaining piece.)
 
-## Translating furni & catalog names
+## Remaining: furni *item* names (FurnitureData)
 
-- **Furni names**: provide a `FurnitureData_es.json` overlay (Nitro loads it via
-  `furnidata.translation.url`). Don't swap the base furnidata — it must stay matched
-  to the SWF pack or furni won't render.
-- **Catalog page/item names**: these live in the database. Translate them with SQL,
-  e.g. `UPDATE catalog_pages SET caption = '…' WHERE id = …;` (the admin CRM's
-  Catalog page can edit these too).
+The individual furni names shown on catalog offers and in the inventory/infostand
+(e.g. "Trimmed Rose Gold Balloon") come from **FurnitureData** (furnidata), not from
+the DB or ExternalTexts. The safe way to translate them is a **`FurnitureData_es.json`
+overlay** that Nitro loads via `furnidata.translation.url` (already wired in the
+client's `renderer-config.json`):
+
+1. Build `FurnitureData_es.json` — the same `{ id, classname, name, description }`
+   entries as `FurnitureData.json` but with Spanish `name`/`description` (source them
+   from habbo.es's furnidata, keyed by classname). **Do not** swap the base furnidata —
+   it must stay matched to the SWF pack or furni won't render.
+2. Serve it at `…/configuration/FurnitureData_es.json` and ensure the client locale is
+   `es` so the `%locale%` overlay URL resolves.
+
+Catalog page captions are already translated in `database/03-catalog-es.sql`; edit any
+others in the admin CRM's **Catalog** page or with SQL
+(`UPDATE catalog_pages SET caption = '…' WHERE id = …;`).
