@@ -5,10 +5,11 @@ current open-source stack used by modern retros (like hobba.tv):
 
 | Layer | Technology | What it does |
 |-------|-----------|--------------|
-| **Game server** | [Arcturus Morningstar](https://git.krews.org/morningstar/Arcturus-Community) (Java) | The emulator — rooms, avatars, chat, furni, economy, pets, trading… |
+| **Game server** | [Arcturus Morningstar **Extended** (MS4)](https://github.com/duckietm/Arcturus-Morningstar-Extended) (Java) | The emulator — rooms, avatars, chat, furni, economy, pets, trading… plus built-in WebSocket and the Extended plugin set. |
 | **Game client** | [Nitro React](https://github.com/billsonnn/nitro-react) (HTML5/TypeScript) | The in-browser hotel the players see. No Flash. |
 | **Assets** | nitro-converter + swf server | Converts Habbo SWF assets into `.nitro` bundles the client loads |
-| **Database** | MariaDB 10.6 | All persistent state (users, rooms, items, catalog…) |
+| **Database** | MariaDB 11.4 (db `habbo`) | All persistent state (users, rooms, items, catalog…) |
+| **Plugins** | Camera · Fun Commands · WordGuesser · Bot Protect | In-game camera, fun commands (`:slime`, `:nuke`…), word game, SSO hardening |
 | **CMS + CRM** | **Next.js 16 / React 19** (this repo's `cms/`) | Registration, login, SSO into the hotel, user dashboards, and a full **admin CRM** |
 
 Everything runs with **Docker Compose** — one command brings up the whole hotel.
@@ -47,8 +48,9 @@ cp .env.example .env                       # then edit SESSION_SECRET
 docker compose up -d --build
 ```
 
-⏳ **First boot takes ~10 minutes** — the emulator compiles (Maven) and the client builds.
-Watch progress with `docker compose logs -f arcturus nitro`.
+⏳ **First boot takes a few minutes** — the emulator runs the prebuilt MS4 jar (no Maven
+build), so the wait is mostly the Nitro client build. Watch progress with
+`docker compose logs -f arcturus nitro`.
 
 Once up:
 
@@ -61,17 +63,12 @@ Once up:
 **To play:** open the CMS → Register → from your dashboard click **Play Now**. It issues an
 SSO ticket and drops you into the hotel.
 
-> The first-run database ships with a default SSO ticket `123`, so http://127.0.0.1:1080?sso=123
-> also works for a quick smoke test before you register.
-
-Optional — install the bundled emulator plugins (in-game **Camera** + **Bot Protect**):
-```bash
-make plugins
-```
+The bundled emulator plugins (Camera, Fun Commands, WordGuesser, Bot Protect) load
+automatically — try `:slime <user>` or `:nuke <user>` in a room.
 
 See **[docs/DEPLOY.md](docs/DEPLOY.md)** for production/another-server deployment, making
 yourself an admin, backups, and troubleshooting, and **[docs/PLUGINS.md](docs/PLUGINS.md)**
-for the emulator plugins (and the Morningstar 4 / Extended note).
+for the emulator plugins and in-game commands.
 
 ---
 
@@ -81,12 +78,16 @@ for the emulator plugins (and the Morningstar 4 / Extended note).
 retrotv/
 ├── docker-compose.yml      # the whole stack (mysql · arcturus · nitro · cms)
 ├── .env.example            # configuration
+├── emulator/               # game server — runs the prebuilt MS4 Extended jar
+│   ├── Dockerfile          #   downloads the pinned release jar
+│   ├── config.ini          #   DB + websocket config
+│   └── plugins/            #   Camera · Fun Commands · WordGuesser · Bot Protect
+├── database/               # Extended (MS4) base DB + RetroTV extras (initdb)
 ├── cms/                    # Next.js 16 CMS + Admin CRM  (this repo's own code)
-├── foundation/             # the engine (Arcturus + Nitro + assets, via submodules)
-│   ├── emulator/           #   Java game server + Dockerfile + config.ini
+├── foundation/             # Nitro client + asset pipeline (submodule: nitro-docker)
 │   ├── nitro/              #   client, asset converter, swf server
-│   └── mysql/dumps/        #   base Arcturus database
-└── docs/DEPLOY.md          # deployment & operations guide
+│   └── mysql/conf.d/       #   MariaDB charset config
+└── docs/                   # DEPLOY.md · PLUGINS.md
 ```
 
 ---

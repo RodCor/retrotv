@@ -7,7 +7,7 @@ import { SignJWT } from "jose";
 
 const db = {
   host: "127.0.0.1", port: 13306,
-  user: "arcturus_user", password: "arcturus_pw", database: "arcturus",
+  user: "arcturus_user", password: "arcturus_pw", database: "habbo",
 };
 const SECRET = "dev-only-insecure-secret-change-me-in-production-please-0000";
 const USERNAME = "AdminTest";

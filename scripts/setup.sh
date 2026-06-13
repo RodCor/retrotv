@@ -9,13 +9,12 @@ cd "$(dirname "$0")/.."
 echo "==> Fetching engine submodules (Arcturus + Nitro + assets)..."
 git submodule update --init --recursive
 
-echo "==> Normalizing line endings for container scripts..."
+echo "==> Normalizing line endings for the Nitro container scripts..."
+# The game server is our own image (emulator/); only the Nitro submodule's
+# shell scripts need the CRLF->LF fix on Windows checkouts.
 for f in \
-  foundation/emulator/scripts/build.sh \
   foundation/nitro/scripts/build.sh \
-  foundation/emulator/supervisor/supervisord.conf \
-  foundation/nitro/supervisor/supervisord.conf \
-  foundation/emulator/config.ini ; do
+  foundation/nitro/supervisor/supervisord.conf ; do
   if [ -f "$f" ]; then
     sed -i 's/\r$//' "$f"
     echo "    fixed $f"

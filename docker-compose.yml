@@ -1,10 +1,12 @@
 # =============================================================================
 #  RetroTV — full Habbo-style retro hotel stack
-#  Services:  mysql (MariaDB) · arcturus (Java emulator) · nitro (HTML5 client
-#             + asset/swf servers) · cms (Next.js CMS + Admin CRM)
+#  Services:  mysql (MariaDB) · arcturus (Arcturus Morningstar EXTENDED / MS4
+#             Java emulator) · nitro (HTML5 client + asset/swf servers) ·
+#             cms (Next.js CMS + Admin CRM)
 #
-#  First boot compiles the emulator (Maven) and builds the client — allow
-#  ~10 minutes. Subsequent boots reuse cached build volumes and are fast.
+#  The emulator runs the official prebuilt MS4 release jar (no Maven build), so
+#  first boot is mostly the Nitro client build (~2-3 min). Generate the client
+#  assets once with `make assets`.
 #
 #  Quick start:   cp .env.example .env   &&   docker compose up -d --build
 #  Client:        http://127.0.0.1:1080
@@ -14,8 +16,6 @@ name: retrotv
 
 volumes:
   volume-mysql:
-  volume-arcturus-maven-repo:
-  volume-arcturus-target:
   volume-nitro-converter-node-modules:
   volume-nitro-react-node-modules:
   # Camera plugin photos — written by the emulator, served by the nitro host.
@@ -27,17 +27,19 @@ networks:
 services:
   mysql:
     container_name: retrotv-mysql
-    image: mariadb:10.6
+    # 11.4+ is required: the Extended (MS4) dump uses the utf8mb4_uca1400 collations.
+    image: mariadb:11.4
     command: --default-authentication-plugin=mysql_native_password
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD:-arcturus_root_pw}
       - MYSQL_USER=${DB_USER:-arcturus_user}
       - MYSQL_PASSWORD=${DB_PASSWORD:-arcturus_pw}
-      - MYSQL_DATABASE=${DB_NAME:-arcturus}
+      - MYSQL_DATABASE=${DB_NAME:-habbo}
     volumes:
       - volume-mysql:/var/lib/mysql
       - ./foundation/mysql/conf.d:/etc/mysql/conf.d
-      - ./foundation/mysql/dumps:/docker-entrypoint-initdb.d
+      # Extended (MS4) base database + RetroTV extras, loaded on first init.
+      - ./database:/docker-entrypoint-initdb.d
     ports:
       - "${DB_PORT:-13306}:3306"
     networks:
@@ -47,12 +49,11 @@ services:
   arcturus:
     container_name: retrotv-arcturus
     build:
-      context: ./foundation/emulator
-    entrypoint: ["/bin/sh", "/app/scripts/build.sh"]
+      context: ./emulator
+    environment:
+      - DB_HOST=mysql
+      - DB_PORT=3306
     volumes:
-      - ./foundation/emulator/:/app/
-      - volume-arcturus-target:/app/arcturus/target
-      - volume-arcturus-maven-repo:/root/.m2
       - volume-camera:/app/usercontent/camera   # Camera plugin output
     ports:
       - "3000:3000" # classic game socket
@@ -91,7 +92,7 @@ services:
       - DB_PORT=3306
       - DB_USER=${DB_USER:-arcturus_user}
       - DB_PASSWORD=${DB_PASSWORD:-arcturus_pw}
-      - DB_NAME=${DB_NAME:-arcturus}
+      - DB_NAME=${DB_NAME:-habbo}
       - SESSION_SECRET=${SESSION_SECRET:-change-me-in-production-0000000000000000}
       - NEXT_PUBLIC_HOTEL_NAME=${HOTEL_NAME:-RetroTV}
       - NEXT_PUBLIC_CLIENT_URL=${CLIENT_URL:-http://127.0.0.1:1080}

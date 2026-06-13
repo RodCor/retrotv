@@ -1,63 +1,63 @@
 # 🧩 Emulator plugins
 
-The Arcturus emulator loads `.jar` plugins from `arcturus/target/plugins/`. RetroTV
-bundles a couple of community plugins from
-[duckietm/Plugins](https://github.com/duckietm/Plugins) and installs them with one command.
+RetroTV runs the **Arcturus Morningstar Extended (Morningstar 4)** emulator, which loads
+`.jar` plugins from its `plugins/` folder. The plugins are **baked into the emulator image**
+(`emulator/plugins/`) and load automatically on boot — there is no separate install step.
 
-## Install
-
-```bash
-make plugins      # or: bash scripts/install-plugins.sh
-```
-
-This copies `plugins/*.jar` into the emulator, configures the Camera plugin, and
-restarts the emulator. Re-run it after `make reset` (the plugins live in the
-`arcturus-target` volume, which a full reset wipes).
-
-Verify they loaded:
-```bash
-docker exec retrotv-arcturus sh -c "tail -200 /tmp/arcturus-emulator-stdout*" | grep -i plugin
-# Expect: "Plugin Manager -> Loaded! 3 plugins!"  (NitroWebsockets + Camera + BotProtection)
-```
-
-## Bundled plugins (Morningstar 3.5.x — compatible with our emulator)
+All four community plugins from [duckietm/Plugins](https://github.com/duckietm/Plugins) are
+bundled and run on the MS4 emulator:
 
 | Plugin | JAR | What it does |
 |--------|-----|--------------|
-| **Camera** | `Camera-1.6.jar` | In-game camera — players take/publish photos. Built against `Habbo:3.5.2`. |
-| **Bot Protect** | `bot-protection-2.0.jar` | Sterilizes the SSO ticket right after login so it can't be replayed. Recommended for live hotels. |
-| _NitroWebsockets_ | _(downloaded by the emulator build)_ | The `ws://…:2096` bridge the Nitro client connects to. |
+| **Fun Commands** | `fun-commands-2.0.jar` | In-room commands: `:slime`, `:nuke`, `:tp`/`:tptome`, `:spush` (super push), `:spull` (super pull), `:brb`/`:afk`. |
+| **WordGuesser** | `wordguesser-1.1.jar` | `:rw` word-guessing mini-game. Reads words from the `random_words` table (seeded by `database/02-retrotv-extras.sql`). |
+| **Camera** | `Camera-1.6.jar` | In-game camera — players take & publish photos. |
+| **Bot Protect** | `bot-protection-2.0.jar` | Sterilizes the SSO ticket right after login so it can't be replayed. |
 
-### Camera configuration
-The Camera plugin auto-creates its `emulator_settings` on first launch. The installer
-sets Linux-friendly values:
+> The MS4 emulator also has a **built-in WebSocket** for the Nitro client (`ws.enabled=true`,
+> `ws.port=2096` in `emulator/config.ini`) — no separate websocket plugin is needed.
+
+Verify they loaded:
+```bash
+docker logs retrotv-arcturus | grep -i plugin
+# Expect: "Plugin Manager -> Loaded! 4 plugins!"
+# plus "[Camera] Plugin has loaded!" and "Fun Commands (2.0.0) has official loaded!"
+```
+
+## Command triggers (in the hotel chat)
+
+| Command | Triggers |
+|---------|----------|
+| Slime someone | `:slime <user>` (also `:slijm`) |
+| Nuke someone | `:nuke <user>` (also `:explode`) |
+| Teleport to me | `:tptome <user>` / `:tp <user>` |
+| Super push / pull | `:spush <user>` / `:spull <user>` |
+| Away / back | `:brb` / `:afk` |
+| Word guess | `:rw <word>` |
+
+Command availability per rank is governed by the `permissions` table (edit it in the
+**Ranks** page of the admin CRM). The `:afk` effect uses furni effect `565` — grab it from
+duckietm's asset converter if you want the visual.
+
+## Camera configuration
+
+`database/02-retrotv-extras.sql` sets the Camera output to a Linux path served by the nitro
+host, and the root `docker-compose.yml` mounts a shared `volume-camera` into both the emulator
+(write side) and the nitro host (`/app/nitro-assets/camera`, served at `:8080/camera/`):
 
 | Setting | Value |
 |---------|-------|
 | `imager.location.output.camera` | `/app/usercontent/camera/` |
-| `imager.location.output.thumbnail` | `/app/usercontent/camera/thumbnail/` |
 | `camera.url` | `http://127.0.0.1:8080/camera/` |
 | `camera.use.https` | `0` |
 
-The root `docker-compose.yml` mounts a shared `volume-camera` into **both** the emulator
-(write side) and the nitro host (`/app/nitro-assets/camera`, served at `:8080/camera/`),
-so published photos are viewable. For a public deployment, change `camera.url` to your
-domain (e.g. `https://play.yourdomain.com/camera/`) and set `camera.use.https=1`.
+For a public deployment, change `camera.url` to your domain and set `camera.use.https=1`.
 
-## Not bundled: Morningstar 4 (Extended) plugins
+## Adding / updating plugins
 
-duckietm's **Fun Commands** (`:slime`, `:nuke`, super pull/push, brb/afk…) and
-**WordGuesser** are built for **Morningstar 4** — the
-[Arcturus-Morningstar-Extended](https://github.com/duckietm/Arcturus-Morningstar-Extended)
-fork. They do **not** load on our 3.5.x Community emulator (they throw permission/SQL
-errors and the Fun Commands README states "FOR Morningstar 4 ONLY").
-
-To run those, RetroTV would need to migrate its game server to the Extended (MS4) fork,
-which also uses a different base database (`myBoBBa`). That's a larger change — see the
-project notes / ask to switch the `foundation/emulator/arcturus` submodule to the Extended
-fork if you want the full MS4 plugin set.
-
-## Adding your own plugins
-
-Drop any 3.5.x-compatible `.jar` into `plugins/` and re-run `make plugins`, or build from
-source (each duckietm plugin is a Maven project; `mvn package` against `com.eu.habbo:Habbo`).
+Drop any MS4-compatible `.jar` into `emulator/plugins/` and rebuild the emulator image:
+```bash
+docker compose up -d --build arcturus
+```
+To build a plugin from source, each duckietm plugin is a Maven project — `mvn package`
+against `com.eu.habbo:Habbo` and copy the jar into `emulator/plugins/`.

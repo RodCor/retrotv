@@ -11,13 +11,18 @@ Four containers on one Docker network (`retrotv`):
 
 | Service | Container | Internal | Host port | Purpose |
 |---------|-----------|----------|-----------|---------|
-| `mysql` | retrotv-mysql | 3306 | 13306 | MariaDB — all game + CMS data |
-| `arcturus` | retrotv-arcturus | 3000 / 3001 / 2096 | 3000 / 3001 / 2096 | Emulator: game socket / RCON / **Nitro websocket** |
+| `mysql` | retrotv-mysql | 3306 | 13306 | **MariaDB 11.4** — database `habbo` (all game + CMS data) |
+| `arcturus` | retrotv-arcturus | 3000 / 3001 / 2096 | 3000 / 3001 / 2096 | **Arcturus Morningstar Extended (MS4)**: game socket / RCON / **built-in Nitro websocket** |
 | `nitro` | retrotv-nitro | 5154 / 8080 / 8081 | 1080 / 8080 / 8081 | Client / assets / swf servers |
 | `cms` | retrotv-cms | 3000 | 3010 | Next.js CMS + Admin CRM |
 
-The CMS and emulator share the same MariaDB. Login flow: CMS writes a random
+The CMS and emulator share the same MariaDB (db `habbo`). Login flow: CMS writes a random
 `users.auth_ticket`, opens the client at `?sso=<ticket>`, emulator validates it.
+
+> **MariaDB 11.4+ is required** — the Extended (MS4) base database uses the
+> `utf8mb4_uca1400` collations, which older MariaDB (10.x) cannot load.
+> The game server runs the **prebuilt MS4 release jar** (pinned in
+> `emulator/Dockerfile`), so there is no Maven compile step.
 
 ---
 
@@ -36,12 +41,12 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-First boot compiles the emulator (~3 min Maven) and builds the client. Watch:
+First boot downloads the prebuilt MS4 emulator jar and builds the client. Watch:
 ```bash
 docker compose logs -f arcturus nitro
 ```
 Wait until you see `Arcturus Morningstar has successfully loaded.` and
-`Nitro Websockets Listening on ws://0.0.0.0:2096`.
+`WebSocket server started on 0.0.0.0:2096`.
 
 ### Generate the client assets (one-time)
 The client needs Habbo SWF assets converted to `.nitro` bundles:
@@ -64,7 +69,7 @@ After it finishes, hard-refresh the client.
 ## 3. Remote server deployment (production)
 
 ### 3.1 Server prerequisites
-- A Linux box (2+ vCPU, **4 GB RAM minimum**, 8 GB recommended — Maven + JVM + Node).
+- A Linux box (2+ vCPU, **4 GB RAM minimum**, 8 GB recommended — JVM + Node).
 - Docker Engine + Docker Compose plugin:
   ```bash
   curl -fsSL https://get.docker.com | sh
@@ -99,8 +104,9 @@ The Nitro client config lives in
 ```
 Then restart the client: `docker compose restart nitro`.
 
-Also set the emulator's allowed origin if needed in
-`foundation/emulator/config.ini` (`websockets.whitelist=*` for any origin, or your domain).
+Also set the emulator's websocket origin allow-list if needed in
+`emulator/config.ini` (`ws.whitelist=*` for any origin, or your domain) and rebuild the
+emulator: `docker compose up -d --build arcturus`.
 
 ### 3.4 Bring it up
 ```bash
@@ -130,7 +136,7 @@ After registering an account in the CMS, promote it. `ADMIN_MIN_RANK` (default *
 is the minimum `users.rank` for the `/admin` CRM. Default Arcturus ranks: 7 = top staff.
 
 ```bash
-docker exec retrotv-mysql mysql -u arcturus_user -parcturus_pw arcturus \
+docker exec retrotv-mysql mariadb -u arcturus_user -parcturus_pw habbo \
   -e "UPDATE users SET rank=7 WHERE username='YourName';"
 ```
 Log out / back in (so the session cookie picks up the new rank), then visit
@@ -171,18 +177,19 @@ docker compose restart cms
 docker compose restart arcturus
 ```
 
-### Recompile the emulator (after editing Java/config)
+### Update the emulator (after editing config or plugins)
 ```bash
-docker exec retrotv-arcturus sh -c "cd /app/arcturus && mvn package && cp /app/config.ini target/config.ini"
-docker compose restart arcturus
+# Bump EMU_VERSION in emulator/Dockerfile to upgrade the jar; edit emulator/config.ini
+# or drop a jar in emulator/plugins/, then rebuild + restart:
+docker compose up -d --build arcturus
 ```
 
 ### Database backup / restore
 ```bash
 # Backup
-docker exec retrotv-mysql mysqldump -u root -parcturus_root_pw arcturus > backup-$(date +%F).sql
+docker exec retrotv-mysql mariadb-dump -u root -parcturus_root_pw habbo > backup-$(date +%F).sql
 # Restore
-docker exec -i retrotv-mysql mysql -u root -parcturus_root_pw arcturus < backup-2026-06-13.sql
+docker exec -i retrotv-mysql mariadb -u root -parcturus_root_pw habbo < backup-2026-06-13.sql
 ```
 
 ### Update the CMS only
@@ -196,7 +203,10 @@ docker compose up -d --build cms
 
 | Symptom | Cause / Fix |
 |---------|-------------|
-| Emulator log: `can't cd to /app/arcturus` / `: not found` | Shell scripts have **CRLF** line endings (Windows checkout). Run `sed -i 's/\r$//' foundation/emulator/scripts/build.sh foundation/nitro/scripts/build.sh foundation/*/supervisor/supervisord.conf foundation/emulator/config.ini` and `docker compose up -d --force-recreate arcturus nitro`. (`.gitattributes` in the repo prevents this on fresh clones.) |
+| MySQL init: `Unknown collation: 'utf8mb4_uca1400_ai_ci'` | The DB image is too old. The Extended dump needs **MariaDB 11.4+** (set in `docker-compose.yml`). `docker compose down -v && docker compose up -d`. |
+| Emulator log: `Table 'habbo.emulator_settings' doesn't exist` / `maxPoolSize < 1` | The DB didn't finish loading (often the collation error above). Reset the DB volume: `docker compose rm -sf mysql && docker volume rm retrotv_volume-mysql && docker compose up -d mysql`. |
+| Client connects but stays on the loader | Emulator websocket off. Ensure `ws.enabled=true` in `emulator/config.ini` and that the log shows `WebSocket server started on 0.0.0.0:2096`. |
+| Nitro `build.sh: : not found` (Windows) | The nitro submodule scripts have **CRLF** endings. Run `make setup` (or `sed -i 's/\r$//' foundation/nitro/scripts/build.sh foundation/nitro/supervisor/supervisord.conf`) then `docker compose up -d --force-recreate nitro`. |
 | Client stuck at ~20% / missing textures | Assets not generated. Run the converter (section 2). Check the SWF server: `curl http://127.0.0.1:8081/gamedata/furnidata.xml`. |
 | Client loads but can't connect | Websocket URL wrong. Check `renderer-config.json` `socket.url` matches the emulator host:2096 and that 2096 is reachable. |
 | CMS: `ECONNREFUSED` to DB | DB not ready or wrong host. Inside compose the CMS uses `DB_HOST=mysql`; locally (CMS on host) use `127.0.0.1:13306`. |
