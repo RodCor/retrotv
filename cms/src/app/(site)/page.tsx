@@ -118,7 +118,7 @@ export default async function Home() {
               <div key={f.title} className={`panel panel-pad rise d${i + 1} transition-transform hover:-translate-y-1`}>
                 <div
                   className="grid h-12 w-12 place-items-center rounded-xl"
-                  style={{ background: "rgba(8,12,28,0.6)", border: "1px solid var(--line-strong)", boxShadow: `0 0 30px -12px ${f.color}`, color: f.color }}
+                  style={{ background: "#f3f9fd", border: "1px solid var(--line)", boxShadow: `0 6px 16px -10px ${f.color}`, color: f.color }}
                 >
                   <f.Icon size={22} strokeWidth={2.2} />
                 </div>

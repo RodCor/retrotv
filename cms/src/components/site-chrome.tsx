@@ -9,14 +9,7 @@ export async function SiteHeader() {
   const isStaff = (session?.rank ?? 0) >= Number(process.env.ADMIN_MIN_RANK ?? 5);
   return (
     <header className="sticky top-0 z-50">
-      <div
-        className="border-b"
-        style={{
-          borderColor: "var(--line)",
-          background: "rgba(10,14,31,0.72)",
-          backdropFilter: "blur(16px)",
-        }}
-      >
+      <div className="site-head">
         <div className="shell flex h-16 items-center justify-between gap-4">
           <Link href="/" className="group flex items-center gap-2.5">
             <span
@@ -30,11 +23,11 @@ export async function SiteHeader() {
               <Tv size={18} strokeWidth={2.5} />
             </span>
             <span className="flex flex-col leading-none">
-              <span className="rt-display text-xl" style={{ color: "var(--ink)" }}>
+              <span className="rt-display text-xl" style={{ color: "var(--amber-deep)" }}>
                 {config.hotel.name}
               </span>
               <span className="font-pixel text-[0.6rem]" style={{ color: "var(--cyan)" }}>
-                RETRO HOTEL
+                HOTEL RETRO
               </span>
             </span>
           </Link>
@@ -68,8 +61,7 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
   return (
     <Link
       href={href}
-      className="hidden rounded-lg px-3 py-2 transition-colors sm:block"
-      style={{ color: "var(--ink-soft)" }}
+      className="site-navlink hidden rounded-lg px-3 py-2 transition-colors sm:block"
     >
       {children}
     </Link>

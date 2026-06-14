@@ -62,7 +62,7 @@ export default async function CommunityPage() {
           <h1 className="rt-display text-4xl" style={{ color: "var(--rt-brand)" }}>
             Community
           </h1>
-          <p className="mt-2 font-semibold" style={{ color: "#cfe0ee" }}>
+          <p className="mt-2 font-semibold" style={{ color: "var(--ink-soft)" }}>
             Meet the team keeping the hotel running and say hi to our newest
             faces.
           </p>
@@ -75,7 +75,7 @@ export default async function CommunityPage() {
           </h2>
           {staff.length === 0 ? (
             <Panel muted>
-              <p className="font-semibold" style={{ color: "#cfe0ee" }}>
+              <p className="font-semibold" style={{ color: "var(--ink-soft)" }}>
                 The staff roster is taking a coffee break. Check back soon!
               </p>
             </Panel>
@@ -91,7 +91,7 @@ export default async function CommunityPage() {
                     alt={`${s.username}'s avatar`}
                   />
                   <div className="min-w-0">
-                    <div className="truncate text-lg font-extrabold" style={{ color: "#fff" }}>
+                    <div className="truncate text-lg font-extrabold" style={{ color: "var(--ink)" }}>
                       {s.username}
                     </div>
                     {s.rank_name && (
@@ -107,7 +107,7 @@ export default async function CommunityPage() {
                       </span>
                     )}
                     {s.badge && (
-                      <div className="mt-1 text-xs font-bold" style={{ color: "#8aa3ba" }}>
+                      <div className="mt-1 text-xs font-bold" style={{ color: "var(--ink-dim)" }}>
                         Badge: {s.badge}
                       </div>
                     )}
@@ -125,7 +125,7 @@ export default async function CommunityPage() {
           </h2>
           {members.length === 0 ? (
             <Panel muted>
-              <p className="font-semibold" style={{ color: "#cfe0ee" }}>
+              <p className="font-semibold" style={{ color: "var(--ink-soft)" }}>
                 No members to show yet — be the first to join!
               </p>
             </Panel>
@@ -140,11 +140,11 @@ export default async function CommunityPage() {
                     src={avatarImageUrl(m.look, { size: "l", direction: 2, headDirection: 2 })}
                     alt={`${m.username}'s avatar`}
                   />
-                  <div className="mt-2 truncate text-sm font-extrabold" style={{ color: "#fff" }}>
+                  <div className="mt-2 truncate text-sm font-extrabold" style={{ color: "var(--ink)" }}>
                     {m.username}
                   </div>
                   {m.motto && (
-                    <div className="mt-1 truncate text-xs font-semibold" style={{ color: "#8aa3ba" }}>
+                    <div className="mt-1 truncate text-xs font-semibold" style={{ color: "var(--ink-dim)" }}>
                       {m.motto}
                     </div>
                   )}

@@ -581,3 +581,92 @@ select.afield { appearance: none; cursor: pointer; }
   transition: color .12s ease, border-color .12s ease;
 }
 .thumb-x:hover { color: var(--ink); border-color: var(--cyan); }
+
+/* ============================================================================
+   .habbo — public site, 2015-Habbo skin (bright, orange, friendly).
+   Scoped to the (site) route group so the admin/CRM keeps its dark theme.
+   Redefines the design tokens so pages' existing var(--…) usages re-theme.
+   ========================================================================== */
+.habbo {
+  --bg-900: #d3e8f5; --bg-800: #e7f3fb; --bg-700: #ffffff;
+  --panel: #ffffff; --panel-solid: #ffffff; --panel-2: #f1f8fc;
+  --line: #cfe1ee; --line-strong: #b3d0e3;
+  --ink: #143049; --ink-soft: #42637a; --ink-dim: #809aac;
+  --amber: #ffc01f; --amber-deep: #f5821f; --cyan: #00a3e0;
+  --violet: #6c8cff; --pink: #ff6ea9; --green: #7ac70c; --red: #e8453c;
+  --shadow-glow: 0 2px 6px rgba(20,60,90,0.10);
+  --shadow-lg: 0 16px 34px -18px rgba(20,60,90,0.4);
+
+  position: relative; z-index: 1; min-height: 100vh;
+  color: var(--ink);
+  font-family: var(--font-habbo-body), Ubuntu, system-ui, sans-serif;
+  font-weight: 400;
+  background:
+    radial-gradient(1100px 520px at 50% -14%, #ffffff 0%, transparent 70%),
+    linear-gradient(180deg, #eaf5fc 0%, #cfe6f4 100%);
+}
+
+.habbo h1, .habbo h2, .habbo h3, .habbo h4,
+.habbo .rt-display {
+  font-family: var(--font-habbo-display), Fredoka, sans-serif;
+  font-weight: 700; letter-spacing: -0.01em; color: var(--ink);
+}
+.habbo .eyebrow {
+  font-family: var(--font-habbo-display), sans-serif; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.72rem; color: var(--amber-deep);
+}
+.habbo .text-gradient {
+  background: linear-gradient(95deg, var(--amber-deep) 0%, var(--amber) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* white cards */
+.habbo .panel, .habbo .rt-panel {
+  background: #ffffff; border: 1px solid var(--line); border-radius: 14px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.8) inset, 0 10px 22px -16px rgba(20,60,90,0.35), 0 2px 0 rgba(20,60,90,0.04);
+  backdrop-filter: none;
+}
+.habbo .panel::after { display: none; }
+.habbo .rt-panel-muted { background: var(--panel-2); }
+.habbo .panel-glow-amber { box-shadow: 0 12px 30px -14px rgba(245,130,31,0.55); }
+.habbo .panel-glow-cyan { box-shadow: 0 12px 30px -14px rgba(0,163,224,0.45); }
+
+/* chunky Habbo pill buttons */
+.habbo .btn, .habbo .rt-btn { font-family: var(--font-habbo-display), sans-serif; font-weight: 700; border-radius: 999px; }
+.habbo .btn-amber, .habbo .rt-btn-brand {
+  background: linear-gradient(180deg, #ffd23f 0%, #f5901f 100%); color: #6b3500;
+  border: 1px solid #e07a12;
+  box-shadow: 0 2px 0 #cf6c0e, 0 8px 16px -8px rgba(245,130,31,0.7), inset 0 1px 0 rgba(255,255,255,0.6);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.35);
+}
+.habbo .btn-amber:hover, .habbo .rt-btn-brand:hover { filter: brightness(1.04); transform: translateY(-1px); }
+.habbo .btn-amber:active, .habbo .rt-btn-brand:active { box-shadow: 0 1px 0 #cf6c0e, inset 0 2px 4px rgba(0,0,0,0.15); transform: translateY(1px); }
+.habbo .btn-ghost, .habbo .rt-btn-ghost {
+  background: #ffffff; border: 1px solid var(--line-strong); color: var(--ink); box-shadow: 0 2px 0 rgba(20,60,90,0.06);
+}
+.habbo .btn-ghost:hover, .habbo .rt-btn-ghost:hover { background: #f4f9fc; }
+.habbo .rt-btn-accent { background: linear-gradient(180deg, #8fd83a, #6cb70c); color: #1c3d00; border: 1px solid #5a9e0a; box-shadow: 0 2px 0 #4f8c08, inset 0 1px 0 rgba(255,255,255,0.5); }
+.habbo .rt-btn-blue { background: linear-gradient(180deg, #36b5e8, #0a93d4); color: #fff; border: 1px solid #0a82bd; box-shadow: 0 2px 0 #0a76ad, inset 0 1px 0 rgba(255,255,255,0.4); }
+.habbo .rt-btn-danger { background: linear-gradient(180deg, #f4675f, #e3382f); color: #fff; border: 1px solid #cf2f27; }
+
+/* inputs */
+.habbo .rt-input, .habbo .rt-select, .habbo .rt-textarea {
+  background: #fff; border: 1px solid var(--line-strong); color: var(--ink); border-radius: 9px;
+}
+.habbo .rt-input::placeholder, .habbo .rt-textarea::placeholder { color: var(--ink-dim); }
+.habbo .rt-label { color: var(--ink-soft); }
+
+/* small surfaces */
+.habbo .stat-ic, .habbo .av-head, .habbo .av-sm { background: #eef6fb; border: 1px solid var(--line); }
+.habbo .stat-val { font-family: var(--font-habbo-display), sans-serif; }
+.habbo .rt-badge { background: #eef6fb; border: 1px solid var(--line); color: var(--ink); }
+.habbo .rt-avatar { image-rendering: pixelated; }
+
+/* site header/footer (2015-Habbo) */
+.habbo .site-head {
+  background: #ffffff; border-bottom: 1px solid var(--line);
+  box-shadow: 0 2px 8px -4px rgba(20,60,90,0.18);
+}
+.habbo .site-foot { background: #ffffff; border-top: 1px solid var(--line); }
+.habbo .site-navlink { color: var(--ink-soft); font-weight: 600; }
+.habbo .site-navlink:hover { color: var(--amber-deep); }
