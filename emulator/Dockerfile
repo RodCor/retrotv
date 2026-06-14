@@ -15,8 +15,9 @@ RUN wget -q -O /app/Habbo.jar \
     "https://github.com/duckietm/Arcturus-Morningstar-Extended/releases/download/v${EMU_VERSION}/Habbo-${EMU_VERSION}-jar-with-dependencies.jar" \
  && test -s /app/Habbo.jar
 
-# Plugins (loaded from ./plugins) and runtime config (read from ./config.ini).
-COPY plugins/ /app/plugins/
+# Plugins are staged in plugins-available/; the entrypoint copies the ones marked
+# enabled in the cms_plugins table into plugins/ (the dir Arcturus loads at boot).
+COPY plugins/ /app/plugins-available/
 COPY config.ini /app/config.ini
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh

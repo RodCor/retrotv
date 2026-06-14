@@ -6,7 +6,8 @@ export {
   LayoutDashboard, Users, ShoppingBag, Shirt, Home, Star, ShieldAlert, Settings2,
   Search, Pencil, Trash2, Eye, EyeOff, Plus, Save, Check, X, Coins, Gem, Diamond,
   Ban, UserX, KeyRound, Crown, Image as ImageIcon, ChevronLeft, ChevronRight,
-  Circle, Sparkles, Megaphone, ToggleLeft, RefreshCw, Hammer, Music, Camera,
+  Circle, Sparkles, Megaphone, ToggleLeft, ToggleRight, RefreshCw, Hammer, Music, Camera,
+  Puzzle, Power,
 } from "lucide-react";
 
 type BtnVariant = "default" | "primary" | "amber" | "danger" | "solid";

@@ -8,17 +8,25 @@ import {
   Home,
   Camera,
   ShieldAlert,
+  Puzzle,
 } from "@/components/admin-ui";
 import { query } from "@/lib/db";
 import { config } from "@/lib/config";
 import { getSession, isStaff } from "@/lib/auth";
-import { SettingRow } from "./forms";
+import { SettingRow, PluginToggle } from "./forms";
 
 export const dynamic = "force-dynamic";
 
 interface SettingRecord {
   key: string;
   value: string;
+}
+
+interface PluginRecord {
+  jar: string;
+  name: string;
+  description: string;
+  enabled: number;
 }
 
 type RowKind = "text" | "bool";
@@ -147,6 +155,17 @@ export default async function SettingsPage() {
 
   const byKey = new Map(settings.map((s) => [s.key, s.value]));
 
+  // Plugin registry (cms_plugins). May be absent if the migration hasn't run.
+  let plugins: PluginRecord[] = [];
+  let pluginsError = false;
+  try {
+    plugins = await query<PluginRecord>(
+      "SELECT jar, name, description, enabled FROM cms_plugins ORDER BY name",
+    );
+  } catch {
+    pluginsError = true;
+  }
+
   return (
     <div>
       <PageHead eyebrow="Hotel" title="Settings">
@@ -195,6 +214,50 @@ export default async function SettingsPage() {
           })}
         </div>
       )}
+
+      <div className="mt-4">
+        <ACard
+          title="Plugins"
+          icon={<Puzzle size={15} strokeWidth={2} />}
+          actions={
+            !pluginsError && (
+              <span className="text-xs adim">
+                {plugins.filter((p) => p.enabled).length} of {plugins.length} enabled
+              </span>
+            )
+          }
+        >
+          {pluginsError ? (
+            <p className="text-sm" style={{ color: "var(--rt-ink-soft, #8b93a7)" }}>
+              Plugin registry unavailable. Run <code>database/05-cms-plugins.sql</code> to
+              create the <code>cms_plugins</code> table.
+            </p>
+          ) : plugins.length === 0 ? (
+            <p className="text-sm" style={{ color: "var(--rt-ink-soft, #8b93a7)" }}>
+              No plugins registered yet. The emulator registers installed plugins on its
+              next boot.
+            </p>
+          ) : (
+            <>
+              <p className="mb-1 text-xs" style={{ color: "var(--rt-ink-soft, #8b93a7)" }}>
+                Toggle which installed plugins the emulator loads. Changes apply on the
+                next emulator restart.
+              </p>
+              <div className="flex flex-col">
+                {plugins.map((p) => (
+                  <PluginToggle
+                    key={p.jar}
+                    jar={p.jar}
+                    name={p.name}
+                    description={p.description}
+                    enabled={p.enabled === 1}
+                  />
+                ))}
+              </div>
+            </>
+          )}
+        </ACard>
+      </div>
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <ACard

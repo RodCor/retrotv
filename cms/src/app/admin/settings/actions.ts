@@ -65,3 +65,38 @@ export async function updateSetting(
     text: `Saved. Restart the emulator for "${k}" to take effect.`,
   };
 }
+
+/** Enable/disable an installed emulator plugin (applied on next emulator restart). */
+export async function togglePlugin(
+  jar: string,
+  enabled: boolean,
+): Promise<ActionResult> {
+  const session = await getSession();
+  if (!session || !isStaff(session.rank)) {
+    return { type: "error", text: "Not authorized." };
+  }
+
+  const j = (jar ?? "").trim();
+  if (!j) return { type: "error", text: "Invalid plugin." };
+
+  try {
+    const result = await execute(
+      "UPDATE cms_plugins SET enabled = :e WHERE jar = :j",
+      { e: enabled ? 1 : 0, j },
+    );
+    if (result.affectedRows === 0) {
+      return { type: "error", text: "Plugin not found in the registry." };
+    }
+  } catch (err) {
+    return {
+      type: "error",
+      text: `Update failed: ${err instanceof Error ? err.message : "unknown error"}`,
+    };
+  }
+
+  revalidatePath("/admin/settings");
+  return {
+    type: "success",
+    text: `${enabled ? "Enabled" : "Disabled"} "${j}". Restart the emulator to apply.`,
+  };
+}
