@@ -69,6 +69,19 @@ patch("renderer-config.json", (rc) => {
   rc["external.texts.translation.url"] = `${CLIENT_URL}/configuration/UITexts_%locale%.json5?t=%timestamp%`;
 });
 
+// Point the hotel-view hotspots (lobby/pool/picnic/...) at our public rooms so
+// clicking a section of the landing screen enters a real room.
+patch("ui-config.json", (uc) => {
+  const hv = uc.hotelview || (uc.hotelview = {});
+  hv["room.lobby"] = "4";        // Recepción
+  hv["room.picnic"] = "5";       // El Bar
+  hv["room.infobus"] = "6";      // Cine RetroTV
+  hv["room.pool"] = "7";         // Salón Lounge
+  hv["room.rooftop"] = "7";
+  hv["room.rooftop.pool"] = "7";
+  hv["room.peaceful"] = "4";
+});
+
 // Inject the RetroTV UI override stylesheet into index.html (idempotent). This
 // hides cosmetic bits (Earnings button, seasonal currency) without forking Nitro.
 try {
