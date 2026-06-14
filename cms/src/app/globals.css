@@ -391,6 +391,22 @@ select.field { appearance: none; cursor: pointer; }
   font-weight: 600; border: 1px solid var(--line-strong); background: rgba(124,152,230,0.12); color: var(--ink);
 }
 
+/* currency chips (My Account) — hotel-style coins/duckets/diamonds/pixels */
+.rt-cur-grid {
+  display: grid; gap: 0.55rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+@media (min-width: 520px) { .rt-cur-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.rt-cur {
+  display: flex; align-items: center; gap: 0.55rem;
+  padding: 0.55rem 0.7rem; border-radius: 12px;
+  background: rgba(124,152,230,0.08); border: 1px solid var(--line);
+}
+.rt-cur-ic { display: inline-flex; flex-shrink: 0; }
+.rt-cur-meta { display: flex; flex-direction: column; line-height: 1.1; min-width: 0; }
+.rt-cur-val { font-family: var(--font-pixel), monospace; font-weight: 700; font-size: 0.95rem; color: var(--ink); }
+.rt-cur-lbl { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-dim); }
+
 .rt-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
 .rt-table th {
   text-align: left; padding: 0.7rem 0.85rem; font-family: var(--font-pixel), monospace;
