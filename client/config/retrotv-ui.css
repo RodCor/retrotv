@@ -7,3 +7,61 @@
 /* Hide the seasonal currency block in the purse (purse.seasonal.currency.*). */
 .nitro-purse-seasonal-currency,
 .nitro-purse__other { display: none !important; }
+
+/* ===========================================================================
+   2015-Habbo UI reskin. The stock Nitro theme is the modern/dark Habbo look
+   (dark teal title bars, dark toolbar). These rules nudge the window chrome and
+   buttons back to the lighter, classic 2015 style.
+   =========================================================================== */
+
+/* --- Windows: classic light-blue gradient title bars --- */
+.nitro-card-header-shell,
+.nitro-card-header {
+  background: linear-gradient(#dff1fc 0%, #a9d6ef 48%, #7cb9de 100%) !important;
+  border: 0 !important;
+  border-bottom: 2px solid #5e9cbf !important;
+  border-radius: 9px 9px 0 0 !important;
+}
+.nitro-card-header-text {
+  color: #1d4f72 !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7) !important;
+  font-weight: 700 !important;
+}
+.nitro-card-shell {
+  border: 2px solid #6ba6c8 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.5) !important;
+}
+/* close button: classic rounded red */
+.nitro-card-header-close {
+  background: linear-gradient(#ff9077 0%, #e0543a 100%) !important;
+  border: 2px solid #b23b25 !important;
+  border-radius: 6px !important;
+}
+
+/* --- Buttons: classic Habbo green / blue gradients --- */
+.btn-success {
+  background: linear-gradient(#a9e35f 0%, #6cb81c 100%) !important;
+  border: 2px solid #4f9410 !important;
+  color: #163b0a !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.45) !important;
+}
+.btn-primary {
+  background: linear-gradient(#6cc0f1 0%, #2e93cf 100%) !important;
+  border: 2px solid #1f79ab !important;
+  color: #fff !important;
+}
+.btn-danger {
+  background: linear-gradient(#ff9077 0%, #e0543a 100%) !important;
+  border: 2px solid #b23b25 !important;
+  color: #fff !important;
+}
+.btn-warning {
+  background: linear-gradient(#ffd95a 0%, #f5a623 100%) !important;
+  border: 2px solid #d98a0c !important;
+  color: #5a3700 !important;
+}
+.btn-success, .btn-primary, .btn-danger, .btn-warning, .btn-dark {
+  border-radius: 7px !important;
+  font-weight: 700 !important;
+}
