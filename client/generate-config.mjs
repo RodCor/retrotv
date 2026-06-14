@@ -90,4 +90,26 @@ try {
   console.log(`[config] css inject failed: ${err.message}`);
 }
 
+// Strip the "(pageId)" the emulator appends to catalog category names. The client
+// keeps numeric parens (/\s*\(\D[^)]*\)\s*$/); drop the \D so "Asian (123456)"
+// renders as "Asian". Idempotent — once patched the \D pattern is gone.
+try {
+  const assets = `${DIR}/../assets`;
+  const FIND = "\\(\\D[^)]*\\)";
+  const REPL = "\\([^)]*\\)";
+  let patched = 0;
+  for (const f of fs.existsSync(assets) ? fs.readdirSync(assets) : []) {
+    if (!f.endsWith(".js")) continue;
+    const p = `${assets}/${f}`;
+    const s = fs.readFileSync(p, "utf8");
+    const n = s.split(FIND).length - 1;
+    if (!n) continue;
+    fs.writeFileSync(p, s.split(FIND).join(REPL));
+    patched += n;
+  }
+  console.log(patched ? `[config] catalog page-id strip: patched ${patched}` : "[config] catalog page-id strip: already applied");
+} catch (err) {
+  console.log(`[config] catalog page-id patch failed: ${err.message}`);
+}
+
 console.log("[config] done");
