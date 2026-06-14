@@ -69,8 +69,15 @@ patch("renderer-config.json", (rc) => {
   rc["external.texts.translation.url"] = `${CLIENT_URL}/configuration/UITexts_%locale%.json5?t=%timestamp%`;
 });
 
-// Inject the RetroTV UI override stylesheet into index.html (idempotent). This
-// hides cosmetic bits (Earnings button, seasonal currency) without forking Nitro.
+// Enable the built-in radio / "Hotel TV" widget (stations live in
+// radio-stations.json5). Stock ui-config ships it disabled.
+patch("ui-config.json", (uc) => {
+  uc["radio_ui.enabled"] = true;
+});
+
+// Inject the RetroTV stylesheet + the classic top bar into index.html (idempotent).
+// The top bar is a CSS/HTML layer (no Nitro fork has an in-client top bar); the
+// client already leaves space for a CMS-rendered header at the top.
 try {
   const indexPath = `${DIR}/../index.html`;
   if (fs.existsSync(indexPath)) {
@@ -80,14 +87,17 @@ try {
         "</head>",
         `  <link rel="stylesheet" href="configuration/retrotv-ui.css">\n</head>`,
       );
-      fs.writeFileSync(indexPath, html);
       console.log("[config] injected retrotv-ui.css");
-    } else {
-      console.log("[config] retrotv-ui.css already linked");
     }
+    if (!html.includes("rtv-topbar")) {
+      const bar = `<div id="rtv-topbar"><span class="rtv-tb-logo">${HOTEL_NAME}</span><span class="rtv-tb-tag">HOTEL RETRO · 2015</span></div>`;
+      html = html.replace("<body>", `<body>\n  ${bar}`);
+      console.log("[config] injected top bar");
+    }
+    fs.writeFileSync(indexPath, html);
   }
 } catch (err) {
-  console.log(`[config] css inject failed: ${err.message}`);
+  console.log(`[config] index.html inject failed: ${err.message}`);
 }
 
 // Strip the "(pageId)" the emulator appends to catalog category names. The client
