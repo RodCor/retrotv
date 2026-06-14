@@ -46,3 +46,4 @@ cms/catshot.mjs
 cms/c-*.png
 cms/t-rename*.mjs
 cms/shot-*.png
+database/backups/
