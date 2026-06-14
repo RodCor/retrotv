@@ -43,36 +43,6 @@
 .chatstyles-anchor,
 .chatstyles-icon { display: none !important; }
 
-/* --- Classic persistent top bar (injected into index.html) --- */
-#rtv-topbar {
-  position: fixed;
-  top: 0; left: 0; right: 0;
-  height: 44px;
-  z-index: 3;               /* above the room view, below the floating UI/purse */
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 0 16px;
-  background: linear-gradient(#2f2f33 0%, #1b1b1e 100%);
-  border-bottom: 2px solid #0c0c0d;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
-  pointer-events: none;     /* never block clicks on the hotel UI underneath */
-  font-family: Volter, "Ubuntu", sans-serif;
-}
-.rtv-tb-logo {
-  font-size: 21px;
-  font-weight: 800;
-  letter-spacing: 0.5px;
-  color: #f5a623;
-  text-shadow: 0 1px 0 rgba(0, 0, 0, 0.5);
-}
-.rtv-tb-tag {
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  color: #7fb7d8;
-  text-transform: uppercase;
-}
-
 /* --- Buttons: classic Habbo green / blue gradients --- */
 .btn-success {
   background: linear-gradient(#a9e35f 0%, #6cb81c 100%) !important;

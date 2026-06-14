@@ -1,7 +1,0 @@
-{
-  // RetroTV hotel radio. Add streaming URLs here to enable the radio/"Hotel TV"
-  // widget (the first station autostarts quietly). Left empty by default — add
-  // your own stream when you want it; no client rebuild needed, just refresh.
-  //   { id: 'retrotv', name: 'RetroTV Radio', genre: 'Hotel Radio', url: 'https://your-stream/stream' }
-  stations: [],
-}
