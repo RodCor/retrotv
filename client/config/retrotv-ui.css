@@ -39,6 +39,10 @@
   border-radius: 6px !important;
 }
 
+/* Remove the chat-styles "wheel" selector next to the chat input. */
+.chatstyles-anchor,
+.chatstyles-icon { display: none !important; }
+
 /* --- Classic persistent top bar (injected into index.html) --- */
 #rtv-topbar {
   position: fixed;

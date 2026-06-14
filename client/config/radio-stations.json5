@@ -1,14 +1,7 @@
 {
-  // RetroTV hotel radio. Each entry is a streaming URL the client plays with the
-  // HTML5 Audio API. The first station autostarts (quietly) on load.
-  // Swap these for your own stream(s) — no client rebuild needed, just refresh.
-  stations: [
-    {
-      id: 'retrotv',
-      name: 'RetroTV Radio',
-      genre: 'Hotel Radio',
-      // Placeholder stream (SomaFM, free non-commercial). Replace with your own.
-      url: 'https://ice1.somafm.com/groovesalad-128-mp3',
-    },
-  ],
+  // RetroTV hotel radio. Add streaming URLs here to enable the radio/"Hotel TV"
+  // widget (the first station autostarts quietly). Left empty by default — add
+  // your own stream when you want it; no client rebuild needed, just refresh.
+  //   { id: 'retrotv', name: 'RetroTV Radio', genre: 'Hotel Radio', url: 'https://your-stream/stream' }
+  stations: [],
 }
