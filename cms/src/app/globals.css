@@ -537,6 +537,24 @@ select.afield { appearance: none; cursor: pointer; }
 }
 .folder-row { cursor: pointer; }
 
+/* badge management (user detail) */
+.badge-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0.45rem; }
+.badge-chip {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.35rem 0.5rem; border-radius: 9px;
+  background: rgba(124,152,230,0.07); border: 1px solid var(--line);
+}
+.badge-chip img { width: 26px; height: 26px; object-fit: contain; image-rendering: pixelated; flex-shrink: 0; }
+.badge-chip .badge-code {
+  width: 26px; height: 26px; flex-shrink: 0; display: grid; place-items: center;
+  font-family: var(--font-pixel), monospace; font-size: 0.46rem; color: var(--ink-dim);
+  border: 1px dashed var(--line-strong); border-radius: 5px; text-align: center; line-height: 1;
+}
+.badge-chip .badge-name {
+  min-width: 0; flex: 1; font-family: var(--font-pixel), monospace; font-size: 0.66rem;
+  color: var(--ink-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
 /* media thumbnails (furni icon / avatar look) + click-to-enlarge lightbox */
 .thumb-col { width: 44px; }
 .thumb {

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { execute } from "@/lib/db";
+import { execute, queryOne } from "@/lib/db";
 import { getSession, isStaff, hashPassword } from "@/lib/auth";
 
 type ActionResult = { type: "error" | "success"; text: string };
@@ -232,4 +232,51 @@ export async function deleteUser(
   revalidatePath("/admin/users");
   revalidatePath("/admin");
   redirect("/admin/users");
+}
+
+/* ---------------------------- badges ---------------------------- */
+
+export async function giveBadge(
+  userId: number,
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const auth = await requireStaff();
+  if (!auth.ok) return auth.result;
+  if (!Number.isInteger(userId) || userId <= 0) {
+    return { type: "error", text: "Usuario no válido." };
+  }
+  const code = String(formData.get("badge_code") ?? "").trim().slice(0, 32);
+  if (!code) return { type: "error", text: "Escribe un código de placa." };
+
+  try {
+    const dup = await queryOne<{ id: number }>(
+      "SELECT id FROM users_badges WHERE user_id = :u AND badge_code = :c",
+      { u: userId, c: code },
+    );
+    if (dup) return { type: "error", text: `El usuario ya tiene la placa "${code}".` };
+    await execute(
+      "INSERT INTO users_badges (user_id, slot_id, badge_code) VALUES (:u, 0, :c)",
+      { u: userId, c: code },
+    );
+  } catch (err) {
+    return { type: "error", text: `No se pudo otorgar la placa: ${(err as Error).message}` };
+  }
+
+  revalidatePath(`/admin/users/${userId}`);
+  return {
+    type: "success",
+    text: `Placa "${code}" otorgada. (El usuario debe volver a entrar para verla.)`,
+  };
+}
+
+export async function removeBadge(userId: number, badgeId: number): Promise<void> {
+  const auth = await requireStaff();
+  if (!auth.ok) return;
+  if (!Number.isInteger(badgeId) || !Number.isInteger(userId)) return;
+  await execute("DELETE FROM users_badges WHERE id = :id AND user_id = :u", {
+    id: badgeId,
+    u: userId,
+  });
+  revalidatePath(`/admin/users/${userId}`);
 }

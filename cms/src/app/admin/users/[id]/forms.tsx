@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import {
   Field,
   Select,
@@ -16,6 +16,8 @@ import {
   KeyRound,
   Ban,
   Trash2,
+  Plus,
+  Star,
 } from "@/components/admin-ui";
 import {
   updateUserCurrency,
@@ -24,6 +26,8 @@ import {
   resetUserPassword,
   banUser,
   deleteUser,
+  giveBadge,
+  removeBadge,
 } from "../actions";
 
 interface RankOption {
@@ -244,6 +248,62 @@ export function DeleteForm({ userId }: { userId: number }) {
       <ABtn variant="danger" type="submit" disabled={pending}>
         <Trash2 size={14} strokeWidth={2} />
         {pending ? "Eliminando…" : "Eliminar usuario"}
+      </ABtn>
+      <FormMsg message={state} />
+    </form>
+  );
+}
+
+/* ------------------------------ badges ------------------------------ */
+
+/** One badge: image (with code fallback) + remove button. */
+export function BadgeChip({
+  userId,
+  badgeId,
+  code,
+  badgeBase,
+}: {
+  userId: number;
+  badgeId: number;
+  code: string;
+  badgeBase: string;
+}) {
+  const [broken, setBroken] = useState(false);
+  return (
+    <div className="badge-chip" title={code}>
+      {broken ? (
+        <span className="badge-code">{code}</span>
+      ) : (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={`${badgeBase}/${encodeURIComponent(code)}.gif`} alt={code} onError={() => setBroken(true)} />
+      )}
+      <span className="badge-name">{code}</span>
+      <form action={removeBadge.bind(null, userId, badgeId)} className="ml-auto">
+        <ABtn type="submit" variant="danger" size="xs" title="Quitar placa">
+          <Trash2 size={12} strokeWidth={2} />
+        </ABtn>
+      </form>
+    </div>
+  );
+}
+
+/** Give a badge by code. */
+export function GiveBadgeForm({ userId }: { userId: number }) {
+  const [state, action, pending] = useActionState(giveBadge.bind(null, userId), null);
+  return (
+    <form action={action} className="flex items-end gap-2">
+      <Field
+        label="Código de placa"
+        name="badge_code"
+        required
+        placeholder="ADM, VIP, ACH_BasicClub1…"
+        className="flex-1"
+        maxLength={32}
+        autoComplete="off"
+      />
+      <ABtn type="submit" variant="primary" disabled={pending}>
+        <Plus size={14} strokeWidth={2} />
+        {pending ? "Dando…" : "Dar placa"}
       </ABtn>
       <FormMsg message={state} />
     </form>

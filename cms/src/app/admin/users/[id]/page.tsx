@@ -14,7 +14,9 @@ import {
   KeyRound,
   Ban,
   Circle,
+  Star,
 } from "@/components/admin-ui";
+import { config } from "@/lib/config";
 import {
   CurrencyForm,
   RankForm,
@@ -22,6 +24,8 @@ import {
   PasswordForm,
   BanForm,
   DeleteForm,
+  BadgeChip,
+  GiveBadgeForm,
 } from "./forms";
 
 interface UserDetail {
@@ -70,6 +74,11 @@ export default async function UserDetailPage({
 
   const dia = await queryOne<{ amount: number }>(
     "SELECT amount FROM users_currency WHERE user_id = :id AND type = 5",
+    { id: userId },
+  );
+
+  const badges = await query<{ id: number; badge_code: string }>(
+    "SELECT id, badge_code FROM users_badges WHERE user_id = :id ORDER BY badge_code",
     { id: userId },
   );
 
@@ -177,6 +186,28 @@ export default async function UserDetailPage({
           </div>
         </ACard>
       </div>
+
+      {/* Badges */}
+      <ACard title="Placas" icon={<Star size={16} strokeWidth={2} />} className="mt-4">
+        <div className="acard-pad space-y-3">
+          <GiveBadgeForm userId={user.id} />
+          {badges.length === 0 ? (
+            <p className="text-xs opacity-60">Este usuario no tiene placas.</p>
+          ) : (
+            <div className="badge-grid">
+              {badges.map((b) => (
+                <BadgeChip
+                  key={b.id}
+                  userId={user.id}
+                  badgeId={b.id}
+                  code={b.badge_code}
+                  badgeBase={config.assets.badgeUrl}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </ACard>
 
       {/* Danger zone */}
       <ACard

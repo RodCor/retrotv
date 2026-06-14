@@ -40,6 +40,10 @@ export const config = {
     // Game data, fetched server-side to map clothing sets -> figure types.
     // In docker this is the internal asset service; on host it's the mapped port.
     gameDataUrl: process.env.GAMEDATA_URL ?? "http://127.0.0.1:8080/gamedata",
+    // Badge GIFs, loaded by the browser (admin badge previews).
+    badgeUrl:
+      process.env.NEXT_PUBLIC_BADGE_URL ??
+      "http://127.0.0.1:8081/c_images/album1584",
   },
 } as const;
 
