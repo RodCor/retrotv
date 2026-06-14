@@ -15,6 +15,10 @@ export type FormResult = { type: "error" | "success"; text: string };
 const USERNAME_RE = /^[A-Za-z0-9_]{3,20}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Every habbo joins with effectively-unlimited coins and permanent Habbo Club.
+const UNLIMITED_CREDITS = 1_000_000_000;
+const HC_DURATION = 4_000_000_000; // ~126 years from join — i.e. forever
+
 async function clientIp(): Promise<string> {
   const h = await headers();
   const fwd = h.get("x-forwarded-for");
@@ -80,7 +84,7 @@ export async function registerAction(
       look: config.hotel.defaultLook,
       gender: "M",
       rank: 1,
-      credits: config.hotel.startCredits,
+      credits: UNLIMITED_CREDITS,
       pixels: config.hotel.startPixels,
       points: config.hotel.startPoints,
       auth_ticket: "",
@@ -91,6 +95,15 @@ export async function registerAction(
   );
 
   const userId = result.insertId;
+
+  // Grant permanent Habbo Club so every new habbo joins with HC forever.
+  await execute(
+    `INSERT INTO users_subscriptions
+       (user_id, subscription_type, timestamp_start, duration, active)
+     VALUES (:userId, 'HABBO_CLUB', :now, :duration, 1)`,
+    { userId, now, duration: HC_DURATION },
+  );
+
   const token = await createSessionToken({ userId, username, rank: 1 });
   await setSessionCookie(token);
 

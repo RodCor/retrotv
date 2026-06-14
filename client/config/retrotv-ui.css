@@ -1,0 +1,9 @@
+/* RetroTV client UI overrides — injected into index.html by generate-config.mjs.
+   Keep this to cosmetic hide/tweak rules; anything heavier belongs in the client. */
+
+/* Hide the Earnings ("Ganancias") button in the purse. */
+.nitro-purse__btn--earnings { display: none !important; }
+
+/* Hide the seasonal currency block in the purse (purse.seasonal.currency.*). */
+.nitro-purse-seasonal-currency,
+.nitro-purse__other { display: none !important; }

@@ -69,4 +69,25 @@ patch("renderer-config.json", (rc) => {
   rc["external.texts.translation.url"] = `${CLIENT_URL}/configuration/UITexts_%locale%.json5?t=%timestamp%`;
 });
 
+// Inject the RetroTV UI override stylesheet into index.html (idempotent). This
+// hides cosmetic bits (Earnings button, seasonal currency) without forking Nitro.
+try {
+  const indexPath = `${DIR}/../index.html`;
+  if (fs.existsSync(indexPath)) {
+    let html = fs.readFileSync(indexPath, "utf8");
+    if (!html.includes("configuration/retrotv-ui.css")) {
+      html = html.replace(
+        "</head>",
+        `  <link rel="stylesheet" href="configuration/retrotv-ui.css">\n</head>`,
+      );
+      fs.writeFileSync(indexPath, html);
+      console.log("[config] injected retrotv-ui.css");
+    } else {
+      console.log("[config] retrotv-ui.css already linked");
+    }
+  }
+} catch (err) {
+  console.log(`[config] css inject failed: ${err.message}`);
+}
+
 console.log("[config] done");
