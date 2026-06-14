@@ -95,7 +95,16 @@ export default async function CommunityPage() {
                       {s.username}
                     </div>
                     {s.rank_name && (
-                      <Badge color="var(--rt-blue)">{s.rank_name}</Badge>
+                      <span
+                        className="rt-badge"
+                        style={{
+                          background: "rgba(52,225,212,0.14)",
+                          borderColor: "rgba(52,225,212,0.4)",
+                          color: "var(--cyan)",
+                        }}
+                      >
+                        {s.rank_name}
+                      </span>
                     )}
                     {s.badge && (
                       <div className="mt-1 text-xs font-bold" style={{ color: "#8aa3ba" }}>

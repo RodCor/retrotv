@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Home as HomeIcon, Users, Gem, Play } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { config } from "@/lib/config";
 import { getSession } from "@/lib/auth";
@@ -34,9 +35,9 @@ const SAMPLE_LOOKS = [
 ];
 
 const FEATURES = [
-  { icon: "🏠", color: "var(--amber)", title: "Design rooms", body: "Grab furni from the catalog and build the hangout of your dreams — pixel by pixel." },
-  { icon: "🤝", color: "var(--cyan)", title: "Make friends", body: "Meet habbos from everywhere, throw parties, and grow your friends list every day." },
-  { icon: "💎", color: "var(--pink)", title: "Collect rares", body: "Hunt rares, trade smart, and flex the flashiest collection in the whole hotel." },
+  { Icon: HomeIcon, color: "var(--amber)", title: "Design rooms", body: "Grab furni from the catalog and build the hangout of your dreams — pixel by pixel." },
+  { Icon: Users, color: "var(--cyan)", title: "Make friends", body: "Meet habbos from everywhere, throw parties, and grow your friends list every day." },
+  { Icon: Gem, color: "var(--pink)", title: "Collect rares", body: "Hunt rares, trade smart, and flex the flashiest collection in the whole hotel." },
 ];
 
 export default async function Home() {
@@ -65,8 +66,9 @@ export default async function Home() {
               pixel-perfect virtual world — right in your browser.
             </p>
             <div className="rise d3 mt-7 flex flex-wrap items-center gap-3">
-              <Link href={playHref} className="btn btn-amber" style={{ fontSize: "1.02rem", padding: "0.8rem 1.5rem" }}>
-                ▶ {session ? "Enter the hotel" : "Play free now"}
+              <Link href={playHref} prefetch={false} className="btn btn-amber inline-flex items-center gap-2" style={{ fontSize: "1.02rem", padding: "0.8rem 1.5rem" }}>
+                <Play size={17} strokeWidth={2.5} fill="currentColor" />
+                {session ? "Enter the hotel" : "Play free now"}
               </Link>
               <Link href="/community" className="btn btn-ghost" style={{ padding: "0.8rem 1.3rem" }}>
                 Explore community
@@ -115,10 +117,10 @@ export default async function Home() {
             {FEATURES.map((f, i) => (
               <div key={f.title} className={`panel panel-pad rise d${i + 1} transition-transform hover:-translate-y-1`}>
                 <div
-                  className="grid h-12 w-12 place-items-center rounded-xl text-2xl"
-                  style={{ background: "rgba(8,12,28,0.6)", border: "1px solid var(--line-strong)", boxShadow: `0 0 30px -12px ${f.color}` }}
+                  className="grid h-12 w-12 place-items-center rounded-xl"
+                  style={{ background: "rgba(8,12,28,0.6)", border: "1px solid var(--line-strong)", boxShadow: `0 0 30px -12px ${f.color}`, color: f.color }}
                 >
-                  {f.icon}
+                  <f.Icon size={22} strokeWidth={2.2} />
                 </div>
                 <h3 className="mt-4 text-xl">{f.title}</h3>
                 <p className="mt-2 text-sm" style={{ color: "var(--ink-soft)" }}>{f.body}</p>
@@ -138,7 +140,7 @@ export default async function Home() {
                   Pick a name, customise your look, and step straight into the hotel. It&apos;s free,
                   it&apos;s fast, and your room is waiting.
                 </p>
-                <Link href={playHref} className="btn btn-amber mt-5">Create your habbo →</Link>
+                <Link href={playHref} prefetch={false} className="btn btn-amber mt-5">Create your habbo →</Link>
               </div>
               <div className="flex flex-wrap items-end justify-center gap-1">
                 {SAMPLE_LOOKS.map((look, i) => (

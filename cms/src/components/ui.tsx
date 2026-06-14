@@ -105,14 +105,15 @@ export function FormMessage({
   const isError = message.type === "error";
   return (
     <div
-      className="rt-panel"
+      role="alert"
       style={{
         padding: "0.6rem 0.9rem",
-        borderColor: isError ? "var(--rt-danger)" : "var(--rt-accent)",
-        background: isError ? "#fff0f0" : "#f0fff4",
+        borderRadius: "12px",
+        border: `1px solid ${isError ? "var(--red)" : "var(--green)"}`,
+        background: isError ? "rgba(230,58,82,0.13)" : "rgba(70,224,138,0.13)",
+        color: isError ? "#ffb4bd" : "#9ef0c2",
         fontWeight: 700,
         fontSize: "0.9rem",
-        boxShadow: "none",
       }}
     >
       {message.text}
