@@ -38,22 +38,22 @@ function relativeTime(unixSeconds: number): string {
   const abs = Math.abs(diff);
   const future = diff > 0;
 
-  const units: [number, string][] = [
-    [86400, "day"],
-    [3600, "hour"],
-    [60, "minute"],
+  const units: [number, string, string][] = [
+    [86400, "día", "días"],
+    [3600, "hora", "horas"],
+    [60, "minuto", "minutos"],
   ];
 
-  if (abs < 60) return future ? "in moments" : "just now";
+  if (abs < 60) return future ? "en unos momentos" : "ahora mismo";
 
-  for (const [secs, label] of units) {
+  for (const [secs, singular, plural] of units) {
     if (abs >= secs) {
       const n = Math.floor(abs / secs);
-      const plural = n === 1 ? label : `${label}s`;
-      return future ? `in ${n} ${plural}` : `${n} ${plural} ago`;
+      const label = n === 1 ? singular : plural;
+      return future ? `en ${n} ${label}` : `hace ${n} ${label}`;
     }
   }
-  return future ? "soon" : "just now";
+  return future ? "pronto" : "ahora mismo";
 }
 
 function isPermanent(expire: number): boolean {
@@ -67,10 +67,10 @@ export default async function ModerationPage() {
   if (!session || !isStaff(session.rank)) {
     return (
       <>
-        <PageHead eyebrow="Safety" title="Moderation" />
-        <ACard title="Access denied" icon={<ShieldAlert size={16} strokeWidth={2} />}>
+        <PageHead eyebrow="Seguridad" title="Moderación" />
+        <ACard title="Acceso denegado" icon={<ShieldAlert size={16} strokeWidth={2} />}>
           <p style={{ color: "var(--ink-soft, #98a0b3)" }}>
-            You do not have permission to view this page.
+            No tienes permiso para ver esta página.
           </p>
         </ACard>
       </>
@@ -105,15 +105,15 @@ export default async function ModerationPage() {
 
   return (
     <>
-      <PageHead eyebrow="Safety" title="Moderation" />
+      <PageHead eyebrow="Seguridad" title="Moderación" />
 
       <div className="flex flex-col gap-4">
-        <ACard title="Ban a user" icon={<UserX size={16} strokeWidth={2} />}>
+        <ACard title="Banear a un usuario" icon={<UserX size={16} strokeWidth={2} />}>
           <BanUserForm />
         </ACard>
 
         <ACard
-          title="Active bans"
+          title="Baneos activos"
           icon={<Ban size={16} strokeWidth={2} />}
           actions={<Tag color="gray">{bans.length}</Tag>}
           pad={false}
@@ -121,7 +121,7 @@ export default async function ModerationPage() {
           {bans.length === 0 ? (
             <div className="acard-pad">
               <p style={{ color: "var(--ink-soft, #98a0b3)" }}>
-                No bans on record.
+                No hay baneos registrados.
               </p>
             </div>
           ) : (
@@ -130,11 +130,11 @@ export default async function ModerationPage() {
                 <thead>
                   <tr>
                     <th className="num">ID</th>
-                    <th>User</th>
-                    <th>Reason</th>
-                    <th>Type</th>
-                    <th>Banned</th>
-                    <th>Expires</th>
+                    <th>Usuario</th>
+                    <th>Motivo</th>
+                    <th>Tipo</th>
+                    <th>Baneado</th>
+                    <th>Expira</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -152,7 +152,7 @@ export default async function ModerationPage() {
                       </td>
                       <td>
                         {isPermanent(b.ban_expire) ? (
-                          <Tag color="red">Permanent</Tag>
+                          <Tag color="red">Permanente</Tag>
                         ) : (
                           <span style={{ color: "var(--ink-soft, #98a0b3)" }}>
                             {relativeTime(b.ban_expire)}
@@ -163,7 +163,7 @@ export default async function ModerationPage() {
                         <form action={deleteBan}>
                           <input type="hidden" name="id" value={b.id} />
                           <ABtn type="submit" size="xs" variant="primary">
-                            Lift
+                            Levantar
                           </ABtn>
                         </form>
                       </td>
@@ -177,14 +177,14 @@ export default async function ModerationPage() {
 
         {chatlogs !== null && (
           <ACard
-            title="Recent chat"
+            title="Chat reciente"
             icon={<ShieldAlert size={16} strokeWidth={2} />}
             pad={false}
           >
             {chatlogs.length === 0 ? (
               <div className="acard-pad">
                 <p style={{ color: "var(--ink-soft, #98a0b3)" }}>
-                  No chat logs yet.
+                  Todavía no hay registros de chat.
                 </p>
               </div>
             ) : (
@@ -192,9 +192,9 @@ export default async function ModerationPage() {
                 <table className="dtable">
                   <thead>
                     <tr>
-                      <th className="num">User</th>
-                      <th>Message</th>
-                      <th>When</th>
+                      <th className="num">Usuario</th>
+                      <th>Mensaje</th>
+                      <th>Cuándo</th>
                     </tr>
                   </thead>
                   <tbody>

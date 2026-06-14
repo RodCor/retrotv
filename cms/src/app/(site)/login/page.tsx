@@ -9,18 +9,18 @@ export default function LoginPage() {
       <main className="flex flex-1 items-center justify-center px-4 py-12">
         <div className="rt-panel w-full max-w-md">
           <h1 className="rt-display mb-1 text-3xl" style={{ color: "var(--rt-brand)" }}>
-            Welcome back
+            ¡Hola de nuevo!
           </h1>
           <p className="mb-6 text-sm" style={{ color: "#6b7c8c" }}>
-            Log in to your account to keep playing.
+            Inicia sesión en tu cuenta para seguir jugando.
           </p>
 
           <LoginForm />
 
           <p className="mt-6 text-center text-sm" style={{ color: "#6b7c8c" }}>
-            New here?{" "}
+            ¿Nuevo por aquí?{" "}
             <Link href="/register" className="font-bold" style={{ color: "var(--rt-blue)" }}>
-              Create an account
+              Crea una cuenta
             </Link>
           </p>
         </div>

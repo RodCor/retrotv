@@ -35,8 +35,8 @@ const habboBody = Ubuntu({
 });
 
 export const metadata: Metadata = {
-  title: `${config.hotel.name} — Habbo Retro Hotel`,
-  description: `Join ${config.hotel.name}, a modern Habbo-style virtual world. Create your avatar, design rooms, make friends and explore.`,
+  title: `${config.hotel.name} — Hotel Retro estilo Habbo`,
+  description: `Únete a ${config.hotel.name}, un mundo virtual estilo Habbo. Crea tu avatar, diseña salas, haz amigos y explora.`,
 };
 
 export default function RootLayout({

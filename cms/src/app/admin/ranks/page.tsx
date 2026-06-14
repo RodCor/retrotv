@@ -20,26 +20,26 @@ export default async function RanksPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <PageHead eyebrow="Permissions" title="Ranks" />
+      <PageHead eyebrow="Permisos" title="Rangos" />
 
-      <ACard title="New rank" icon={<Plus size={16} strokeWidth={2} />}>
+      <ACard title="Nuevo rango" icon={<Plus size={16} strokeWidth={2} />}>
         <CreateRankForm />
       </ACard>
 
-      <ACard title="Existing ranks" pad={false}>
+      <ACard title="Rangos existentes" pad={false}>
         {ranks.length === 0 ? (
-          <p className="acard-pad text-sm opacity-70">No ranks defined.</p>
+          <p className="acard-pad text-sm opacity-70">No hay rangos definidos.</p>
         ) : (
           <TableWrap>
             <table className="dtable">
               <thead>
                 <tr>
                   <th className="num">ID</th>
-                  <th>Rank</th>
-                  <th className="num">Level</th>
-                  <th>Badge</th>
-                  <th>Prefix</th>
-                  <th>Actions</th>
+                  <th>Rango</th>
+                  <th className="num">Nivel</th>
+                  <th>Placa</th>
+                  <th>Prefijo</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>

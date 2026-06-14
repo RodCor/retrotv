@@ -10,7 +10,7 @@ export function RenamePage({ id, caption }: { id: number; caption: string }) {
   const [editing, setEditing] = useState(false);
   if (!editing) {
     return (
-      <ABtn type="button" variant="default" size="xs" onClick={() => setEditing(true)} title="Rename">
+      <ABtn type="button" variant="default" size="xs" onClick={() => setEditing(true)} title="Renombrar">
         <Pencil size={13} strokeWidth={2} />
       </ABtn>
     );
@@ -21,8 +21,8 @@ export function RenamePage({ id, caption }: { id: number; caption: string }) {
         name="caption" defaultValue={caption} autoFocus maxLength={120}
         className="afield" style={{ width: 130, padding: "0.25rem 0.45rem", fontSize: "0.78rem" }}
       />
-      <ABtn type="submit" variant="primary" size="xs" title="Save"><Check size={13} strokeWidth={2} /></ABtn>
-      <ABtn type="button" variant="default" size="xs" onClick={() => setEditing(false)} title="Cancel"><X size={13} strokeWidth={2} /></ABtn>
+      <ABtn type="submit" variant="primary" size="xs" title="Guardar"><Check size={13} strokeWidth={2} /></ABtn>
+      <ABtn type="button" variant="default" size="xs" onClick={() => setEditing(false)} title="Cancelar"><X size={13} strokeWidth={2} /></ABtn>
     </form>
   );
 }
@@ -33,12 +33,12 @@ export function CreatePageForm({ parentId, here }: { parentId: number; here: str
   return (
     <form action={action} className="space-y-3">
       <input type="hidden" name="parent_id" value={parentId} />
-      <p className="text-xs adim">New page inside <span className="amuted font-semibold">{here}</span></p>
-      <Field label="Caption" name="caption" required placeholder="Super Furni" className="w-full" />
-      <Field label="Min rank" name="min_rank" type="number" min={1} defaultValue={1} className="w-full" />
+      <p className="text-xs adim">Nueva página dentro de <span className="amuted font-semibold">{here}</span></p>
+      <Field label="Título" name="caption" required placeholder="Super Furni" className="w-full" />
+      <Field label="Rango mín." name="min_rank" type="number" min={1} defaultValue={1} className="w-full" />
       <ABtn type="submit" variant="primary" disabled={pending}>
         <Plus size={14} strokeWidth={2} />
-        {pending ? "Creating…" : "Add page"}
+        {pending ? "Creando…" : "Añadir página"}
       </ABtn>
       <FormMsg message={state} />
     </form>
@@ -51,17 +51,17 @@ export function CreateItemForm({ pageId, here }: { pageId: number; here: string 
   return (
     <form action={action} className="space-y-3">
       <input type="hidden" name="page_id" value={pageId} />
-      <p className="text-xs adim">New item in <span className="amuted font-semibold">{here}</span></p>
-      <Field label="Catalog name" name="catalog_name" required placeholder="dragon_lamp" className="w-full" />
-      <Field label="Base item id" name="item_ids" type="number" min={1} required placeholder="1234" className="w-full" />
+      <p className="text-xs adim">Nuevo objeto en <span className="amuted font-semibold">{here}</span></p>
+      <Field label="Nombre del catálogo" name="catalog_name" required placeholder="dragon_lamp" className="w-full" />
+      <Field label="ID base del objeto" name="item_ids" type="number" min={1} required placeholder="1234" className="w-full" />
       <div className="grid grid-cols-3 gap-2">
-        <Field label="Credits" name="cost_credits" type="number" min={0} defaultValue={0} />
-        <Field label="Points" name="cost_points" type="number" min={0} defaultValue={0} />
-        <Field label="Amount" name="amount" type="number" min={1} defaultValue={1} />
+        <Field label="Créditos" name="cost_credits" type="number" min={0} defaultValue={0} />
+        <Field label="Puntos" name="cost_points" type="number" min={0} defaultValue={0} />
+        <Field label="Cantidad" name="amount" type="number" min={1} defaultValue={1} />
       </div>
       <ABtn type="submit" variant="primary" disabled={pending}>
         <Plus size={14} strokeWidth={2} />
-        {pending ? "Adding…" : "Add item"}
+        {pending ? "Añadiendo…" : "Añadir objeto"}
       </ABtn>
       <FormMsg message={state} />
     </form>

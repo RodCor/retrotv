@@ -9,7 +9,7 @@ type ActionResult = { type: "error" | "success"; text: string };
 async function requireStaff(): Promise<ActionResult | null> {
   const session = await getSession();
   if (!session || !isStaff(session.rank)) {
-    return { type: "error", text: "Not authorised." };
+    return { type: "error", text: "No autorizado." };
   }
   return null;
 }
@@ -29,17 +29,17 @@ export async function createCatalogPage(
   const pageLayout = String(formData.get("page_layout") ?? "").trim() || "default";
 
   if (!caption) {
-    return { type: "error", text: "Caption is required." };
+    return { type: "error", text: "El título es obligatorio." };
   }
 
   const parentId = parentRaw === "" ? -1 : Number(parentRaw);
   if (!Number.isInteger(parentId)) {
-    return { type: "error", text: "Parent id must be a whole number." };
+    return { type: "error", text: "El ID padre debe ser un número entero." };
   }
 
   const minRank = minRankRaw === "" ? 1 : Number(minRankRaw);
   if (!Number.isInteger(minRank) || minRank < 1) {
-    return { type: "error", text: "Min rank must be a positive whole number." };
+    return { type: "error", text: "El rango mínimo debe ser un número entero positivo." };
   }
 
   const maxRow = await queryOne<{ max_order: number | null }>(
@@ -67,12 +67,12 @@ export async function createCatalogPage(
   } catch (err) {
     return {
       type: "error",
-      text: `Failed to create page: ${(err as Error).message}`,
+      text: `No se pudo crear la página: ${(err as Error).message}`,
     };
   }
 
   revalidatePath("/admin/catalog");
-  return { type: "success", text: `Page "${caption}" created.` };
+  return { type: "success", text: `Página "${caption}" creada.` };
 }
 
 export async function renameCatalogPage(id: number, formData: FormData): Promise<void> {
@@ -137,22 +137,22 @@ export async function createCatalogItem(
   const amount = Number(String(formData.get("amount") ?? "1").trim());
 
   if (!catalogName) {
-    return { type: "error", text: "Catalog name is required." };
+    return { type: "error", text: "El nombre del catálogo es obligatorio." };
   }
   if (!itemIds || !Number.isInteger(Number(itemIds))) {
-    return { type: "error", text: "Item id must be a base item id." };
+    return { type: "error", text: "El ID del objeto debe ser un ID base de objeto." };
   }
   if (!Number.isInteger(pageId) || pageId <= 0) {
-    return { type: "error", text: "Select a valid catalog page." };
+    return { type: "error", text: "Selecciona una página del catálogo válida." };
   }
   if (!Number.isInteger(costCredits) || costCredits < 0) {
-    return { type: "error", text: "Credit cost must be a non-negative whole number." };
+    return { type: "error", text: "El coste en créditos debe ser un número entero no negativo." };
   }
   if (!Number.isInteger(costPoints) || costPoints < 0) {
-    return { type: "error", text: "Point cost must be a non-negative whole number." };
+    return { type: "error", text: "El coste en puntos debe ser un número entero no negativo." };
   }
   if (!Number.isInteger(amount) || amount < 1) {
-    return { type: "error", text: "Amount must be at least 1." };
+    return { type: "error", text: "La cantidad debe ser al menos 1." };
   }
 
   try {
@@ -175,12 +175,12 @@ export async function createCatalogItem(
   } catch (err) {
     return {
       type: "error",
-      text: `Failed to create item: ${(err as Error).message}`,
+      text: `No se pudo crear el objeto: ${(err as Error).message}`,
     };
   }
 
   revalidatePath("/admin/catalog");
-  return { type: "success", text: `Item "${catalogName}" created.` };
+  return { type: "success", text: `Objeto "${catalogName}" creado.` };
 }
 
 export async function deleteCatalogItem(id: number): Promise<void> {

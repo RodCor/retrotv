@@ -15,22 +15,22 @@ export function SetLookForm() {
   const previewUrl = trimmed ? avatarImageUrl(trimmed, { size: "l" }) : null;
 
   return (
-    <ACard title="Set a user's look" icon={<Shirt size={16} strokeWidth={2} />}>
+    <ACard title="Establecer la figura de un usuario" icon={<Shirt size={16} strokeWidth={2} />}>
       <form action={action} className="grid gap-4 md:grid-cols-[minmax(0,1fr)_auto]">
         <div className="space-y-3">
           <p className="text-xs" style={{ color: "var(--muted, #777)" }}>
-            Paste a figure string and a target username to overwrite their look.
+            Pega una cadena de figura y un usuario destino para sobrescribir su figura.
           </p>
 
           <Field
-            label="Target username"
+            label="Usuario destino"
             name="username"
             required
             placeholder="CoolHabbo"
           />
 
           <Field
-            label="Figure string"
+            label="Cadena de figura"
             name="look"
             required
             value={look}
@@ -41,19 +41,19 @@ export function SetLookForm() {
           <div>
             <ABtn variant="primary" type="submit" disabled={pending}>
               <Save size={14} strokeWidth={2} />
-              {pending ? "Applying…" : "Apply look"}
+              {pending ? "Aplicando…" : "Aplicar figura"}
             </ABtn>
             <FormMsg message={state} />
           </div>
         </div>
 
         <div className="flex flex-col items-center justify-center gap-2 md:min-w-[150px]">
-          <span className="alabel">Live preview</span>
+          <span className="alabel">Vista previa en vivo</span>
           {previewUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={previewUrl}
-              alt="Avatar preview"
+              alt="Vista previa del avatar"
               className="rt-avatar"
               style={{ imageRendering: "pixelated" }}
             />
@@ -65,7 +65,7 @@ export function SetLookForm() {
                 border: "1px dashed var(--border, #2a2a35)",
               }}
             >
-              No figure
+              Sin figura
             </div>
           )}
         </div>

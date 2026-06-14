@@ -27,7 +27,7 @@ export async function loginAction(
   const password = String(formData.get("password") ?? "");
 
   if (!username || !password) {
-    return { type: "error", text: "Enter your username and password." };
+    return { type: "error", text: "Escribe tu nombre de usuario y contraseña." };
   }
 
   const user = await queryOne<DbUser>(
@@ -36,7 +36,7 @@ export async function loginAction(
   );
 
   if (!user || !(await verifyPassword(password, user.password))) {
-    return { type: "error", text: "Invalid username or password." };
+    return { type: "error", text: "Usuario o contraseña incorrectos." };
   }
 
   const now = Math.floor(Date.now() / 1000);

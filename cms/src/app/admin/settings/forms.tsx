@@ -33,7 +33,7 @@ export function PluginToggle({
           <Puzzle size={13} strokeWidth={2} style={{ color: "var(--cyan)", flexShrink: 0 }} />
           <span className="text-[13px] font-semibold">{name}</span>
           <code className="text-[11px]" style={{ color: "var(--rt-ink-soft, #8b93a7)" }}>{jar}</code>
-          {enabled ? <Tag color="green">Enabled</Tag> : <Tag color="gray">Disabled</Tag>}
+          {enabled ? <Tag color="green">Activado</Tag> : <Tag color="gray">Desactivado</Tag>}
         </div>
         {description && (
           <p className="mt-0.5 text-[11px]" style={{ color: "var(--rt-ink-soft, #8b93a7)" }}>{description}</p>
@@ -48,7 +48,7 @@ export function PluginToggle({
           disabled={pending}
         >
           {enabled ? <ToggleRight size={13} strokeWidth={2} /> : <ToggleLeft size={13} strokeWidth={2} />}
-          {pending ? "Saving" : enabled ? "Disable" : "Enable"}
+          {pending ? "Guardando" : enabled ? "Desactivar" : "Activar"}
         </ABtn>
       </form>
     </div>
@@ -112,8 +112,8 @@ export function SettingRow({
       >
         {kind === "bool" ? (
           <Select name="value" defaultValue={bool} className="flex-1">
-            <option value="1">Enabled</option>
-            <option value="0">Disabled</option>
+            <option value="1">Activado</option>
+            <option value="0">Desactivado</option>
           </Select>
         ) : (
           <Field
@@ -125,7 +125,7 @@ export function SettingRow({
         )}
         <ABtn type="submit" variant="primary" size="xs" disabled={pending}>
           <Save size={12} strokeWidth={2} />
-          {pending ? "Saving" : "Save"}
+          {pending ? "Guardando" : "Guardar"}
         </ABtn>
       </form>
     </div>

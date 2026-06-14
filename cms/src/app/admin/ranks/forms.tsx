@@ -28,23 +28,23 @@ export function CreateRankForm() {
   return (
     <form action={action} className="space-y-3">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-        <Field label="Rank name" name="rank_name" required />
+        <Field label="Nombre del rango" name="rank_name" required />
         <Field
-          label="Level"
+          label="Nivel"
           name="level"
           type="number"
           min={1}
           defaultValue={1}
           required
         />
-        <Field label="Badge" name="badge" placeholder="ADM" />
-        <Field label="Prefix" name="prefix" placeholder="[Admin]" />
-        <Field label="Prefix color" name="prefix_color" placeholder="#ff0000" />
+        <Field label="Placa" name="badge" placeholder="ADM" />
+        <Field label="Prefijo" name="prefix" placeholder="[Admin]" />
+        <Field label="Color del prefijo" name="prefix_color" placeholder="#ff0000" />
       </div>
       <div className="flex items-center gap-2">
         <ABtn type="submit" variant="primary" disabled={pending}>
           <Plus size={14} strokeWidth={2} />
-          {pending ? "Creating…" : "Create rank"}
+          {pending ? "Creando…" : "Crear rango"}
         </ABtn>
         <FormMsg message={state} />
       </div>
@@ -73,7 +73,7 @@ export function EditRankRow({ rank }: { rank: RankRow }) {
             <Field
               name="rank_name"
               defaultValue={rank.rank_name}
-              aria-label="Rank name"
+              aria-label="Nombre del rango"
               className="min-w-[8rem]"
             />
           </form>
@@ -89,7 +89,7 @@ export function EditRankRow({ rank }: { rank: RankRow }) {
             type="number"
             min={1}
             defaultValue={rank.level}
-            aria-label="Level"
+            aria-label="Nivel"
             className="w-20"
           />
         </td>
@@ -98,7 +98,7 @@ export function EditRankRow({ rank }: { rank: RankRow }) {
             form={`edit-rank-${rank.id}`}
             name="badge"
             defaultValue={rank.badge ?? ""}
-            aria-label="Badge"
+            aria-label="Placa"
             className="w-24"
           />
         </td>
@@ -121,7 +121,7 @@ export function EditRankRow({ rank }: { rank: RankRow }) {
               disabled={editPending}
             >
               <Save size={14} strokeWidth={2} />
-              {editPending ? "Saving…" : "Save"}
+              {editPending ? "Guardando…" : "Guardar"}
             </ABtn>
             <form action={deleteAction} className="contents">
               <input type="hidden" name="id" value={rank.id} />
@@ -132,7 +132,7 @@ export function EditRankRow({ rank }: { rank: RankRow }) {
                 disabled={deletePending}
               >
                 <Trash2 size={14} strokeWidth={2} />
-                {deletePending ? "Deleting…" : "Delete"}
+                {deletePending ? "Eliminando…" : "Eliminar"}
               </ABtn>
             </form>
           </div>

@@ -24,20 +24,20 @@ export function BanUserForm() {
     <form action={formAction} className="space-y-3">
       <div className="grid gap-3 md:grid-cols-3">
         <Field
-          label="Username"
+          label="Usuario"
           name="username"
           placeholder="HabboName"
           autoComplete="off"
           required
         />
         <Field
-          label="Reason"
+          label="Motivo"
           name="reason"
-          placeholder="Breaking the rules…"
+          placeholder="Incumplir las normas…"
           autoComplete="off"
         />
         <Field
-          label="Duration (hours)"
+          label="Duración (horas)"
           name="hours"
           type="number"
           min={1}
@@ -49,7 +49,7 @@ export function BanUserForm() {
       <div className="flex items-center gap-3">
         <ABtn type="submit" variant="danger" disabled={pending}>
           <Ban size={14} strokeWidth={2} />
-          {pending ? "Banning…" : "Ban"}
+          {pending ? "Baneando…" : "Banear"}
         </ABtn>
       </div>
       <FormMsg message={state} />

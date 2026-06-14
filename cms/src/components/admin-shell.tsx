@@ -7,14 +7,14 @@ import {
 } from "lucide-react";
 
 const NAV = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/users", label: "Users", icon: Users },
-  { href: "/admin/catalog", label: "Catalog", icon: ShoppingBag },
-  { href: "/admin/clothing", label: "Clothing", icon: Shirt },
-  { href: "/admin/rooms", label: "Rooms", icon: Home },
-  { href: "/admin/ranks", label: "Ranks", icon: Star },
-  { href: "/admin/moderation", label: "Moderation", icon: ShieldAlert },
-  { href: "/admin/settings", label: "Settings", icon: Settings2 },
+  { href: "/admin", label: "Panel", icon: LayoutDashboard },
+  { href: "/admin/users", label: "Usuarios", icon: Users },
+  { href: "/admin/catalog", label: "Catálogo", icon: ShoppingBag },
+  { href: "/admin/clothing", label: "Ropa", icon: Shirt },
+  { href: "/admin/rooms", label: "Salas", icon: Home },
+  { href: "/admin/ranks", label: "Rangos", icon: Star },
+  { href: "/admin/moderation", label: "Moderación", icon: ShieldAlert },
+  { href: "/admin/settings", label: "Configuración", icon: Settings2 },
 ];
 
 /** Shared chrome for every /admin page: sidebar + top bar. */
@@ -35,7 +35,7 @@ export async function AdminShell({ children }: { children: React.ReactNode }) {
           </span>
           <span className="flex flex-col leading-none">
             <span className="rt-display text-sm" style={{ color: "var(--ink)" }}>{config.hotel.name}</span>
-            <span className="font-pixel text-[0.56rem]" style={{ color: "var(--cyan)" }}>HOUSEKEEPING</span>
+            <span className="font-pixel text-[0.56rem]" style={{ color: "var(--cyan)" }}>ADMINISTRACIÓN</span>
           </span>
         </Link>
         {NAV.map(({ href, label, icon: Icon }) => (
@@ -44,7 +44,7 @@ export async function AdminShell({ children }: { children: React.ReactNode }) {
           </Link>
         ))}
         <Link href="/" className="anav mt-auto text-xs" style={{ color: "var(--ink-dim)" }}>
-          ← Back to site
+          ← Volver al sitio
         </Link>
       </aside>
 
@@ -55,13 +55,13 @@ export async function AdminShell({ children }: { children: React.ReactNode }) {
         >
           <div>
             <p className="aeyebrow">Admin · {config.hotel.name}</p>
-            <h2 className="rt-display text-base" style={{ color: "var(--ink)" }}>Housekeeping</h2>
+            <h2 className="rt-display text-base" style={{ color: "var(--ink)" }}>Administración</h2>
           </div>
           {user && (
             <div className="flex items-center gap-2.5">
               <div className="text-right leading-tight">
                 <div className="text-sm font-bold" style={{ color: "var(--ink)" }}>{user.username}</div>
-                <div className="font-pixel text-[0.62rem]" style={{ color: "var(--cyan)" }}>RANK {user.rank}</div>
+                <div className="font-pixel text-[0.62rem]" style={{ color: "var(--cyan)" }}>RANGO {user.rank}</div>
               </div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={avatarImageUrl(user.look, { headOnly: true, size: "m" })} alt={user.username} width={36} height={36} className="av-head" />

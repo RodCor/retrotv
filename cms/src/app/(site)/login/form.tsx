@@ -12,18 +12,18 @@ export function LoginForm() {
       <FormMessage message={state} />
 
       <div className="flex flex-col gap-1">
-        <Label htmlFor="username">Username</Label>
+        <Label htmlFor="username">Nombre de usuario</Label>
         <Input
           id="username"
           name="username"
           autoComplete="username"
-          placeholder="cooluser_99"
+          placeholder="usuario_99"
           required
         />
       </div>
 
       <div className="flex flex-col gap-1">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">Contraseña</Label>
         <Input
           id="password"
           name="password"
@@ -34,7 +34,7 @@ export function LoginForm() {
       </div>
 
       <Button type="submit" variant="brand" disabled={pending}>
-        {pending ? "Logging in…" : "Log in"}
+        {pending ? "Entrando…" : "Entrar"}
       </Button>
     </form>
   );

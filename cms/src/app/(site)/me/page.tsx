@@ -23,7 +23,7 @@ export default async function MePage() {
       <SiteHeader />
 
       <main className="mx-auto flex max-w-3xl flex-col gap-6 px-4 py-8">
-        <h1 className="rt-display text-3xl">My Account</h1>
+        <h1 className="rt-display text-3xl">Mi cuenta</h1>
 
         {/* Profile card — avatar is read-only; looks are changed inside the hotel */}
         <Panel>
@@ -35,14 +35,14 @@ export default async function MePage() {
                 src={avatarImageUrl(user.look, { size: "l" })}
                 alt={`${user.username}'s avatar`}
               />
-              <span className="text-xs opacity-60">Change your look in the hotel</span>
+              <span className="text-xs opacity-60">Cambia tu look dentro del hotel</span>
             </div>
 
             <div className="flex flex-1 flex-col gap-4">
               <div>
                 <h2 className="rt-display text-2xl">{user.username}</h2>
                 <p className="mt-1 text-sm italic opacity-80">
-                  {user.motto || "No motto set."}
+                  {user.motto || "Sin misión."}
                 </p>
               </div>
 
@@ -55,10 +55,10 @@ export default async function MePage() {
 
               <div className="flex flex-wrap items-center gap-3">
                 <ButtonLink href="/play" prefetch={false} variant="accent">
-                  Enter Hotel
+                  Entrar al hotel
                 </ButtonLink>
                 <a href="/logout" className="rt-btn rt-btn-ghost">
-                  Logout
+                  Cerrar sesión
                 </a>
               </div>
             </div>
@@ -67,9 +67,9 @@ export default async function MePage() {
 
         {/* Change password */}
         <Panel muted>
-          <h2 className="rt-display mb-1 text-xl">Change password</h2>
+          <h2 className="rt-display mb-1 text-xl">Cambiar contraseña</h2>
           <p className="mb-3 text-sm opacity-70">
-            Update the password you use to sign in to the website and the hotel.
+            Actualiza la contraseña que usas para entrar a la web y al hotel.
           </p>
           <PasswordForm />
         </Panel>

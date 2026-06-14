@@ -62,24 +62,24 @@ export default async function ClothingAdminPage() {
 
   return (
     <div>
-      <PageHead eyebrow="Looks" title="Clothing" />
+      <PageHead eyebrow="Figuras" title="Ropa" />
 
       <SetLookForm />
 
       <div className="mt-4">
         <ACard
-          title="Purchasable clothing"
+          title="Ropa comprable"
           icon={<Shirt size={16} strokeWidth={2} />}
           pad={false}
-          actions={!clothingError && <span className="text-xs adim">showing {clothing.length} of {clothingTotal}</span>}
+          actions={!clothingError && <span className="text-xs adim">mostrando {clothing.length} de {clothingTotal}</span>}
         >
           {clothingError ? (
             <p className="acard-pad text-sm adim">
-              Clothing catalog unavailable on this database.
+              El catálogo de ropa no está disponible en esta base de datos.
               <span className="mt-1 block text-xs opacity-70">{clothingError}</span>
             </p>
           ) : clothing.length === 0 ? (
-            <p className="acard-pad text-sm adim">No purchasable-clothing entries on this hotel yet.</p>
+            <p className="acard-pad text-sm adim">Todavía no hay entradas de ropa comprable en este hotel.</p>
           ) : (
             <TableWrap>
               <table className="dtable">
@@ -87,8 +87,8 @@ export default async function ClothingAdminPage() {
                   <tr>
                     <th className="thumb-col"></th>
                     <th className="num">ID</th>
-                    <th className="cap">Name</th>
-                    <th>Figure sets</th>
+                    <th className="cap">Nombre</th>
+                    <th>Conjuntos de figura</th>
                   </tr>
                 </thead>
                 <tbody>

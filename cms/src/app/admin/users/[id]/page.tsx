@@ -86,15 +86,15 @@ export default async function UserDetailPage({
   }
 
   const rankName =
-    ranks.find((r) => r.level === user.rank)?.rank_name ?? `Rank ${user.rank}`;
+    ranks.find((r) => r.level === user.rank)?.rank_name ?? `Rango ${user.rank}`;
   const isOnline = user.online === "1";
 
   return (
     <div>
-      <PageHead eyebrow="Manage user" title={user.username}>
+      <PageHead eyebrow="Gestionar usuario" title={user.username}>
         <ABtn href="/admin/users">
           <ChevronLeft size={14} strokeWidth={2} />
-          Back
+          Volver
         </ABtn>
       </PageHead>
 
@@ -106,7 +106,7 @@ export default async function UserDetailPage({
             className="av-head"
             style={{ width: 64, height: 64 }}
             src={avatarImageUrl(user.look, { size: "l", headOnly: true })}
-            alt={`${user.username} avatar`}
+            alt={`avatar de ${user.username}`}
           />
           <div className="flex min-w-0 flex-col gap-1.5">
             <div className="flex flex-wrap items-center gap-2">
@@ -114,10 +114,10 @@ export default async function UserDetailPage({
               {isOnline ? (
                 <Tag color="green">
                   <Circle size={8} fill="currentColor" />
-                  Online
+                  En línea
                 </Tag>
               ) : (
-                <Tag color="gray">Offline</Tag>
+                <Tag color="gray">Desconectado</Tag>
               )}
               <Tag color="amber">
                 <Crown size={12} strokeWidth={2} />
@@ -125,21 +125,21 @@ export default async function UserDetailPage({
               </Tag>
             </div>
             <p className="text-sm italic opacity-70">
-              {user.motto || "(no motto)"}
+              {user.motto || "(sin misión)"}
             </p>
             <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs opacity-60">
               <span>ID #{user.id}</span>
-              <span>{user.mail ?? "(no email)"}</span>
-              <span>Gender: {user.gender}</span>
-              <span>Joined: {fmtDate(user.account_created)}</span>
-              <span>Last online: {fmtDate(user.last_online)}</span>
+              <span>{user.mail ?? "(sin correo)"}</span>
+              <span>Género: {user.gender}</span>
+              <span>Se unió: {fmtDate(user.account_created)}</span>
+              <span>Última conexión: {fmtDate(user.last_online)}</span>
             </div>
           </div>
         </div>
       </ACard>
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-        <ACard title="Currency" icon={<Coins size={16} strokeWidth={2} />}>
+        <ACard title="Monedas" icon={<Coins size={16} strokeWidth={2} />}>
           <div className="acard-pad">
             <CurrencyForm
               userId={user.id}
@@ -151,13 +151,13 @@ export default async function UserDetailPage({
           </div>
         </ACard>
 
-        <ACard title="Rank" icon={<Crown size={16} strokeWidth={2} />}>
+        <ACard title="Rango" icon={<Crown size={16} strokeWidth={2} />}>
           <div className="acard-pad">
             <RankForm userId={user.id} rank={user.rank} ranks={ranks} />
           </div>
         </ACard>
 
-        <ACard title="Profile" icon={<Pencil size={16} strokeWidth={2} />}>
+        <ACard title="Perfil" icon={<Pencil size={16} strokeWidth={2} />}>
           <div className="acard-pad">
             <ProfileForm
               userId={user.id}
@@ -169,7 +169,7 @@ export default async function UserDetailPage({
         </ACard>
 
         <ACard
-          title="Reset password"
+          title="Restablecer contraseña"
           icon={<KeyRound size={16} strokeWidth={2} />}
         >
           <div className="acard-pad">
@@ -180,7 +180,7 @@ export default async function UserDetailPage({
 
       {/* Danger zone */}
       <ACard
-        title="Danger zone"
+        title="Zona de peligro"
         icon={<Ban size={16} strokeWidth={2} />}
         className="mt-4"
       >

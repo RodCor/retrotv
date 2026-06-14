@@ -21,19 +21,19 @@ export async function saveUserLook(
 ): Promise<ActionResult> {
   const session = await getSession();
   if (!session || !isStaff(session.rank)) {
-    return { type: "error", text: "Not authorised." };
+    return { type: "error", text: "No autorizado." };
   }
 
   const username = String(formData.get("username") ?? "").trim();
   const look = String(formData.get("look") ?? "").trim();
 
   if (!username) {
-    return { type: "error", text: "Username is required." };
+    return { type: "error", text: "El usuario es obligatorio." };
   }
   if (!isValidLook(look)) {
     return {
       type: "error",
-      text: "Look is invalid. Use a figure string like hr-100-0.hd-180-1…",
+      text: "La figura no es válida. Usa una cadena de figura como hr-100-0.hd-180-1…",
     };
   }
 
@@ -42,7 +42,7 @@ export async function saveUserLook(
     { username },
   );
   if (!user) {
-    return { type: "error", text: `No user named "${username}".` };
+    return { type: "error", text: `No existe ningún usuario llamado "${username}".` };
   }
 
   try {
@@ -51,15 +51,15 @@ export async function saveUserLook(
       { look, id: user.id },
     );
     if (res.affectedRows === 0) {
-      return { type: "error", text: "No rows updated." };
+      return { type: "error", text: "No se actualizó ninguna fila." };
     }
   } catch (err) {
     return {
       type: "error",
-      text: `Failed to update look: ${(err as Error).message}`,
+      text: `No se pudo actualizar la figura: ${(err as Error).message}`,
     };
   }
 
   revalidatePath("/admin/clothing");
-  return { type: "success", text: `Updated look for ${user.username}.` };
+  return { type: "success", text: `Figura actualizada para ${user.username}.` };
 }

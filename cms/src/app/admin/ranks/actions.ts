@@ -9,7 +9,7 @@ type ActionResult = { type: "error" | "success"; text: string };
 async function requireStaff(): Promise<ActionResult | null> {
   const session = await getSession();
   if (!session || !isStaff(session.rank)) {
-    return { type: "error", text: "Unauthorized." };
+    return { type: "error", text: "No autorizado." };
   }
   return null;
 }
@@ -28,10 +28,10 @@ export async function createRank(
   const prefix_color = String(formData.get("prefix_color") ?? "").trim();
 
   if (!rank_name) {
-    return { type: "error", text: "Rank name is required." };
+    return { type: "error", text: "El nombre del rango es obligatorio." };
   }
   if (!Number.isInteger(level) || level < 1) {
-    return { type: "error", text: "Level must be a positive integer." };
+    return { type: "error", text: "El nivel debe ser un número entero positivo." };
   }
 
   try {
@@ -41,11 +41,11 @@ export async function createRank(
       { rank_name, badge, level, prefix, prefix_color },
     );
   } catch {
-    return { type: "error", text: "Failed to create rank." };
+    return { type: "error", text: "No se pudo crear el rango." };
   }
 
   revalidatePath("/admin/ranks");
-  return { type: "success", text: `Rank "${rank_name}" created.` };
+  return { type: "success", text: `Rango "${rank_name}" creado.` };
 }
 
 export async function updateRank(
@@ -61,13 +61,13 @@ export async function updateRank(
   const badge = String(formData.get("badge") ?? "").trim();
 
   if (!Number.isInteger(id) || id < 1) {
-    return { type: "error", text: "Invalid rank id." };
+    return { type: "error", text: "ID de rango no válido." };
   }
   if (!rank_name) {
-    return { type: "error", text: "Rank name is required." };
+    return { type: "error", text: "El nombre del rango es obligatorio." };
   }
   if (!Number.isInteger(level) || level < 1) {
-    return { type: "error", text: "Level must be a positive integer." };
+    return { type: "error", text: "El nivel debe ser un número entero positivo." };
   }
 
   try {
@@ -78,11 +78,11 @@ export async function updateRank(
       { rank_name, level, badge, id },
     );
   } catch {
-    return { type: "error", text: "Failed to update rank." };
+    return { type: "error", text: "No se pudo actualizar el rango." };
   }
 
   revalidatePath("/admin/ranks");
-  return { type: "success", text: "Rank updated." };
+  return { type: "success", text: "Rango actualizado." };
 }
 
 export async function deleteRank(
@@ -94,15 +94,15 @@ export async function deleteRank(
 
   const id = Number(formData.get("id"));
   if (!Number.isInteger(id) || id < 1) {
-    return { type: "error", text: "Invalid rank id." };
+    return { type: "error", text: "ID de rango no válido." };
   }
 
   try {
     await execute("DELETE FROM permissions WHERE id = :id", { id });
   } catch {
-    return { type: "error", text: "Failed to delete rank." };
+    return { type: "error", text: "No se pudo eliminar el rango." };
   }
 
   revalidatePath("/admin/ranks");
-  return { type: "success", text: "Rank deleted." };
+  return { type: "success", text: "Rango eliminado." };
 }

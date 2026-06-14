@@ -38,17 +38,17 @@ export async function registerAction(
   if (!USERNAME_RE.test(username)) {
     return {
       type: "error",
-      text: "Username must be 3–20 characters, letters, numbers or underscores only.",
+      text: "El usuario debe tener 3–20 caracteres: letras, números o guiones bajos.",
     };
   }
   if (!EMAIL_RE.test(email)) {
-    return { type: "error", text: "Please enter a valid email address." };
+    return { type: "error", text: "Introduce un correo electrónico válido." };
   }
   if (password.length < 4) {
-    return { type: "error", text: "Password must be at least 4 characters." };
+    return { type: "error", text: "La contraseña debe tener al menos 4 caracteres." };
   }
   if (password !== confirm) {
-    return { type: "error", text: "Passwords do not match." };
+    return { type: "error", text: "Las contraseñas no coinciden." };
   }
 
   const existing = await queryOne<{ id: number }>(
@@ -56,7 +56,7 @@ export async function registerAction(
     { u: username },
   );
   if (existing) {
-    return { type: "error", text: "That username is already taken." };
+    return { type: "error", text: "Ese nombre de usuario ya está en uso." };
   }
 
   const now = Math.floor(Date.now() / 1000);

@@ -52,7 +52,7 @@ export function CurrencyForm({
       <input type="hidden" name="userId" value={userId} />
       <div className="grid grid-cols-2 gap-3">
         <Field
-          label="Credits"
+          label="Créditos"
           name="credits"
           type="number"
           min={0}
@@ -66,14 +66,14 @@ export function CurrencyForm({
           defaultValue={duckets}
         />
         <Field
-          label="Diamonds"
+          label="Diamantes"
           name="diamonds"
           type="number"
           min={0}
           defaultValue={diamonds}
         />
         <Field
-          label="Points"
+          label="Puntos"
           name="points"
           type="number"
           min={0}
@@ -83,7 +83,7 @@ export function CurrencyForm({
       <div className="flex items-center gap-3">
         <ABtn variant="primary" type="submit" disabled={pending}>
           <Save size={14} strokeWidth={2} />
-          {pending ? "Saving…" : "Save"}
+          {pending ? "Guardando…" : "Guardar"}
         </ABtn>
         <span className="flex items-center gap-3 text-xs opacity-50">
           <Coins size={13} strokeWidth={2} />
@@ -111,11 +111,11 @@ export function RankForm({
   const options =
     ranks.length > 0
       ? ranks
-      : [1, 2, 3, 4, 5, 6, 7].map((l) => ({ level: l, rank_name: `Rank ${l}` }));
+      : [1, 2, 3, 4, 5, 6, 7].map((l) => ({ level: l, rank_name: `Rango ${l}` }));
   return (
     <form action={action} className="space-y-3">
       <input type="hidden" name="userId" value={userId} />
-      <Select label="Permission rank" name="rank" defaultValue={rank}>
+      <Select label="Rango de permisos" name="rank" defaultValue={rank}>
         {options.map((o) => (
           <option key={o.level} value={o.level}>
             {o.level} — {o.rank_name}
@@ -124,7 +124,7 @@ export function RankForm({
       </Select>
       <ABtn variant="solid" type="submit" disabled={pending}>
         <Crown size={14} strokeWidth={2} />
-        {pending ? "Saving…" : "Update rank"}
+        {pending ? "Guardando…" : "Actualizar rango"}
       </ABtn>
       <FormMsg message={state} />
     </form>
@@ -148,17 +148,17 @@ export function ProfileForm({
   return (
     <form action={action} className="space-y-3">
       <input type="hidden" name="userId" value={userId} />
-      <Textarea label="Motto" name="motto" defaultValue={motto} rows={2} />
-      <Field label="Look (figure string)" name="look" defaultValue={look} />
+      <Textarea label="Misión" name="motto" defaultValue={motto} rows={2} />
+      <Field label="Figura (cadena de figura)" name="look" defaultValue={look} />
       <Field
-        label="Email"
+        label="Correo"
         name="mail"
         type="email"
         defaultValue={mail ?? ""}
       />
       <ABtn variant="primary" type="submit" disabled={pending}>
         <Pencil size={14} strokeWidth={2} />
-        {pending ? "Saving…" : "Update profile"}
+        {pending ? "Guardando…" : "Actualizar perfil"}
       </ABtn>
       <FormMsg message={state} />
     </form>
@@ -173,15 +173,15 @@ export function PasswordForm({ userId }: { userId: number }) {
     <form action={action} className="space-y-3">
       <input type="hidden" name="userId" value={userId} />
       <Field
-        label="New password"
+        label="Nueva contraseña"
         name="newPass"
         type="password"
-        placeholder="At least 6 characters"
+        placeholder="Al menos 6 caracteres"
         autoComplete="new-password"
       />
       <ABtn variant="solid" type="submit" disabled={pending}>
         <KeyRound size={14} strokeWidth={2} />
-        {pending ? "Saving…" : "Reset password"}
+        {pending ? "Guardando…" : "Restablecer contraseña"}
       </ABtn>
       <FormMsg message={state} />
     </form>
@@ -202,9 +202,9 @@ export function BanForm({
     <form action={action} className="space-y-3">
       <input type="hidden" name="userId" value={userId} />
       <input type="hidden" name="staffId" value={staffId} />
-      <Field label="Reason" name="reason" placeholder="Reason for ban…" />
+      <Field label="Motivo" name="reason" placeholder="Motivo del baneo…" />
       <Field
-        label="Duration (hours)"
+        label="Duración (horas)"
         name="hours"
         type="number"
         min={1}
@@ -212,7 +212,7 @@ export function BanForm({
       />
       <ABtn variant="danger" type="submit" disabled={pending}>
         <Ban size={14} strokeWidth={2} />
-        {pending ? "Banning…" : "Ban user"}
+        {pending ? "Baneando…" : "Banear usuario"}
       </ABtn>
       <FormMsg message={state} />
     </form>
@@ -230,7 +230,7 @@ export function DeleteForm({ userId }: { userId: number }) {
       onSubmit={(e) => {
         if (
           !window.confirm(
-            "Permanently delete this user? This cannot be undone.",
+            "¿Eliminar permanentemente a este usuario? Esto no se puede deshacer.",
           )
         ) {
           e.preventDefault();
@@ -239,11 +239,11 @@ export function DeleteForm({ userId }: { userId: number }) {
     >
       <input type="hidden" name="userId" value={userId} />
       <p className="text-xs opacity-60">
-        This permanently removes the account from the database.
+        Esto elimina permanentemente la cuenta de la base de datos.
       </p>
       <ABtn variant="danger" type="submit" disabled={pending}>
         <Trash2 size={14} strokeWidth={2} />
-        {pending ? "Deleting…" : "Delete user"}
+        {pending ? "Eliminando…" : "Eliminar usuario"}
       </ABtn>
       <FormMsg message={state} />
     </form>

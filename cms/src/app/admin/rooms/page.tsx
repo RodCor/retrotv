@@ -44,41 +44,41 @@ export default async function RoomsPage({
 
   return (
     <div className="flex flex-col gap-4">
-      <PageHead eyebrow="Spaces" title="Rooms" />
+      <PageHead eyebrow="Espacios" title="Salas" />
 
-      <ACard title="Search" icon={<Search size={16} strokeWidth={2} />}>
+      <ACard title="Buscar" icon={<Search size={16} strokeWidth={2} />}>
         <form method="GET" className="flex flex-wrap items-end gap-2">
           <div className="grow">
             <Field
-              label="Room name"
+              label="Nombre de la sala"
               id="q"
               name="q"
               defaultValue={q}
-              placeholder="Search by name…"
+              placeholder="Buscar por nombre…"
             />
           </div>
           <ABtn type="submit" variant="primary">
             <Search size={14} strokeWidth={2} />
-            Search
+            Buscar
           </ABtn>
         </form>
       </ACard>
 
-      <ACard title="Rooms" icon={<Home size={16} strokeWidth={2} />} pad={false}>
+      <ACard title="Salas" icon={<Home size={16} strokeWidth={2} />} pad={false}>
         {rooms.length === 0 ? (
-          <p className="acard-pad text-sm opacity-70">No rooms found.</p>
+          <p className="acard-pad text-sm opacity-70">No se encontraron salas.</p>
         ) : (
           <TableWrap>
             <table className="dtable">
               <thead>
                 <tr>
                   <th className="num">ID</th>
-                  <th>Name</th>
-                  <th>Owner</th>
-                  <th className="num">Users</th>
-                  <th>Public</th>
-                  <th>Staff Pick</th>
-                  <th>Actions</th>
+                  <th>Nombre</th>
+                  <th>Dueño</th>
+                  <th className="num">Usuarios</th>
+                  <th>Pública</th>
+                  <th>Destacada</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -95,16 +95,16 @@ export default async function RoomsPage({
                       </td>
                       <td>
                         {isPublic ? (
-                          <Tag color="green">Public</Tag>
+                          <Tag color="green">Pública</Tag>
                         ) : (
-                          <Tag color="gray">Private</Tag>
+                          <Tag color="gray">Privada</Tag>
                         )}
                       </td>
                       <td>
                         {isPicked ? (
                           <Tag color="cyan">
                             <Star size={12} strokeWidth={2} />
-                            Picked
+                            Destacada
                           </Tag>
                         ) : (
                           <Tag color="gray">—</Tag>
@@ -117,10 +117,10 @@ export default async function RoomsPage({
                               type="submit"
                               size="xs"
                               variant={isPicked ? "solid" : "default"}
-                              title={isPicked ? "Remove staff pick" : "Staff pick"}
+                              title={isPicked ? "Quitar destacada" : "Destacar"}
                             >
                               <Star size={14} strokeWidth={2} />
-                              {isPicked ? "Unpick" : "Pick"}
+                              {isPicked ? "Quitar" : "Destacar"}
                             </ABtn>
                           </form>
                           <form action={togglePublic.bind(null, room.id)}>
@@ -128,14 +128,14 @@ export default async function RoomsPage({
                               type="submit"
                               size="xs"
                               variant="default"
-                              title={isPublic ? "Make private" : "Make public"}
+                              title={isPublic ? "Hacer privada" : "Hacer pública"}
                             >
                               {isPublic ? (
                                 <Eye size={14} strokeWidth={2} />
                               ) : (
                                 <Home size={14} strokeWidth={2} />
                               )}
-                              {isPublic ? "Private" : "Public"}
+                              {isPublic ? "Privada" : "Pública"}
                             </ABtn>
                           </form>
                           <form action={deleteRoom.bind(null, room.id)}>
@@ -143,10 +143,10 @@ export default async function RoomsPage({
                               type="submit"
                               size="xs"
                               variant="danger"
-                              title="Delete room"
+                              title="Eliminar sala"
                             >
                               <Trash2 size={14} strokeWidth={2} />
-                              Delete
+                              Eliminar
                             </ABtn>
                           </form>
                         </div>

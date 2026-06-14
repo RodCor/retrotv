@@ -34,12 +34,12 @@ export async function updateSetting(
 ): Promise<ActionResult> {
   const session = await getSession();
   if (!session || !isStaff(session.rank)) {
-    return { type: "error", text: "Not authorized." };
+    return { type: "error", text: "No autorizado." };
   }
 
   const k = (key ?? "").trim();
   if (!ALLOWED_KEYS.has(k)) {
-    return { type: "error", text: "That setting cannot be edited here." };
+    return { type: "error", text: "Ese ajuste no se puede editar aquí." };
   }
 
   const v = String(value ?? "");
@@ -50,19 +50,19 @@ export async function updateSetting(
       { v, k },
     );
     if (result.affectedRows === 0) {
-      return { type: "error", text: `Setting "${k}" not found.` };
+      return { type: "error", text: `No se encontró el ajuste "${k}".` };
     }
   } catch (err) {
     return {
       type: "error",
-      text: `Update failed: ${err instanceof Error ? err.message : "unknown error"}`,
+      text: `Error al actualizar: ${err instanceof Error ? err.message : "error desconocido"}`,
     };
   }
 
   revalidatePath("/admin/settings");
   return {
     type: "success",
-    text: `Saved. Restart the emulator for "${k}" to take effect.`,
+    text: `Guardado. Reinicia el emulador para que "${k}" tenga efecto.`,
   };
 }
 
@@ -73,11 +73,11 @@ export async function togglePlugin(
 ): Promise<ActionResult> {
   const session = await getSession();
   if (!session || !isStaff(session.rank)) {
-    return { type: "error", text: "Not authorized." };
+    return { type: "error", text: "No autorizado." };
   }
 
   const j = (jar ?? "").trim();
-  if (!j) return { type: "error", text: "Invalid plugin." };
+  if (!j) return { type: "error", text: "Plugin no válido." };
 
   try {
     const result = await execute(
@@ -85,18 +85,18 @@ export async function togglePlugin(
       { e: enabled ? 1 : 0, j },
     );
     if (result.affectedRows === 0) {
-      return { type: "error", text: "Plugin not found in the registry." };
+      return { type: "error", text: "Plugin no encontrado en el registro." };
     }
   } catch (err) {
     return {
       type: "error",
-      text: `Update failed: ${err instanceof Error ? err.message : "unknown error"}`,
+      text: `Error al actualizar: ${err instanceof Error ? err.message : "error desconocido"}`,
     };
   }
 
   revalidatePath("/admin/settings");
   return {
     type: "success",
-    text: `${enabled ? "Enabled" : "Disabled"} "${j}". Restart the emulator to apply.`,
+    text: `"${j}" ${enabled ? "activado" : "desactivado"}. Reinicia el emulador para aplicar.`,
   };
 }

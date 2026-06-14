@@ -43,72 +43,72 @@ const GROUPS: { title: string; icon: "general" | "welcome" | "rooms" | "camera" 
     title: "General",
     icon: "general",
     rows: [
-      { key: "hotel.name", label: "Hotel name" },
-      { key: "hotel.beta.enabled", label: "Beta mode", kind: "bool" },
+      { key: "hotel.name", label: "Nombre del hotel" },
+      { key: "hotel.beta.enabled", label: "Modo beta", kind: "bool" },
       {
         key: "console.mode",
-        label: "Console mode",
-        hint: "Messenger console behaviour flag.",
+        label: "Modo consola",
+        hint: "Indicador del comportamiento de la consola del mensajero.",
       },
     ],
   },
   {
-    title: "Welcome",
+    title: "Bienvenida",
     icon: "welcome",
     rows: [
       {
         key: "welcome.alert.enabled",
-        label: "Welcome alert",
+        label: "Alerta de bienvenida",
         kind: "bool",
-        hint: "Show an alert to players on login.",
+        hint: "Mostrar una alerta a los jugadores al iniciar sesión.",
       },
-      { key: "welcome.alert.message", label: "Welcome message" },
+      { key: "welcome.alert.message", label: "Mensaje de bienvenida" },
     ],
   },
   {
-    title: "Rooms",
+    title: "Salas",
     icon: "rooms",
     rows: [
-      { key: "hotel.max.rooms.per.user", label: "Max rooms / user" },
-      { key: "hotel.max.rooms.per.user.hc", label: "Max rooms / user (HC)" },
-      { key: "hotel.room.user.max", label: "Max users per room" },
-      { key: "maximum.bots.per.room", label: "Max bots per room" },
-      { key: "maximum.pets.per.room", label: "Max pets per room" },
+      { key: "hotel.max.rooms.per.user", label: "Salas máx. / usuario" },
+      { key: "hotel.max.rooms.per.user.hc", label: "Salas máx. / usuario (HC)" },
+      { key: "hotel.room.user.max", label: "Usuarios máx. por sala" },
+      { key: "maximum.bots.per.room", label: "Bots máx. por sala" },
+      { key: "maximum.pets.per.room", label: "Mascotas máx. por sala" },
       {
         key: "hotel.wardrobe.enabled",
-        label: "Wardrobe",
+        label: "Armario",
         kind: "bool",
       },
     ],
   },
   {
-    title: "Camera",
+    title: "Cámara",
     icon: "camera",
     rows: [
       {
         key: "imager.location.output.camera",
-        label: "Camera output path",
-        hint: "Server path where photos are written.",
+        label: "Ruta de salida de la cámara",
+        hint: "Ruta del servidor donde se guardan las fotos.",
       },
-      { key: "camera.url", label: "Camera URL" },
+      { key: "camera.url", label: "URL de la cámara" },
     ],
   },
   {
-    title: "Chat & limits",
+    title: "Chat y límites",
     icon: "chat",
     rows: [
       {
         key: "rcon.commands.enabled",
-        label: "RCON commands",
+        label: "Comandos RCON",
         kind: "bool",
-        hint: "Allow remote console commands from the CMS.",
+        hint: "Permitir comandos de consola remota desde el CMS.",
       },
       {
         key: "chat.flood.protection.length",
-        label: "Flood protection (chars)",
+        label: "Protección antiflood (caracteres)",
       },
-      { key: "message.too.long.length", label: "Max chat message length" },
-      { key: "floortext.maxlength", label: "Max floor text length" },
+      { key: "message.too.long.length", label: "Longitud máx. del mensaje de chat" },
+      { key: "floortext.maxlength", label: "Longitud máx. del texto del suelo" },
     ],
   },
 ];
@@ -127,9 +127,9 @@ export default async function SettingsPage() {
   const session = await getSession();
   if (!session || !isStaff(session.rank)) {
     return (
-      <ACard title="Settings" icon={<Settings2 size={15} strokeWidth={2} />}>
+      <ACard title="Configuración" icon={<Settings2 size={15} strokeWidth={2} />}>
         <p style={{ color: "var(--rt-ink-soft, #8b93a7)" }}>
-          You do not have permission to view this page.
+          No tienes permiso para ver esta página.
         </p>
       </ACard>
     );
@@ -168,22 +168,22 @@ export default async function SettingsPage() {
 
   return (
     <div>
-      <PageHead eyebrow="Hotel" title="Settings">
+      <PageHead eyebrow="Hotel" title="Configuración">
         <Tag color="cyan">db: habbo</Tag>
-        <Tag color="gray">{settings.length} keys loaded</Tag>
+        <Tag color="gray">{settings.length} claves cargadas</Tag>
       </PageHead>
 
       {settingsError ? (
         <ACard
-          title="Emulator settings"
+          title="Ajustes del emulador"
           icon={<Settings2 size={15} strokeWidth={2} />}
         >
           <p
             className="text-sm"
             style={{ color: "var(--rt-danger, #ff9aa6)" }}
           >
-            Could not read <code>emulator_settings</code>. The emulator database
-            may be unavailable.
+            No se pudo leer <code>emulator_settings</code>. La base de datos del
+            emulador puede no estar disponible.
           </p>
         </ACard>
       ) : (
@@ -222,26 +222,26 @@ export default async function SettingsPage() {
           actions={
             !pluginsError && (
               <span className="text-xs adim">
-                {plugins.filter((p) => p.enabled).length} of {plugins.length} enabled
+                {plugins.filter((p) => p.enabled).length} de {plugins.length} activados
               </span>
             )
           }
         >
           {pluginsError ? (
             <p className="text-sm" style={{ color: "var(--rt-ink-soft, #8b93a7)" }}>
-              Plugin registry unavailable. Run <code>database/05-cms-plugins.sql</code> to
-              create the <code>cms_plugins</code> table.
+              Registro de plugins no disponible. Ejecuta <code>database/05-cms-plugins.sql</code> para
+              crear la tabla <code>cms_plugins</code>.
             </p>
           ) : plugins.length === 0 ? (
             <p className="text-sm" style={{ color: "var(--rt-ink-soft, #8b93a7)" }}>
-              No plugins registered yet. The emulator registers installed plugins on its
-              next boot.
+              Todavía no hay plugins registrados. El emulador registra los plugins instalados en su
+              próximo arranque.
             </p>
           ) : (
             <>
               <p className="mb-1 text-xs" style={{ color: "var(--rt-ink-soft, #8b93a7)" }}>
-                Toggle which installed plugins the emulator loads. Changes apply on the
-                next emulator restart.
+                Activa o desactiva los plugins instalados que carga el emulador. Los cambios se aplican
+                en el próximo reinicio del emulador.
               </p>
               <div className="flex flex-col">
                 {plugins.map((p) => (
@@ -261,36 +261,36 @@ export default async function SettingsPage() {
 
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         <ACard
-          title="Hotel configuration"
+          title="Configuración del hotel"
           icon={<Home size={15} strokeWidth={2} />}
         >
           <p
             className="mb-2 text-xs"
             style={{ color: "var(--rt-ink-soft, #8b93a7)" }}
           >
-            Read-only values sourced from the CMS environment.
+            Valores de solo lectura obtenidos del entorno del CMS.
           </p>
           <TableWrap>
             <table className="dtable">
               <tbody>
                 <tr>
-                  <th scope="row">Hotel name</th>
+                  <th scope="row">Nombre del hotel</th>
                   <td>{config.hotel.name}</td>
                 </tr>
                 <tr>
-                  <th scope="row">Nitro client URL</th>
+                  <th scope="row">URL del cliente Nitro</th>
                   <td>
                     <code>{config.hotel.clientUrl}</code>
                   </td>
                 </tr>
                 <tr>
-                  <th scope="row">Database</th>
+                  <th scope="row">Base de datos</th>
                   <td>
                     <code>habbo</code>
                   </td>
                 </tr>
                 <tr>
-                  <th scope="row">Default look</th>
+                  <th scope="row">Figura predeterminada</th>
                   <td>
                     <code>{config.hotel.defaultLook}</code>
                   </td>
@@ -301,7 +301,7 @@ export default async function SettingsPage() {
         </ACard>
 
         <ACard
-          title="How changes apply"
+          title="Cómo se aplican los cambios"
           icon={<Settings2 size={15} strokeWidth={2} />}
         >
           <div
@@ -311,21 +311,21 @@ export default async function SettingsPage() {
             <div className="flex items-center gap-2">
               <Tag color="cyan">CMS</Tag>
               <span>
-                The CMS writes to the shared <code>habbo</code> database; it has
-                no direct socket link to the emulator.
+                El CMS escribe en la base de datos compartida <code>habbo</code>; no
+                tiene una conexión de socket directa con el emulador.
               </span>
             </div>
             <div className="flex items-center gap-2">
               <Tag color="violet">SSO</Tag>
               <span>
-                Players hand off to Nitro at{" "}
-                <code>{config.hotel.clientUrl}</code> with a single-use auth
-                ticket.
+                Los jugadores pasan a Nitro en{" "}
+                <code>{config.hotel.clientUrl}</code> con un ticket de
+                autenticación de un solo uso.
               </span>
             </div>
             <p>
-              Most settings are picked up by Arcturus on its next restart or
-              reload. Save each row, then restart the emulator.
+              Arcturus aplica la mayoría de los ajustes en su próximo reinicio o
+              recarga. Guarda cada fila y luego reinicia el emulador.
             </p>
           </div>
         </ACard>

@@ -15,23 +15,23 @@ export function PasswordForm() {
       <FormMessage message={state} />
 
       <div className="flex flex-col gap-1">
-        <Label htmlFor="current">Current password</Label>
+        <Label htmlFor="current">Contraseña actual</Label>
         <Input id="current" name="current" type="password" autoComplete="current-password" />
       </div>
 
       <div className="flex flex-col gap-1">
-        <Label htmlFor="next">New password</Label>
+        <Label htmlFor="next">Nueva contraseña</Label>
         <Input id="next" name="next" type="password" autoComplete="new-password" />
       </div>
 
       <div className="flex flex-col gap-1">
-        <Label htmlFor="confirm">Confirm new password</Label>
+        <Label htmlFor="confirm">Confirmar nueva contraseña</Label>
         <Input id="confirm" name="confirm" type="password" autoComplete="new-password" />
       </div>
 
       <div>
         <Button type="submit" variant="blue" disabled={pending}>
-          {pending ? "Changing…" : "Change password"}
+          {pending ? "Cambiando…" : "Cambiar contraseña"}
         </Button>
       </div>
     </form>

@@ -5,7 +5,7 @@ import { query } from "@/lib/db";
 import { avatarImageUrl } from "@/lib/habbo-imaging";
 
 export const metadata = {
-  title: "Community",
+  title: "Comunidad",
 };
 
 interface StaffRow {
@@ -59,24 +59,19 @@ export default async function CommunityPage() {
 
       <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
         <header className="mb-8">
-          <h1 className="rt-display text-4xl" style={{ color: "var(--rt-brand)" }}>
-            Community
-          </h1>
+          <h1 className="rt-display text-4xl" style={{ color: "var(--rt-brand)" }}>Comunidad</h1>
           <p className="mt-2 font-semibold" style={{ color: "var(--ink-soft)" }}>
-            Meet the team keeping the hotel running and say hi to our newest
-            faces.
+            Conoce al equipo que mantiene el hotel y saluda a las caras nuevas.
           </p>
         </header>
 
         {/* Staff team */}
         <section className="mb-10">
-          <h2 className="rt-display mb-4 text-2xl" style={{ color: "var(--rt-brand)" }}>
-            Staff team
-          </h2>
+          <h2 className="rt-display mb-4 text-2xl" style={{ color: "var(--rt-brand)" }}>Equipo del hotel</h2>
           {staff.length === 0 ? (
             <Panel muted>
               <p className="font-semibold" style={{ color: "var(--ink-soft)" }}>
-                The staff roster is taking a coffee break. Check back soon!
+                El equipo está tomando un café. ¡Vuelve pronto!
               </p>
             </Panel>
           ) : (
@@ -108,7 +103,7 @@ export default async function CommunityPage() {
                     )}
                     {s.badge && (
                       <div className="mt-1 text-xs font-bold" style={{ color: "var(--ink-dim)" }}>
-                        Badge: {s.badge}
+                        Placa: {s.badge}
                       </div>
                     )}
                   </div>
@@ -120,13 +115,11 @@ export default async function CommunityPage() {
 
         {/* Newest members */}
         <section>
-          <h2 className="rt-display mb-4 text-2xl" style={{ color: "var(--rt-brand)" }}>
-            Newest members
-          </h2>
+          <h2 className="rt-display mb-4 text-2xl" style={{ color: "var(--rt-brand)" }}>Nuevos miembros</h2>
           {members.length === 0 ? (
             <Panel muted>
               <p className="font-semibold" style={{ color: "var(--ink-soft)" }}>
-                No members to show yet — be the first to join!
+                Aún no hay miembros — ¡sé el primero en unirte!
               </p>
             </Panel>
           ) : (

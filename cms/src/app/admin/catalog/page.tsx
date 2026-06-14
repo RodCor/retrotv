@@ -88,18 +88,18 @@ export default async function CatalogAdminPage({
     return cn ? `${config.assets.furniIconUrl}/${encodeURIComponent(cn)}_icon.png` : null;
   };
 
-  const hereLabel = current ? current.caption : "Root";
+  const hereLabel = current ? current.caption : "Raíz";
 
   return (
     <div>
-      <PageHead eyebrow="Shop" title="Catalog">
-        <ABtn href="/admin/catalog" variant="default" size="xs"><Home size={13} strokeWidth={2} />Root</ABtn>
+      <PageHead eyebrow="Tienda" title="Catálogo">
+        <ABtn href="/admin/catalog" variant="default" size="xs"><Home size={13} strokeWidth={2} />Raíz</ABtn>
       </PageHead>
 
       {/* breadcrumb */}
       <div className="acard acard-pad mb-4">
         <nav className="crumb">
-          <Link href="/admin/catalog">Root</Link>
+          <Link href="/admin/catalog">Raíz</Link>
           {trail.map((c, i) => (
             <span key={c.id} className="contents">
               <span className="sep">/</span>
@@ -114,14 +114,14 @@ export default async function CatalogAdminPage({
       <div className="grid gap-4 lg:grid-cols-[1.7fr_1fr]">
         {/* ---- left: tree + items ---- */}
         <div className="space-y-4">
-          <ACard title={current ? "Pages inside this page" : "Catalog pages"} icon={<ShoppingBag size={16} strokeWidth={2} />} pad={false}
-            actions={<span className="text-xs adim">{children.length} page{children.length === 1 ? "" : "s"}</span>}>
+          <ACard title={current ? "Páginas dentro de esta página" : "Páginas del catálogo"} icon={<ShoppingBag size={16} strokeWidth={2} />} pad={false}
+            actions={<span className="text-xs adim">{children.length} {children.length === 1 ? "página" : "páginas"}</span>}>
             <TableWrap>
               <table className="dtable">
-                <thead><tr><th className="cap">Page</th><th>Contains</th><th className="num">Rank</th><th>Visible</th><th>Actions</th></tr></thead>
+                <thead><tr><th className="cap">Página</th><th>Contiene</th><th className="num">Rango</th><th>Visible</th><th>Acciones</th></tr></thead>
                 <tbody>
                   {children.length === 0 ? (
-                    <tr><td colSpan={5} className="adim">No sub-pages here.</td></tr>
+                    <tr><td colSpan={5} className="adim">No hay subpáginas aquí.</td></tr>
                   ) : children.map((c) => (
                     <tr key={c.id}>
                       <td className="cap">
@@ -131,13 +131,13 @@ export default async function CatalogAdminPage({
                         </Link>
                       </td>
                       <td className="adim text-xs">
-                        {subCounts.get(c.id) ? `${subCounts.get(c.id)} pages` : ""}
+                        {subCounts.get(c.id) ? `${subCounts.get(c.id)} páginas` : ""}
                         {subCounts.get(c.id) && itemCounts.get(c.id) ? " · " : ""}
-                        {itemCounts.get(c.id) ? `${itemCounts.get(c.id)} items` : ""}
-                        {!subCounts.get(c.id) && !itemCounts.get(c.id) ? "empty" : ""}
+                        {itemCounts.get(c.id) ? `${itemCounts.get(c.id)} objetos` : ""}
+                        {!subCounts.get(c.id) && !itemCounts.get(c.id) ? "vacía" : ""}
                       </td>
                       <td className="num">{c.min_rank}</td>
-                      <td>{c.visible === "1" ? <Tag color="green">Visible</Tag> : <Tag color="gray">Hidden</Tag>}</td>
+                      <td>{c.visible === "1" ? <Tag color="green">Visible</Tag> : <Tag color="gray">Oculto</Tag>}</td>
                       <td>
                         <div className="flex flex-wrap items-center gap-1">
                           <RenamePage id={c.id} caption={c.caption} />
@@ -157,14 +157,14 @@ export default async function CatalogAdminPage({
           </ACard>
 
           {current && (
-            <ACard title="Items on this page" icon={<Sparkles size={16} strokeWidth={2} />} pad={false}
-              actions={<span className="text-xs adim">{items.length} item{items.length === 1 ? "" : "s"}</span>}>
+            <ACard title="Objetos en esta página" icon={<Sparkles size={16} strokeWidth={2} />} pad={false}
+              actions={<span className="text-xs adim">{items.length} {items.length === 1 ? "objeto" : "objetos"}</span>}>
               <TableWrap>
                 <table className="dtable">
-                  <thead><tr><th className="thumb-col"></th><th className="cap">Name</th><th>Base id</th><th className="num">Credits</th><th className="num">Points</th><th className="num">Qty</th><th>Actions</th></tr></thead>
+                  <thead><tr><th className="thumb-col"></th><th className="cap">Nombre</th><th>ID base</th><th className="num">Créditos</th><th className="num">Puntos</th><th className="num">Cant.</th><th>Acciones</th></tr></thead>
                   <tbody>
                     {items.length === 0 ? (
-                      <tr><td colSpan={7} className="adim">No items on this page.</td></tr>
+                      <tr><td colSpan={7} className="adim">No hay objetos en esta página.</td></tr>
                     ) : items.map((it) => {
                       const icon = iconFor(it.item_ids);
                       return (
@@ -192,11 +192,11 @@ export default async function CatalogAdminPage({
 
         {/* ---- right: contextual create ---- */}
         <div className="space-y-4">
-          <ACard title="Add page" icon={<ShoppingBag size={16} strokeWidth={2} />}>
+          <ACard title="Añadir página" icon={<ShoppingBag size={16} strokeWidth={2} />}>
             <CreatePageForm parentId={currentId} here={hereLabel} />
           </ACard>
           {current && (
-            <ACard title="Add item" icon={<Sparkles size={16} strokeWidth={2} />}>
+            <ACard title="Añadir objeto" icon={<Sparkles size={16} strokeWidth={2} />}>
               <CreateItemForm pageId={current.id} here={hereLabel} />
             </ACard>
           )}

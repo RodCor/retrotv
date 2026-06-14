@@ -26,18 +26,18 @@ export async function banUserByName(
 ): Promise<ActionResult> {
   const staff = await requireStaff();
   if (!staff) {
-    return { type: "error", text: "Not authorized." };
+    return { type: "error", text: "No autorizado." };
   }
 
   const name = (username ?? "").trim();
   if (!name) {
-    return { type: "error", text: "Username is required." };
+    return { type: "error", text: "El usuario es obligatorio." };
   }
 
-  const cleanReason = (reason ?? "").trim() || "No reason provided";
+  const cleanReason = (reason ?? "").trim() || "Sin motivo especificado";
   const dur = Number(hours);
   if (!Number.isFinite(dur) || dur <= 0) {
-    return { type: "error", text: "Hours must be a positive number." };
+    return { type: "error", text: "Las horas deben ser un número positivo." };
   }
 
   // Resolve the user. machine_id may not exist on every schema, so be defensive.
@@ -55,7 +55,7 @@ export async function banUserByName(
   }
 
   if (!user) {
-    return { type: "error", text: `No user named "${name}" found.` };
+    return { type: "error", text: `No se encontró ningún usuario llamado "${name}".` };
   }
 
   const now = Math.floor(Date.now() / 1000);
@@ -80,12 +80,12 @@ export async function banUserByName(
   } catch (err) {
     return {
       type: "error",
-      text: `Failed to ban: ${err instanceof Error ? err.message : "unknown error"}`,
+      text: `No se pudo banear: ${err instanceof Error ? err.message : "error desconocido"}`,
     };
   }
 
   revalidatePath("/admin/moderation");
-  return { type: "success", text: `Banned ${name} for ${dur} hour(s).` };
+  return { type: "success", text: `${name} baneado durante ${dur} ${dur === 1 ? "hora" : "horas"}.` };
 }
 
 /** Lift (delete) a ban by id. Called from a per-row form. */

@@ -12,12 +12,12 @@ export function RegisterForm() {
       <FormMessage message={state} />
 
       <div className="flex flex-col gap-1">
-        <Label htmlFor="username">Username</Label>
+        <Label htmlFor="username">Nombre de usuario</Label>
         <Input
           id="username"
           name="username"
           autoComplete="username"
-          placeholder="cooluser_99"
+          placeholder="usuario_99"
           minLength={3}
           maxLength={20}
           required
@@ -25,19 +25,19 @@ export function RegisterForm() {
       </div>
 
       <div className="flex flex-col gap-1">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">Correo electrónico</Label>
         <Input
           id="email"
           name="email"
           type="email"
           autoComplete="email"
-          placeholder="you@example.com"
+          placeholder="tu@ejemplo.com"
           required
         />
       </div>
 
       <div className="flex flex-col gap-1">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">Contraseña</Label>
         <Input
           id="password"
           name="password"
@@ -49,7 +49,7 @@ export function RegisterForm() {
       </div>
 
       <div className="flex flex-col gap-1">
-        <Label htmlFor="confirm">Confirm password</Label>
+        <Label htmlFor="confirm">Confirmar contraseña</Label>
         <Input
           id="confirm"
           name="confirm"
@@ -61,7 +61,7 @@ export function RegisterForm() {
       </div>
 
       <Button type="submit" variant="brand" disabled={pending}>
-        {pending ? "Creating account…" : "Create account"}
+        {pending ? "Creando cuenta…" : "Crear cuenta"}
       </Button>
     </form>
   );

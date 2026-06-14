@@ -52,26 +52,26 @@ export default async function UsersPage({
 
   return (
     <div>
-      <PageHead eyebrow="People" title="Users" />
+      <PageHead eyebrow="Personas" title="Usuarios" />
 
       <ACard
-        title="Directory"
+        title="Directorio"
         icon={<Users size={16} strokeWidth={2} />}
         actions={
           <form method="GET" className="flex items-end gap-2">
             <Field
               name="q"
               defaultValue={q}
-              placeholder="Username or email…"
-              aria-label="Search username or email"
+              placeholder="Usuario o correo…"
+              aria-label="Buscar usuario o correo"
             />
             <ABtn type="submit" variant="primary" size="xs">
               <Search size={14} strokeWidth={2} />
-              Search
+              Buscar
             </ABtn>
             {q && (
               <ABtn href="/admin/users" size="xs">
-                Clear
+                Limpiar
               </ABtn>
             )}
           </form>
@@ -79,7 +79,7 @@ export default async function UsersPage({
         pad={false}
       >
         {users.length === 0 ? (
-          <p className="px-4 py-6 text-sm opacity-60">No users found.</p>
+          <p className="px-4 py-6 text-sm opacity-60">No se encontraron usuarios.</p>
         ) : (
           <TableWrap>
             <table className="dtable">
@@ -87,11 +87,11 @@ export default async function UsersPage({
                 <tr>
                   <th>Avatar</th>
                   <th className="num">ID</th>
-                  <th>Username</th>
-                  <th>Rank</th>
-                  <th className="num">Credits</th>
-                  <th>Status</th>
-                  <th>Actions</th>
+                  <th>Usuario</th>
+                  <th>Rango</th>
+                  <th className="num">Créditos</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -102,7 +102,7 @@ export default async function UsersPage({
                       <img
                         className="av-sm"
                         src={avatarImageUrl(u.look, { size: "s", headOnly: true })}
-                        alt={`${u.username} avatar`}
+                        alt={`avatar de ${u.username}`}
                       />
                     </td>
                     <td className="num opacity-60">{u.id}</td>
@@ -118,16 +118,16 @@ export default async function UsersPage({
                       {u.online === "1" ? (
                         <Tag color="green">
                           <Circle size={8} fill="currentColor" />
-                          Online
+                          En línea
                         </Tag>
                       ) : (
-                        <Tag color="gray">Offline</Tag>
+                        <Tag color="gray">Desconectado</Tag>
                       )}
                     </td>
                     <td>
                       <ABtn size="xs" variant="primary" href={`/admin/users/${u.id}`}>
                         <Pencil size={12} strokeWidth={2} />
-                        Manage
+                        Gestionar
                       </ABtn>
                     </td>
                   </tr>
@@ -143,15 +143,15 @@ export default async function UsersPage({
           {pageNum > 1 && (
             <ABtn href={`/admin/users?${baseQs}page=${pageNum - 1}`} size="xs">
               <ChevronLeft size={14} strokeWidth={2} />
-              Prev
+              Anterior
             </ABtn>
           )}
         </div>
-        <span className="text-xs opacity-50">Page {pageNum}</span>
+        <span className="text-xs opacity-50">Página {pageNum}</span>
         <div>
           {hasNext && (
             <ABtn href={`/admin/users?${baseQs}page=${pageNum + 1}`} size="xs">
-              Next
+              Siguiente
               <ChevronRight size={14} strokeWidth={2} />
             </ABtn>
           )}

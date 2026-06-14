@@ -35,9 +35,9 @@ const SAMPLE_LOOKS = [
 ];
 
 const FEATURES = [
-  { Icon: HomeIcon, color: "var(--amber)", title: "Design rooms", body: "Grab furni from the catalog and build the hangout of your dreams — pixel by pixel." },
-  { Icon: Users, color: "var(--cyan)", title: "Make friends", body: "Meet habbos from everywhere, throw parties, and grow your friends list every day." },
-  { Icon: Gem, color: "var(--pink)", title: "Collect rares", body: "Hunt rares, trade smart, and flex the flashiest collection in the whole hotel." },
+  { Icon: HomeIcon, color: "var(--amber)", title: "Diseña salas", body: "Coge furnis del catálogo y construye el sitio de tus sueños — píxel a píxel." },
+  { Icon: Users, color: "var(--cyan)", title: "Haz amigos", body: "Conoce a habbos de todas partes, monta fiestas y amplía tu lista de amigos cada día." },
+  { Icon: Gem, color: "var(--pink)", title: "Colecciona raros", body: "Caza raros, tradea con cabeza y presume de la colección más espectacular del hotel." },
 ];
 
 export default async function Home() {
@@ -54,32 +54,32 @@ export default async function Home() {
         <section className="shell grid items-center gap-10 pt-12 pb-10 md:grid-cols-[1.15fr_0.85fr] md:pt-20 md:pb-16">
           <div>
             <p className="eyebrow rise inline-flex items-center gap-2">
-              <span style={{ color: "var(--green)" }}>●</span> Now boarding new habbos
+              <span style={{ color: "var(--green)" }}>●</span> Embarcando nuevos habbos
             </p>
             <h1 className="rise d1 mt-4 text-[clamp(2.6rem,6vw,4.6rem)]">
-              Your retro hotel,
+              Tu hotel retro,
               <br />
-              <span className="text-gradient">back on the air.</span>
+              <span className="text-gradient">de vuelta al aire.</span>
             </h1>
             <p className="rise d2 mt-5 max-w-md text-lg" style={{ color: "var(--ink-soft)" }}>
-              Build rooms, dress your habbo, collect rares and hang out with friends in a
-              pixel-perfect virtual world — right in your browser.
+              Construye salas, viste a tu habbo, colecciona raros y queda con tus amigos en un
+              mundo virtual pixelado — directo en tu navegador.
             </p>
             <div className="rise d3 mt-7 flex flex-wrap items-center gap-3">
               <Link href={playHref} prefetch={false} className="btn btn-amber inline-flex items-center gap-2" style={{ fontSize: "1.02rem", padding: "0.8rem 1.5rem" }}>
                 <Play size={17} strokeWidth={2.5} fill="currentColor" />
-                {session ? "Enter the hotel" : "Play free now"}
+                {session ? "Entrar al hotel" : "Juega gratis"}
               </Link>
               <Link href="/community" className="btn btn-ghost" style={{ padding: "0.8rem 1.3rem" }}>
-                Explore community
+                Explorar comunidad
               </Link>
             </div>
             <div className="rise d4 mt-8 flex items-center gap-6">
               <MiniStat value={stats.users} label="Habbos" accent="var(--amber)" />
               <span style={{ width: 1, height: 34, background: "var(--line-strong)" }} />
-              <MiniStat value={stats.online} label="Online now" accent="var(--green)" />
+              <MiniStat value={stats.online} label="En línea" accent="var(--green)" />
               <span style={{ width: 1, height: 34, background: "var(--line-strong)" }} />
-              <MiniStat value={stats.rooms} label="Rooms" accent="var(--cyan)" />
+              <MiniStat value={stats.rooms} label="Salas" accent="var(--cyan)" />
             </div>
           </div>
 
@@ -109,8 +109,8 @@ export default async function Home() {
         <section className="shell pb-12">
           <div className="mb-5 flex items-end justify-between gap-4">
             <div>
-              <p className="eyebrow">The good stuff</p>
-              <h2 className="mt-1 text-3xl">Everything Habbo, modernised</h2>
+              <p className="eyebrow">Lo mejor</p>
+              <h2 className="mt-1 text-3xl">Todo Habbo, renovado</h2>
             </div>
           </div>
           <div className="grid gap-4 md:grid-cols-3">
@@ -134,13 +134,13 @@ export default async function Home() {
           <div className="panel panel-pad panel-glow-amber overflow-hidden">
             <div className="grid items-center gap-8 md:grid-cols-[1fr_auto]">
               <div>
-                <p className="eyebrow">Join the crowd</p>
-                <h2 className="mt-1 text-3xl">Make your habbo in seconds</h2>
+                <p className="eyebrow">Únete</p>
+                <h2 className="mt-1 text-3xl">Crea tu habbo en segundos</h2>
                 <p className="mt-3 max-w-md text-sm" style={{ color: "var(--ink-soft)" }}>
-                  Pick a name, customise your look, and step straight into the hotel. It&apos;s free,
-                  it&apos;s fast, and your room is waiting.
+                  Elige un nombre, personaliza tu look y entra directo al hotel. Es gratis,
+                  es rápido, y tu sala te está esperando.
                 </p>
-                <Link href={playHref} prefetch={false} className="btn btn-amber mt-5">Create your habbo →</Link>
+                <Link href={playHref} prefetch={false} className="btn btn-amber mt-5">Crea tu habbo →</Link>
               </div>
               <div className="flex flex-wrap items-end justify-center gap-1">
                 {SAMPLE_LOOKS.map((look, i) => (

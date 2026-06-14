@@ -70,36 +70,36 @@ export default async function AdminDashboard() {
 
   return (
     <div>
-      <PageHead eyebrow="Overview" title="Dashboard" />
+      <PageHead eyebrow="Resumen" title="Panel" />
 
       <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-5">
         <StatTile
           icon={<Users size={18} strokeWidth={2} />}
-          label="Total users"
+          label="Usuarios totales"
           value={fmtCount(totalUsers)}
           accent="var(--cyan)"
         />
         <StatTile
           icon={<Circle size={18} strokeWidth={2} />}
-          label="Online now"
+          label="En línea"
           value={fmtCount(onlineNow)}
           accent="var(--green)"
         />
         <StatTile
           icon={<Home size={18} strokeWidth={2} />}
-          label="Rooms"
+          label="Salas"
           value={fmtCount(totalRooms)}
           accent="var(--amber)"
         />
         <StatTile
           icon={<ShoppingBag size={18} strokeWidth={2} />}
-          label="Catalog items"
+          label="Objetos del catálogo"
           value={fmtCount(totalCatalog)}
           accent="var(--violet)"
         />
         <StatTile
           icon={<Ban size={18} strokeWidth={2} />}
-          label="Bans"
+          label="Baneos"
           value={fmtCount(totalBans)}
           accent="var(--red)"
         />
@@ -107,11 +107,11 @@ export default async function AdminDashboard() {
 
       <div className="mt-4">
         <ACard
-          title="Recent registrations"
+          title="Registros recientes"
           icon={<Users size={16} strokeWidth={2} />}
         >
           {recent.length === 0 ? (
-            <p className="text-sm opacity-70">No recent registrations.</p>
+            <p className="text-sm opacity-70">No hay registros recientes.</p>
           ) : (
             <TableWrap>
               <table className="dtable">
@@ -119,9 +119,9 @@ export default async function AdminDashboard() {
                   <tr>
                     <th></th>
                     <th className="num">ID</th>
-                    <th>Username</th>
-                    <th>Email</th>
-                    <th>Joined</th>
+                    <th>Usuario</th>
+                    <th>Correo</th>
+                    <th>Se unió</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -136,7 +136,7 @@ export default async function AdminDashboard() {
                             size: "s",
                             headOnly: true,
                           })}
-                          alt={`${u.username} avatar`}
+                          alt={`avatar de ${u.username}`}
                         />
                       </td>
                       <td className="num">{u.id}</td>
@@ -152,7 +152,7 @@ export default async function AdminDashboard() {
                           href={`/admin/users/${u.id}`}
                         >
                           <Pencil size={14} strokeWidth={2} />
-                          Manage
+                          Gestionar
                         </ABtn>
                       </td>
                     </tr>

@@ -33,21 +33,21 @@ export async function SiteHeader() {
           </Link>
 
           <nav className="flex items-center gap-1 text-sm font-bold">
-            <NavLink href="/">Home</NavLink>
-            <NavLink href="/community">Community</NavLink>
+            <NavLink href="/">Inicio</NavLink>
+            <NavLink href="/community">Comunidad</NavLink>
             {session ? (
               <>
-                <Link href="/me" className="btn btn-ghost btn-sm ml-1">My Account</Link>
+                <Link href="/me" className="btn btn-ghost btn-sm ml-1">Mi cuenta</Link>
                 {isStaff && (
-                  <Link href="/admin" className="btn btn-ghost btn-sm">CRM</Link>
+                  <Link href="/admin" className="btn btn-ghost btn-sm">Panel</Link>
                 )}
-                <Link href="/play" prefetch={false} className="btn btn-amber btn-sm inline-flex items-center gap-1.5"><Play size={14} strokeWidth={2.5} fill="currentColor" />Play</Link>
-                <Link href="/logout" prefetch={false} className="btn btn-ghost btn-sm inline-flex items-center" title="Log out" aria-label="Log out"><LogOut size={15} strokeWidth={2.5} /></Link>
+                <Link href="/play" prefetch={false} className="btn btn-amber btn-sm inline-flex items-center gap-1.5"><Play size={14} strokeWidth={2.5} fill="currentColor" />Jugar</Link>
+                <Link href="/logout" prefetch={false} className="btn btn-ghost btn-sm inline-flex items-center" title="Cerrar sesión" aria-label="Cerrar sesión"><LogOut size={15} strokeWidth={2.5} /></Link>
               </>
             ) : (
               <>
-                <Link href="/login" className="btn btn-ghost btn-sm ml-1">Log in</Link>
-                <Link href="/register" className="btn btn-amber btn-sm">Get started</Link>
+                <Link href="/login" className="btn btn-ghost btn-sm ml-1">Entrar</Link>
+                <Link href="/register" className="btn btn-amber btn-sm">Regístrate</Link>
               </>
             )}
           </nav>
@@ -79,8 +79,8 @@ export function SiteFooter() {
           </span>
         </div>
         <p className="text-xs" style={{ color: "var(--ink-dim)", maxWidth: "42rem" }}>
-          A fan-made Habbo-style retro hotel for educational use. Not affiliated with Sulake.
-          Built on Arcturus Morningstar + Nitro.
+          Hotel retro estilo Habbo hecho por fans con fines educativos. Sin afiliación con Sulake.
+          Construido sobre Arcturus Morningstar + Nitro.
         </p>
       </div>
     </footer>

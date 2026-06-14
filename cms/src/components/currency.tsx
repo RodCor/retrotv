@@ -47,10 +47,10 @@ function PixelIcon() {
 }
 
 const META: Record<CurrencyKind, { label: string; icon: ReactNode }> = {
-  coins: { label: "Coins", icon: <CoinIcon /> },
+  coins: { label: "Monedas", icon: <CoinIcon /> },
   duckets: { label: "Duckets", icon: <DucketIcon /> },
-  diamonds: { label: "Diamonds", icon: <DiamondIcon /> },
-  pixels: { label: "Pixels", icon: <PixelIcon /> },
+  diamonds: { label: "Diamantes", icon: <DiamondIcon /> },
+  pixels: { label: "Píxeles", icon: <PixelIcon /> },
 };
 
 export function CurrencyTile({ kind, amount }: { kind: CurrencyKind; amount: number }) {

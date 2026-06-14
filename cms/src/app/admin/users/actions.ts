@@ -15,7 +15,7 @@ async function requireStaff(): Promise<
   if (!session || !isStaff(session.rank)) {
     return {
       ok: false,
-      result: { type: "error", text: "Unauthorized — staff access required." },
+      result: { type: "error", text: "No autorizado — se requiere acceso de staff." },
     };
   }
   return { ok: true, session };
@@ -45,7 +45,7 @@ export async function updateUserCurrency(
   const diamonds = toNonNegInt(formData.get("diamonds"));
   const points = toNonNegInt(formData.get("points"));
 
-  if (!userId) return { type: "error", text: "Invalid user." };
+  if (!userId) return { type: "error", text: "Usuario no válido." };
 
   try {
     await execute(
@@ -65,13 +65,13 @@ export async function updateUserCurrency(
       { userId, diamonds },
     );
   } catch {
-    return { type: "error", text: "Failed to update currency." };
+    return { type: "error", text: "No se pudieron actualizar las monedas." };
   }
 
   revalidatePath(`/admin/users/${userId}`);
   return {
     type: "success",
-    text: `Currency updated: ${credits}c / ${duckets} duckets / ${diamonds} diamonds / ${points} pts.`,
+    text: `Monedas actualizadas: ${credits}c / ${duckets} duckets / ${diamonds} diamantes / ${points} pts.`,
   };
 }
 
@@ -87,8 +87,8 @@ export async function updateUserRank(
   const userId = toInt(formData.get("userId"));
   const rank = toInt(formData.get("rank"));
 
-  if (!userId) return { type: "error", text: "Invalid user." };
-  if (rank < 1) return { type: "error", text: "Invalid rank." };
+  if (!userId) return { type: "error", text: "Usuario no válido." };
+  if (rank < 1) return { type: "error", text: "Rango no válido." };
 
   try {
     await execute("UPDATE users SET rank = :rank WHERE id = :userId", {
@@ -96,11 +96,11 @@ export async function updateUserRank(
       userId,
     });
   } catch {
-    return { type: "error", text: "Failed to update rank." };
+    return { type: "error", text: "No se pudo actualizar el rango." };
   }
 
   revalidatePath(`/admin/users/${userId}`);
-  return { type: "success", text: `Rank set to ${rank}.` };
+  return { type: "success", text: `Rango establecido en ${rank}.` };
 }
 
 /* ----------------------------- profile ---------------------------- */
@@ -117,8 +117,8 @@ export async function updateUserProfile(
   const look = String(formData.get("look") ?? "").trim();
   const mail = String(formData.get("mail") ?? "").trim();
 
-  if (!userId) return { type: "error", text: "Invalid user." };
-  if (!look) return { type: "error", text: "Look cannot be empty." };
+  if (!userId) return { type: "error", text: "Usuario no válido." };
+  if (!look) return { type: "error", text: "La figura no puede estar vacía." };
 
   try {
     await execute(
@@ -126,11 +126,11 @@ export async function updateUserProfile(
       { motto, look, mail, userId },
     );
   } catch {
-    return { type: "error", text: "Failed to update profile." };
+    return { type: "error", text: "No se pudo actualizar el perfil." };
   }
 
   revalidatePath(`/admin/users/${userId}`);
-  return { type: "success", text: "Profile updated." };
+  return { type: "success", text: "Perfil actualizado." };
 }
 
 /* -------------------------- reset password ------------------------ */
@@ -145,9 +145,9 @@ export async function resetUserPassword(
   const userId = toInt(formData.get("userId"));
   const newPass = String(formData.get("newPass") ?? "");
 
-  if (!userId) return { type: "error", text: "Invalid user." };
+  if (!userId) return { type: "error", text: "Usuario no válido." };
   if (newPass.length < 6) {
-    return { type: "error", text: "Password must be at least 6 characters." };
+    return { type: "error", text: "La contraseña debe tener al menos 6 caracteres." };
   }
 
   try {
@@ -157,11 +157,11 @@ export async function resetUserPassword(
       userId,
     });
   } catch {
-    return { type: "error", text: "Failed to reset password." };
+    return { type: "error", text: "No se pudo restablecer la contraseña." };
   }
 
   revalidatePath(`/admin/users/${userId}`);
-  return { type: "success", text: "Password reset successfully." };
+  return { type: "success", text: "Contraseña restablecida correctamente." };
 }
 
 /* ------------------------------- ban ------------------------------ */
@@ -178,9 +178,9 @@ export async function banUser(
   const reason = String(formData.get("reason") ?? "").trim();
   const hours = toInt(formData.get("hours"));
 
-  if (!userId) return { type: "error", text: "Invalid user." };
-  if (!reason) return { type: "error", text: "Ban reason is required." };
-  if (hours <= 0) return { type: "error", text: "Ban duration must be > 0 hours." };
+  if (!userId) return { type: "error", text: "Usuario no válido." };
+  if (!reason) return { type: "error", text: "El motivo del baneo es obligatorio." };
+  if (hours <= 0) return { type: "error", text: "La duración del baneo debe ser mayor que 0 horas." };
 
   const now = Math.floor(Date.now() / 1000);
   const expire = now + hours * 3600;
@@ -200,14 +200,14 @@ export async function banUser(
       },
     );
   } catch {
-    return { type: "error", text: "Failed to ban user." };
+    return { type: "error", text: "No se pudo banear al usuario." };
   }
 
   revalidatePath(`/admin/users/${userId}`);
   revalidatePath("/admin");
   return {
     type: "success",
-    text: `User banned for ${hours}h: ${reason}`,
+    text: `Usuario baneado durante ${hours}h: ${reason}`,
   };
 }
 
@@ -221,12 +221,12 @@ export async function deleteUser(
   if (!auth.ok) return auth.result;
 
   const userId = toInt(formData.get("userId"));
-  if (!userId) return { type: "error", text: "Invalid user." };
+  if (!userId) return { type: "error", text: "Usuario no válido." };
 
   try {
     await execute("DELETE FROM users WHERE id = :userId", { userId });
   } catch {
-    return { type: "error", text: "Failed to delete user." };
+    return { type: "error", text: "No se pudo eliminar al usuario." };
   }
 
   revalidatePath("/admin/users");

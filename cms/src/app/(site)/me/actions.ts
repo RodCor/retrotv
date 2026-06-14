@@ -16,7 +16,7 @@ export async function changePasswordAction(
 ): Promise<ActionState> {
   const session = await getSession();
   if (!session) {
-    return { type: "error", text: "You must be logged in." };
+    return { type: "error", text: "Debes iniciar sesión." };
   }
 
   const current = String(formData.get("current") ?? "");
@@ -28,22 +28,22 @@ export async function changePasswordAction(
     { id: session.userId },
   );
   if (!user) {
-    return { type: "error", text: "Account not found." };
+    return { type: "error", text: "Cuenta no encontrada." };
   }
 
   const ok = await verifyPassword(current, user.password);
   if (!ok) {
-    return { type: "error", text: "Current password is incorrect." };
+    return { type: "error", text: "La contraseña actual es incorrecta." };
   }
 
   if (next.length < 4) {
     return {
       type: "error",
-      text: "New password must be at least 4 characters.",
+      text: "La nueva contraseña debe tener al menos 4 caracteres.",
     };
   }
   if (next !== confirm) {
-    return { type: "error", text: "New passwords do not match." };
+    return { type: "error", text: "Las contraseñas no coinciden." };
   }
 
   const hash = await hashPassword(next);
@@ -52,5 +52,5 @@ export async function changePasswordAction(
     id: session.userId,
   });
 
-  return { type: "success", text: "Password changed!" };
+  return { type: "success", text: "¡Contraseña cambiada!" };
 }
