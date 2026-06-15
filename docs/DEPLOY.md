@@ -114,19 +114,47 @@ docker compose up -d --build
 # generate assets (section 2) once
 ```
 
-### 3.5 Reverse proxy (HTTPS) — recommended
-Put **nginx** / **Caddy** / **Traefik** in front. Example Caddy:
-```caddyfile
-play.yourdomain.com {
-    reverse_proxy 127.0.0.1:1080          # client + assets
-}
-www.yourdomain.com {
-    reverse_proxy 127.0.0.1:3010          # CMS / CRM
-}
-# Websocket (emulator) — expose :2096 directly or proxy wss:
+### 3.5 HTTPS reverse proxy (production overlay)
+The repo ships a ready **Caddy** overlay (`docker-compose.prod.yml` + `Caddyfile`)
+that fronts the whole stack with automatic TLS. An HTTPS page can't load `http://`
+assets or `ws://` sockets, so it serves everything over HTTPS/WSS on subdomains:
+
+| Subdomain | Proxies to | Purpose |
+|---|---|---|
+| `play.DOMAIN` | client:80 | the hotel client |
+| `crm.DOMAIN` | cms:3000 | CMS / admin CRM |
+| `assets.DOMAIN` | nitro:8080 | bundled `.nitro` + gamedata |
+| `swf.DOMAIN` | nitro:8081 | furni SWFs, icons, c_images |
+| `ws.DOMAIN` | arcturus:2096 | game websocket + API |
+
+```bash
+# 1. DNS: point A records for play / crm / assets / swf / ws at the server.
+# 2. Set DOMAIN in .env (e.g. DOMAIN=retrotv.example.com).
+# 3. Launch with the overlay — the client is auto-pointed at the HTTPS/WSS URLs:
+docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 ```
-Caddy auto-provisions TLS. The websocket (`:2096`) can be exposed directly or
-proxied via a `:443` route with `wss://`.
+Caddy provisions and renews certificates for each subdomain. The overlay injects
+`WS_URL=wss://ws.DOMAIN`, `ASSET_URL=https://assets.DOMAIN/bundled`, etc. into the
+client, so there's nothing to edit by hand. Bind the raw service ports (1080,
+3010, 8080, 8081, 2096) to `127.0.0.1` or firewall them — Caddy (80/443) is the
+only public entry point.
+
+### 3.6 Production hardening checklist
+- **Secrets.** `make setup` generates a random `SESSION_SECRET` and DB passwords
+  into `.env` on first run. Never deploy the `.env.example` placeholders.
+  - *Rotating on an existing install* (the DB password is baked into the volume
+    at first init): `ALTER USER 'arcturus_user'@'%' IDENTIFIED BY '<new>';` and
+    `ALTER USER 'root'@'%' …`, then update `.env` to match. Changing only
+    `SESSION_SECRET` is safe any time (it just logs everyone out).
+- **Firewall.** Expose only 80/443 publicly. Keep MariaDB (13306) and RCON (3001)
+  bound to localhost / the docker network.
+- **CRM furni web-upload (optional).** "Crear mueble nuevo" shells out to the
+  converter container, so the dockerized CMS needs the **Docker socket** —
+  root-equivalent host access. Enable it only on a trusted/private deployment by
+  uncommenting the `cms` socket block in `docker-compose.prod.yml` (set
+  `DOCKER_GID`, and add the CMS container IP to `rcon.allowed` in
+  `emulator/config.ini`). On internet-facing hotels, leave it off and add furni
+  from the host with **`make add-furni`** instead — same pipeline, no socket.
 
 ---
 
@@ -219,9 +247,15 @@ docker compose up -d --build cms
 ## 8. Resetting everything
 
 ```bash
-docker compose down -v      # ⚠️ deletes all volumes incl. the database
-docker compose up -d --build
+make backup                 # dump first if you care about the data
+make reset                  # ⚠️ docker compose down -v && up --build
 ```
+`make reset` deletes all volumes (including the database) and rebuilds from
+scratch. On the fresh volume, `database/*.sql` re-runs in order (`01` → `16`) and
+reproduces the hotel exactly: schema + catalog + Spanish content + the migration
+fixes (HC duration, user-save column, events table). The set is self-consistent —
+there are no public rooms by default (that was an intentional removal). After it
+comes up, run `make assets` once and re-create your admin (section 4).
 
 ---
 

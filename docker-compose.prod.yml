@@ -1,0 +1,76 @@
+# =============================================================================
+#  RetroTV — production overlay (HTTPS + public URLs)
+#
+#  Use TOGETHER with the base file:
+#    docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+#  Adds a Caddy reverse proxy (automatic HTTPS) in front of the stack and points
+#  the client + CMS at their public HTTPS/WSS URLs. Requires DOMAIN in .env and
+#  DNS records for: play / crm / assets / swf / ws  (all .DOMAIN).
+#
+#  Hardening checklist (see docs/DEPLOY.md):
+#    • strong secrets in .env  (make setup generates them)
+#    • bind the raw service ports to localhost only, or firewall them — Caddy is
+#      the only public entry point (80/443).
+# =============================================================================
+name: retrotv
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    container_name: retrotv-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp" # HTTP/3
+    environment:
+      - DOMAIN=${DOMAIN:?set DOMAIN in .env for production}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - volume-caddy-data:/data
+      - volume-caddy-config:/config
+    depends_on:
+      - client
+      - cms
+      - nitro
+      - arcturus
+    networks:
+      - retrotv
+
+  # Inject the public HTTPS/WSS URLs so the player's browser never hits http://.
+  client:
+    environment:
+      - WS_URL=wss://ws.${DOMAIN}
+      - API_URL=https://ws.${DOMAIN}
+      - ASSET_URL=https://assets.${DOMAIN}/bundled
+      - GAMEDATA_URL=https://assets.${DOMAIN}/gamedata
+      - IMAGE_LIBRARY_URL=https://swf.${DOMAIN}/c_images/
+      - HOF_FURNI_URL=https://swf.${DOMAIN}/dcr/hof_furni
+      - IMAGES_URL=https://assets.${DOMAIN}/images
+      - CLIENT_URL=https://play.${DOMAIN}
+      - HOTEL_NAME=${HOTEL_NAME:-RetroTV}
+      - HOTEL_LANG=${HOTEL_LANG:-es}
+
+  cms:
+    environment:
+      - NEXT_PUBLIC_CLIENT_URL=https://play.${DOMAIN}
+      - NEXT_PUBLIC_FURNI_ICON_URL=https://swf.${DOMAIN}/dcr/hof_furni/icons
+    # --- OPTIONAL: web furni-upload (CRM → Mobiliario → "Crear mueble nuevo") ---
+    # That feature shells out to the converter container, so the CMS needs the
+    # Docker socket. This grants the CMS root-equivalent host access — enable it
+    # ONLY on a trusted/private deployment. On internet-facing hotels prefer the
+    # CLI (`make add-furni`) and leave this commented out.
+    #
+    # volumes:
+    #   - /var/run/docker.sock:/var/run/docker.sock
+    # group_add:
+    #   - "${DOCKER_GID:-999}"   # host's docker group gid (stat -c '%g' /var/run/docker.sock)
+    # environment:
+    #   - RCON_HOST=arcturus
+    #   - NITRO_CONTAINER=retrotv-nitro
+    # Also: add the CMS container's IP to rcon.allowed in emulator/config.ini.
+
+volumes:
+  volume-caddy-data:
+  volume-caddy-config:

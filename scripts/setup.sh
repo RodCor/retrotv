@@ -45,9 +45,27 @@ if [ "$HOTEL_LANG" != "en" ] && [ -f "$LANG_FILE" ] && [ -f "$CONV" ]; then
   echo "    in-game texts -> $HOTEL_LANG (run 'make assets' to apply)"
 fi
 
+# --- .env with freshly generated secrets -----------------------------------
+# Never ship the placeholder secrets. Generate strong random values for the
+# session secret and DB passwords the first time .env is created.
+rand() {
+  local n="${1:-32}"
+  if command -v openssl >/dev/null 2>&1; then
+    openssl rand -hex "$n"
+  else
+    head -c "$n" /dev/urandom | od -An -tx1 | tr -d ' \n'
+  fi
+}
 if [ ! -f .env ]; then
   cp .env.example .env
-  echo "==> Created .env from .env.example — edit SESSION_SECRET before production!"
+  SECRET="$(rand 32)"; DBROOT="$(rand 18)"; DBPASS="$(rand 18)"
+  sed -i "s|^SESSION_SECRET=.*|SESSION_SECRET=${SECRET}|" .env
+  sed -i "s|^DB_ROOT_PASSWORD=.*|DB_ROOT_PASSWORD=${DBROOT}|" .env
+  sed -i "s|^DB_PASSWORD=.*|DB_PASSWORD=${DBPASS}|" .env
+  echo "==> Created .env with freshly generated secrets (SESSION_SECRET + DB passwords)."
+  echo "    Keep .env private (it is git-ignored). Set DOMAIN/CLIENT_URL for a real deployment."
+else
+  echo "==> .env already exists — leaving it (and its secrets) untouched."
 fi
 
 echo ""

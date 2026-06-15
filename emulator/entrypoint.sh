@@ -6,6 +6,15 @@ set -e
 DB_HOST="${DB_HOST:-mysql}"
 DB_PORT="${DB_PORT:-3306}"
 
+# Inject DB credentials from the environment so real secrets stay OUT of the
+# committed config.ini. Anything not provided keeps the file's default value.
+CONFIG=/app/config.ini
+[ -n "$DB_HOST" ]     && sed -i "s|^db.hostname=.*|db.hostname=${DB_HOST}|" "$CONFIG"
+[ -n "$DB_PORT" ]     && sed -i "s|^db.port=.*|db.port=${DB_PORT}|" "$CONFIG"
+[ -n "$DB_NAME" ]     && sed -i "s|^db.database=.*|db.database=${DB_NAME}|" "$CONFIG"
+[ -n "$DB_USER" ]     && sed -i "s|^db.username=.*|db.username=${DB_USER}|" "$CONFIG"
+[ -n "$DB_PASSWORD" ] && sed -i "s|^db.password=.*|db.password=${DB_PASSWORD}|" "$CONFIG"
+
 echo "[emulator] waiting for MySQL at ${DB_HOST}:${DB_PORT} ..."
 i=0
 until mysqladmin ping -h "$DB_HOST" -P "$DB_PORT" --silent 2>/dev/null; do

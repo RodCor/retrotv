@@ -53,6 +53,10 @@ services:
     environment:
       - DB_HOST=mysql
       - DB_PORT=3306
+      # entrypoint.sh injects these into config.ini so secrets stay out of git.
+      - DB_USER=${DB_USER:-arcturus_user}
+      - DB_PASSWORD=${DB_PASSWORD:-arcturus_pw}
+      - DB_NAME=${DB_NAME:-habbo}
     volumes:
       - volume-camera:/app/usercontent/camera   # Camera plugin output
     ports:

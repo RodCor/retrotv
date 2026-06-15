@@ -1,0 +1,40 @@
+# RetroTV production reverse proxy — automatic HTTPS (Let's Encrypt).
+#
+# Set DOMAIN in .env (e.g. DOMAIN=retrotv.example.com) and create DNS A/AAAA
+# records pointing these subdomains at the server:
+#   play.DOMAIN    → the hotel client
+#   crm.DOMAIN     → the CMS / admin CRM
+#   assets.DOMAIN  → bundled .nitro + gamedata
+#   swf.DOMAIN     → furni SWFs, icons, c_images
+#   ws.DOMAIN      → game websocket + API
+#
+# Caddy provisions and renews a certificate for each automatically. Browsers
+# load an HTTPS page, so every asset/socket URL must also be HTTPS/WSS — the
+# docker-compose.prod.yml overlay injects those URLs into the client.
+
+play.{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy client:80
+}
+
+crm.{$DOMAIN} {
+	encode zstd gzip
+	reverse_proxy cms:3000
+}
+
+assets.{$DOMAIN} {
+	encode zstd gzip
+	header Access-Control-Allow-Origin "*"
+	reverse_proxy nitro:8080
+}
+
+swf.{$DOMAIN} {
+	encode zstd gzip
+	header Access-Control-Allow-Origin "*"
+	reverse_proxy nitro:8081
+}
+
+# Game websocket + HTTP API (Caddy upgrades ws connections automatically).
+ws.{$DOMAIN} {
+	reverse_proxy arcturus:2096
+}
