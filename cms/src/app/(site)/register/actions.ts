@@ -17,7 +17,11 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Every habbo joins with effectively-unlimited coins and permanent Habbo Club.
 const UNLIMITED_CREDITS = 1_000_000_000;
-const HC_DURATION = 4_000_000_000; // ~126 years from join — i.e. forever
+// Arcturus stores subscription timestamps as SIGNED int and computes
+// (timestamp_start + duration) as an int, so the end must stay <= Integer.MAX
+// (2147483647) or it overflows on read and wraps negative (expiring HC).
+// duration = INT_MAX - now => HC lasts right up to that ceiling (~2038). "Forever".
+const SUB_INT_MAX = 2_147_483_647;
 
 async function clientIp(): Promise<string> {
   const h = await headers();
@@ -101,7 +105,7 @@ export async function registerAction(
     `INSERT INTO users_subscriptions
        (user_id, subscription_type, timestamp_start, duration, active)
      VALUES (:userId, 'HABBO_CLUB', :now, :duration, 1)`,
-    { userId, now, duration: HC_DURATION },
+    { userId, now, duration: SUB_INT_MAX - now },
   );
 
   const token = await createSessionToken({ userId, username, rank: 1 });

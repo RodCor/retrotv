@@ -10,7 +10,7 @@ UPDATE users SET credits = 1000000000;
 --    Grant to accounts that don't have a HABBO_CLUB row yet...
 INSERT INTO users_subscriptions
   (user_id, subscription_type, timestamp_start, duration, active)
-SELECT u.id, 'HABBO_CLUB', UNIX_TIMESTAMP(), 4000000000, 1
+SELECT u.id, 'HABBO_CLUB', UNIX_TIMESTAMP(), 2147483647 - UNIX_TIMESTAMP(), 1
   FROM users u
  WHERE NOT EXISTS (
    SELECT 1 FROM users_subscriptions s
@@ -19,5 +19,5 @@ SELECT u.id, 'HABBO_CLUB', UNIX_TIMESTAMP(), 4000000000, 1
 
 --    ...and refresh existing HABBO_CLUB rows to "forever".
 UPDATE users_subscriptions
-   SET timestamp_start = UNIX_TIMESTAMP(), duration = 4000000000, active = 1
+   SET timestamp_start = UNIX_TIMESTAMP(), duration = 2147483647 - UNIX_TIMESTAMP(), active = 1
  WHERE subscription_type = 'HABBO_CLUB';
