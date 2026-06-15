@@ -93,6 +93,7 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
             case "attack": case "atacar": attack(habbo, room, parts); break;
             case "cast": case "lanzar": cast(habbo, room, parts); break;
             case "abilities": case "habilidades": case "habs": listAbilities(habbo, room, parts); break;
+            case "apply": case "aplicar": applyStatusCmd(habbo, room, parts); break;
             case "pass": case "next": case "pasar": pass(habbo, room); break;
             case "status": case "estado": status(habbo, room); break;
             case "end": case "fin": end(habbo, room); break;
@@ -265,6 +266,20 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
         return t == null ? null : new int[]{t.x, t.y};
     }
 
+    private void applyStatusCmd(Habbo habbo, Room room, String[] parts) {
+        if (!isOwner(habbo, room)) { habbo.whisper("Solo el dueño (GM) puede aplicar estados manualmente."); return; }
+        Combat combat = combats.get(room.getId());
+        if (combat == null || combat.state != Combat.State.ACTIVE) { habbo.whisper("No hay combate activo."); return; }
+        if (parts.length < 4) { habbo.whisper("Uso: :rpg apply <objetivo> <estado> [turnos]"); return; }
+        int turns = 2;
+        if (parts.length >= 5) { try { turns = Integer.parseInt(parts[4]); } catch (Exception ignored) { } }
+        synchronized (combat) {
+            Fighter target = combat.aliveByName(parts[2]);
+            if (target == null) { habbo.whisper("Objetivo no válido."); return; }
+            broadcast(room, combat.applyStatus(target, parts[3], turns));
+        }
+    }
+
     private void pass(Habbo habbo, Room room) {
         Combat combat = combats.get(room.getId());
         if (combat == null || combat.state != Combat.State.ACTIVE) { habbo.whisper("No hay combate activo."); return; }
@@ -299,6 +314,7 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
             ":rpg attack <nombre>   ataca en tu turno",
             ":rpg abilities  lista tus habilidades",
             ":rpg cast <hab> <objetivo>   lanza una habilidad (rango/área)",
+            ":rpg apply <obj> <estado> [turnos]  (GM) aplica un estado (hemorragia, aturdimiento…)",
             ":rpg pass      pasa tu turno",
             ":rpg status    muestra el estado",
             ":rpg end       (dueño) termina el combate",

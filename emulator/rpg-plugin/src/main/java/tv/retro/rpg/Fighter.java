@@ -1,6 +1,8 @@
 package tv.retro.rpg;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /** One combatant in a {@link Combat} session. */
@@ -24,6 +26,13 @@ public class Fighter {
     public int turnStartY = -1;
     /** Remaining cooldown (in this fighter's turns) per ability, keyed by lowercase name. */
     public final Map<String, Integer> cooldowns = new HashMap<>();
+    /** Active timed status effects (bleed, stun, …). */
+    public final List<Status> statuses = new ArrayList<>();
+
+    public boolean isStunned() {
+        for (Status s : statuses) if ("stun".equals(s.kind) && s.turns > 0) return true;
+        return false;
+    }
 
     /** Tiles this fighter may move from its turn-start tile (chebyshev), from SPD. */
     public int moveBudget() {

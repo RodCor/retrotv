@@ -116,7 +116,15 @@ public class Combat {
             hits++;
             log.add("⚔ " + t.name + " recibe " + dmg + " de daño.");
             log.add(t.name + " " + t.hpBar());
-            if (!t.alive()) { t.hp = 0; log.add("💀 " + t.name + " ha caído."); }
+            if (!t.alive()) {
+                t.hp = 0;
+                log.add("💀 " + t.name + " ha caído.");
+            } else {
+                for (Status s : Status.detect(ab.effectText, dmg)) {
+                    t.statuses.add(s);
+                    log.add("☠ " + t.name + ": " + s.name + " (" + s.turns + " turnos).");
+                }
+            }
         }
         if (hits == 0 && ab.hasFormula()) log.add("· " + ab.name + " no alcanzó a nadie.");
         // Always surface the full effect (the "assisted" part players apply manually).
@@ -139,25 +147,61 @@ public class Combat {
 
     private synchronized List<String> advanceTurn() {
         List<String> log = new ArrayList<>();
-        if (aliveCount() <= 1) {
-            state = State.ENDED;
-            Fighter w = null;
-            for (Fighter f : fighters) if (f.alive()) w = f;
-            log.add("🏆 Fin del combate. " + (w != null ? "Gana " + w.name + "." : "Sin vencedores."));
-            return log;
-        }
-        for (int i = 0; i < fighters.size(); i++) {
+        int guard = fighters.size() * 4 + 4;
+        while (guard-- > 0) {
+            if (aliveCount() <= 1) {
+                state = State.ENDED;
+                Fighter w = null;
+                for (Fighter f : fighters) if (f.alive()) w = f;
+                log.add("🏆 Fin del combate. " + (w != null ? "Gana " + w.name + "." : "Sin vencedores."));
+                return log;
+            }
             turnIndex++;
             if (turnIndex >= fighters.size()) { turnIndex = 0; round++; }
-            if (fighters.get(turnIndex).alive()) break;
+            Fighter cur = fighters.get(turnIndex);
+            if (!cur.alive()) continue;
+            // Start-of-turn upkeep: cooldowns, resource regen, status ticks.
+            cur.cooldowns.replaceAll((k, v) -> Math.max(0, v - 1));
+            cur.resource = Math.min(cur.maxResource, cur.resource + Math.max(5, cur.maxResource / 10));
+            boolean stunned = cur.isStunned();
+            log.addAll(tickStatuses(cur));
+            if (!cur.alive()) { log.add("💀 " + cur.name + " ha caído."); continue; }
+            if (stunned) { log.add("💫 " + cur.name + " está aturdido y pierde el turno."); continue; }
+            turnToken++;
+            log.add(turnBanner());
+            return log;
         }
-        // Start-of-turn upkeep for the new active fighter: tick cooldowns + regen.
-        Fighter cur = fighters.get(turnIndex);
-        cur.cooldowns.replaceAll((k, v) -> Math.max(0, v - 1));
-        cur.resource = Math.min(cur.maxResource, cur.resource + Math.max(5, cur.maxResource / 10));
-        turnToken++;
-        log.add(turnBanner());
+        state = State.ENDED;
+        log.add("🏆 Fin del combate.");
         return log;
+    }
+
+    /** Apply start-of-turn DoT damage + decrement durations; expired statuses drop off. */
+    private synchronized List<String> tickStatuses(Fighter f) {
+        List<String> log = new ArrayList<>();
+        java.util.Iterator<Status> it = f.statuses.iterator();
+        while (it.hasNext()) {
+            Status s = it.next();
+            if ("dot".equals(s.kind) && s.turns > 0) {
+                int dmg = s.magnitude > 0 ? s.magnitude : Math.max(1, f.maxHp / 20);
+                f.hp -= dmg;
+                log.add("🩸 " + f.name + " sufre " + dmg + " por " + s.name + ".");
+                log.add(f.name + " " + f.hpBar());
+                if (!f.alive()) { f.hp = 0; break; }
+            }
+            s.turns--;
+            if (s.turns <= 0) { it.remove(); log.add("· " + s.name + " termina en " + f.name + "."); }
+        }
+        return log;
+    }
+
+    /** Apply a named status to a target (used by the GM :rpg apply command). */
+    public synchronized String applyStatus(Fighter target, String name, int turns) {
+        String kind = Status.kindOf(name);
+        int mag = "dot".equals(kind) ? Math.max(1, target.maxHp / 20) : 0;
+        String label = name.substring(0, 1).toUpperCase() + name.substring(1).toLowerCase();
+        target.statuses.add(new Status(label, kind, mag, Math.max(1, Math.min(10, turns))));
+        return "☠ " + target.name + " recibe " + label + " (" + Math.max(1, turns) + " turnos).";
     }
 
     public synchronized String turnBanner() {
@@ -171,6 +215,11 @@ public class Combat {
             Fighter f = fighters.get(i);
             b.append("\n").append(i == turnIndex && state == State.ACTIVE ? "▶ " : "  ")
              .append(f.name).append(' ').append(f.hpBar()).append(f.alive() ? "" : " 💀");
+            if (!f.statuses.isEmpty()) {
+                StringBuilder st = new StringBuilder();
+                for (Status s : f.statuses) st.append(st.length() > 0 ? ", " : "").append(s.name).append("(").append(s.turns).append(")");
+                b.append(" {").append(st).append("}");
+            }
         }
         return b.toString();
     }
