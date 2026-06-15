@@ -160,8 +160,11 @@
 
   function showTargets() {
     el.targets.innerHTML = "";
+    // You can only attack on your own turn, so the current-turn fighter is you —
+    // exclude them so you never see yourself as a target.
+    var meKey = key(state.turn);
     var alive = state.order.map(function (k) { return state.fighters[k]; })
-      .filter(function (f) { return f && !f.dead; });
+      .filter(function (f) { return f && !f.dead && key(f.name) !== meKey; });
     if (!alive.length) { el.targets.style.display = "none"; return; }
     alive.forEach(function (f) {
       var b = document.createElement("button");
