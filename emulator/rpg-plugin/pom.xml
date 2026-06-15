@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>tv.retro</groupId>
+  <artifactId>rpg-plugin</artifactId>
+  <version>0.1</version>
+  <packaging>jar</packaging>
+  <name>RetroTV RPG</name>
+
+  <properties>
+    <maven.compiler.release>17</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <dependencies>
+    <!-- The Arcturus Morningstar Extended release jar (fat jar, all deps).
+         build.sh copies it into lib/ from the running emulator before building. -->
+    <dependency>
+      <groupId>com.eu.habbo</groupId>
+      <artifactId>Habbo</artifactId>
+      <version>4.2.44</version>
+      <scope>system</scope>
+      <systemPath>${project.basedir}/lib/Habbo.jar</systemPath>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>retrotv-rpg-${project.version}</finalName>
+  </build>
+</project>
