@@ -103,21 +103,27 @@ public class Combat {
      */
     public synchronized List<String> castResolved(Fighter caster, Ability ab, List<Fighter> affected) {
         List<String> log = new ArrayList<>();
-        caster.resource = Math.max(0, caster.resource - ab.cost);
+        caster.resource = Math.max(0, caster.resource - ab.costFor(caster.rango));
         caster.cooldowns.put(ab.key(), ab.cooldown);
-        log.add("✨ " + caster.name + " usa " + ab.name + "!");
+        log.add("✨ " + caster.name + " usa " + ab.name + (ab.rango.isEmpty() ? "" : " [" + ab.rango + "]") + "!");
         int hits = 0;
         for (Fighter t : affected) {
             if (t == caster || !t.alive()) continue;
-            int roll = d(6);
-            int dmg = Math.max(1, caster.atk + ab.power + roll - t.def);
+            int dmg = ab.hasFormula()
+                ? Math.max(1, (int) Math.round(FormulaEval.eval(ab.formula, caster.stats())) - t.def)
+                : Math.max(1, caster.atk + ab.power + d(6) - t.def);
             t.hp -= dmg;
             hits++;
             log.add("⚔ " + t.name + " recibe " + dmg + " de daño.");
             log.add(t.name + " " + t.hpBar());
             if (!t.alive()) { t.hp = 0; log.add("💀 " + t.name + " ha caído."); }
         }
-        if (hits == 0) log.add("· " + ab.name + " no alcanzó a nadie.");
+        if (hits == 0 && ab.hasFormula()) log.add("· " + ab.name + " no alcanzó a nadie.");
+        // Always surface the full effect (the "assisted" part players apply manually).
+        if (!ab.effectText.isEmpty()) {
+            String eff = ab.effectText.length() > 240 ? ab.effectText.substring(0, 237) + "…" : ab.effectText;
+            log.add("📜 " + eff);
+        }
         caster.acted = true;
         log.addAll(advanceTurn());
         return log;

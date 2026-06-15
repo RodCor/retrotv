@@ -14,6 +14,9 @@ public class Fighter {
     public final int atk;
     public final int def;
     public final int spd;
+    public final int nivel;
+    public final int arma;
+    public final String rango;
     public int initiative;
     public boolean acted;
     /** Tile the fighter stood on when their current turn started (movement is measured from here). */
@@ -27,7 +30,8 @@ public class Fighter {
         return Math.max(2, 2 + this.spd / 4);
     }
 
-    public Fighter(int userId, String name, int hp, int resource, int atk, int def, int spd) {
+    public Fighter(int userId, String name, int hp, int resource, int atk, int def, int spd,
+                   int nivel, int arma, String rango) {
         this.userId = userId;
         this.name = name;
         this.hp = hp;
@@ -37,6 +41,22 @@ public class Fighter {
         this.atk = atk;
         this.def = def;
         this.spd = spd;
+        this.nivel = nivel;
+        this.arma = arma;
+        this.rango = rango == null ? "D" : rango;
+    }
+
+    /** Stat map for formula evaluation (BHRPG: NIVEL/FUE/DEF/VEL/VIT/REI/ARMA). */
+    public java.util.Map<String, Double> stats() {
+        java.util.Map<String, Double> m = new java.util.HashMap<>();
+        m.put("NIVEL", (double) nivel);
+        m.put("FUE", (double) atk);
+        m.put("DEF", (double) def);
+        m.put("VEL", (double) spd);
+        m.put("VIT", (double) maxHp);
+        m.put("REI", (double) resource);
+        m.put("ARMA", (double) arma);
+        return m;
     }
 
     public int cooldownOf(String abilityKey) {

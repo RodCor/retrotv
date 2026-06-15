@@ -34,15 +34,26 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RetroRpgPlugin extends HabboPlugin implements EventListener {
 
     private static final int TURN_SECONDS = 90;
-    private static final int RULESET = 1;
     private final Map<Integer, Combat> combats = new ConcurrentHashMap<>();
-    private Map<String, Ability> abilities = new HashMap<>();
+    private final Map<Integer, Map<String, Ability>> abilityCache = new ConcurrentHashMap<>();
 
     @Override public void onEnable() {
         Emulator.getPluginManager().registerEvents(this, this);
-        abilities = Ability.load(RULESET);
-        System.out.println("[RetroRPG] enabled — combat + " + abilities.size()
-                + " abilities (:rpg cast <hab> <obj>)");
+        System.out.println("[RetroRPG] enabled — data-driven combat (per-room ruleset). :rpg help");
+    }
+
+    /** The ruleset a room runs (rooms.rpg_ruleset_id, default 1). */
+    private int rulesetOf(int roomId) {
+        try (Connection c = Emulator.getDatabase().getDataSource().getConnection();
+             PreparedStatement st = c.prepareStatement("SELECT rpg_ruleset_id FROM rooms WHERE id = ?")) {
+            st.setInt(1, roomId);
+            try (ResultSet rs = st.executeQuery()) { return rs.next() ? Math.max(1, rs.getInt(1)) : 1; }
+        } catch (Exception e) { return 1; }
+    }
+
+    /** Cached abilities for a room's ruleset. */
+    private Map<String, Ability> abilities(int roomId) {
+        return abilityCache.computeIfAbsent(rulesetOf(roomId), Ability::load);
     }
     @Override public void onDisable() { combats.clear(); }
     @Override public boolean hasPermission(Habbo habbo, String key) { return false; }
@@ -65,6 +76,7 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
         switch (sub) {
             case "on":  toggle(habbo, room, true);  return;
             case "off": toggle(habbo, room, false); return;
+            case "ruleset": case "reglas": ruleset(habbo, room, parts); return;
             case "":    habbo.whisper("Modo RPG: " + (isEnabled(room.getId()) ? "ACTIVADO" : "desactivado")
                             + ". :rpg help para los comandos."); return;
             case "help": help(habbo); return;
@@ -80,7 +92,7 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
             case "start": case "iniciar": start(habbo, room); break;
             case "attack": case "atacar": attack(habbo, room, parts); break;
             case "cast": case "lanzar": cast(habbo, room, parts); break;
-            case "abilities": case "habilidades": case "habs": listAbilities(habbo); break;
+            case "abilities": case "habilidades": case "habs": listAbilities(habbo, room, parts); break;
             case "pass": case "next": case "pasar": pass(habbo, room); break;
             case "status": case "estado": status(habbo, room); break;
             case "end": case "fin": end(habbo, room); break;
@@ -131,7 +143,7 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
         synchronized (combat) {
             if (combat.state != Combat.State.PENDING) { habbo.whisper("El combate ya está en marcha."); return; }
             if (combat.byUser(habbo.getHabboInfo().getId()) != null) { habbo.whisper("Ya estás en el combate."); return; }
-            String r = combat.join(loadFighter(habbo));
+            String r = combat.join(loadFighter(habbo, rulesetOf(room.getId())));
             if (r != null) broadcast(room, r);
         }
     }
@@ -168,7 +180,7 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
         Combat combat = combats.get(room.getId());
         if (combat == null || combat.state != Combat.State.ACTIVE) { habbo.whisper("No hay combate activo."); return; }
         if (parts.length < 4) { habbo.whisper("Uso: :rpg cast <habilidad> <objetivo>"); return; }
-        Ability ab = abilities.get(parts[2].toLowerCase());
+        Ability ab = abilities(room.getId()).get(parts[2].toLowerCase());
         if (ab == null) { habbo.whisper("Habilidad desconocida. Usa :rpg abilities."); return; }
         synchronized (combat) {
             Fighter me = combat.byUser(habbo.getHabboInfo().getId());
@@ -196,11 +208,54 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
         }
     }
 
-    private void listAbilities(Habbo habbo) {
+    private void listAbilities(Habbo habbo, Room room, String[] parts) {
+        Map<String, Ability> abs = abilities(room.getId());
+        String filter = parts.length >= 3 ? parts[2].toLowerCase() : "";
+        if (filter.isEmpty() && abs.size() > 12) {
+            java.util.Set<String> ramas = new java.util.TreeSet<>();
+            for (Ability a : abs.values()) if (!a.rama.isEmpty()) ramas.add(a.rama);
+            habbo.whisper("Disciplinas (" + abs.size() + " habilidades): " + String.join(", ", ramas));
+            habbo.whisper("Usa :rpg abilities <disciplina> para listarlas.");
+            return;
+        }
         habbo.whisper("— Habilidades —");
-        for (Ability a : abilities.values())
-            habbo.whisper(a.name + " · coste " + a.cost + " · rango " + a.range + " · " + a.shape
-                    + (a.areaSize > 0 ? "(" + a.areaSize + ")" : "") + " · CD " + a.cooldown);
+        int n = 0;
+        for (Ability a : abs.values()) {
+            if (!filter.isEmpty() && !a.rama.toLowerCase().contains(filter) && !a.name.toLowerCase().contains(filter)) continue;
+            if (n++ >= 40) { habbo.whisper("… filtra por disciplina para ver el resto."); break; }
+            habbo.whisper(a.name + (a.rango.isEmpty() ? "" : " [" + a.rango + "]") + " · coste " + a.cost
+                    + " · alcance " + a.range + (a.areaSize > 0 ? " área " + a.areaSize : ""));
+        }
+        if (n == 0) habbo.whisper("Sin resultados para \"" + filter + "\".");
+    }
+
+    /** Owner sets the room's ruleset (:rpg ruleset <id|nombre>). */
+    private void ruleset(Habbo habbo, Room room, String[] parts) {
+        if (!isOwner(habbo, room)) { habbo.whisper("Solo el dueño puede cambiar el ruleset."); return; }
+        if (parts.length < 3) {
+            int cur = rulesetOf(room.getId());
+            habbo.whisper("Ruleset actual: " + cur + ". Usa :rpg ruleset <id o nombre>.");
+            return;
+        }
+        Integer id = resolveRuleset(parts[2]);
+        if (id == null) { habbo.whisper("Ruleset no encontrado: " + parts[2]); return; }
+        try (Connection c = Emulator.getDatabase().getDataSource().getConnection();
+             PreparedStatement st = c.prepareStatement("UPDATE rooms SET rpg_ruleset_id = ? WHERE id = ?")) {
+            st.setInt(1, id); st.setInt(2, room.getId()); st.executeUpdate();
+        } catch (Exception e) { habbo.whisper("Error: " + e.getMessage()); return; }
+        abilityCache.remove(id); // force reload next use
+        combats.remove(room.getId());
+        habbo.whisper("Ruleset de la sala cambiado a " + id + ". " + abilities(room.getId()).size() + " habilidades.");
+    }
+
+    private Integer resolveRuleset(String token) {
+        try (Connection c = Emulator.getDatabase().getDataSource().getConnection();
+             PreparedStatement st = c.prepareStatement(
+                 "SELECT id FROM rpg_rulesets WHERE id = ? OR LOWER(name) = LOWER(?) LIMIT 1")) {
+            st.setString(1, token.replaceAll("[^0-9]", "").isEmpty() ? "0" : token.replaceAll("[^0-9]", ""));
+            st.setString(2, token);
+            try (ResultSet rs = st.executeQuery()) { return rs.next() ? rs.getInt(1) : null; }
+        } catch (Exception e) { return null; }
     }
 
     private int[] posOf(Room room, int userId) {
@@ -238,6 +293,7 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
         String[] lines = {
             "— RetroTV RPG —",
             ":rpg on / off  (dueño) activa el Modo RPG en la sala",
+            ":rpg ruleset <id|nombre>  (dueño) elige el sistema (p.ej. BHRPG)",
             ":rpg join      entra al combate",
             ":rpg start     (dueño) inicia el combate",
             ":rpg attack <nombre>   ataca en tu turno",
@@ -298,22 +354,26 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
     }
 
     /** Build a fighter from the user's character sheet, or sensible defaults. */
-    private Fighter loadFighter(Habbo habbo) {
+    private Fighter loadFighter(Habbo habbo, int rulesetId) {
         int uid = habbo.getHabboInfo().getId();
         String name = habbo.getHabboInfo().getUsername();
-        int hp = 100, res = 100, atk = 10, def = 10, spd = 10;
+        int hp = 100, res = 100, atk = 10, def = 10, spd = 10, nivel = 1, arma = 0;
+        String rango = "D";
         try (Connection c = Emulator.getDatabase().getDataSource().getConnection();
              PreparedStatement st = c.prepareStatement(
-                 "SELECT max_hp, max_resource, atk, def, spd FROM rpg_characters WHERE user_id = ? ORDER BY id LIMIT 1")) {
-            st.setInt(1, uid);
+                 "SELECT max_hp, max_resource, atk, def, spd, level, arma, rango FROM rpg_characters "
+                 + "WHERE user_id = ? AND ruleset_id = ? ORDER BY id LIMIT 1")) {
+            st.setInt(1, uid); st.setInt(2, rulesetId);
             try (ResultSet rs = st.executeQuery()) {
                 if (rs.next()) {
                     hp = rs.getInt(1); res = rs.getInt(2);
                     atk = rs.getInt(3); def = rs.getInt(4); spd = rs.getInt(5);
+                    nivel = rs.getInt(6); arma = rs.getInt(7);
+                    rango = rs.getString(8);
                 }
             }
         } catch (Exception ignored) { }
-        return new Fighter(uid, name, hp, res, atk, def, spd);
+        return new Fighter(uid, name, hp, res, atk, def, spd, nivel, arma, rango);
     }
 
     private boolean isEnabled(int roomId) {
