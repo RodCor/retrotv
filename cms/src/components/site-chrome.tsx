@@ -35,6 +35,8 @@ export async function SiteHeader() {
           <nav className="flex items-center gap-1 text-sm font-bold">
             <NavLink href="/">Inicio</NavLink>
             <NavLink href="/community">Comunidad</NavLink>
+            <NavLink href="/competiciones">Competiciones</NavLink>
+            <NavLink href="/top">Top 10</NavLink>
             {session ? (
               <>
                 <Link href="/me" className="btn btn-ghost btn-sm ml-1">Mi cuenta</Link>

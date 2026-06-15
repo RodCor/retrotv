@@ -1,10 +1,14 @@
 import Link from "next/link";
-import { Home as HomeIcon, Users, Gem, Play } from "lucide-react";
+import { Home as HomeIcon, Users, Gem, Play, Trophy } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
+import { SectionHead, PostCard } from "@/components/site-content";
 import { config } from "@/lib/config";
 import { getSession } from "@/lib/auth";
 import { query } from "@/lib/db";
+import { getPosts, getRankings } from "@/lib/content";
 import { avatarImageUrl } from "@/lib/habbo-imaging";
+
+export const dynamic = "force-dynamic";
 
 type Stats = { users: number; online: number; rooms: number };
 
@@ -42,8 +46,15 @@ const FEATURES = [
 
 export default async function Home() {
   const session = await getSession();
-  const stats = await loadStats();
+  const [stats, news, comps, topPlayers] = await Promise.all([
+    loadStats(),
+    getPosts("news", 2),
+    getPosts("competition", 1),
+    getRankings("score", 3),
+  ]);
   const playHref = session ? "/play" : "/register";
+  const promoBase = config.assets.promoImageUrl;
+  const feed = [...comps, ...news].slice(0, 3);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -128,6 +139,41 @@ export default async function Home() {
             ))}
           </div>
         </section>
+
+        {/* ------------------------------- latest feed ------------------------------ */}
+        {feed.length > 0 && (
+          <section className="shell pb-12">
+            <SectionHead eyebrow="Lo último" title="Novedades y competiciones" href="/community" hrefLabel="Toda la comunidad" />
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {feed.map((p) => (
+                <PostCard key={`${p.category}-${p.id}`} post={p} promoBase={promoBase} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* ------------------------------- top players ------------------------------ */}
+        {topPlayers.length > 0 && (
+          <section className="shell pb-12">
+            <SectionHead eyebrow="Clasificación" title="Top jugadores" href="/top" hrefLabel="Ver Top 10" />
+            <div className="grid gap-4 sm:grid-cols-3">
+              {topPlayers.map((p, i) => (
+                <div key={p.username} className={`panel panel-pad flex items-center gap-4 top-mini rank-${i + 1}`}>
+                  <span className="top-mini__pos">
+                    <Trophy size={16} strokeWidth={2.4} /> {i + 1}
+                  </span>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img className="rt-avatar" style={{ height: "76px", width: "auto" }}
+                    src={avatarImageUrl(p.look, { size: "m", headOnly: true })} alt={p.username} />
+                  <div className="min-w-0">
+                    <div className="truncate text-lg font-extrabold" style={{ color: "var(--ink)" }}>{p.username}</div>
+                    <div className="font-pixel text-sm" style={{ color: "var(--amber-deep)" }}>{Number(p.value).toLocaleString()} pts</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* ------------------------------- join the crowd --------------------------- */}
         <section className="shell pb-6">

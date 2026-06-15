@@ -1,12 +1,14 @@
 import { SiteHeader, SiteFooter } from "@/components/site-chrome";
-import { Panel, Badge } from "@/components/ui";
+import { Panel } from "@/components/ui";
+import { SectionHead, PostCard } from "@/components/site-content";
 import { ADMIN_MIN_RANK } from "@/lib/auth";
 import { query } from "@/lib/db";
+import { config } from "@/lib/config";
+import { getPosts } from "@/lib/content";
 import { avatarImageUrl } from "@/lib/habbo-imaging";
 
-export const metadata = {
-  title: "Comunidad",
-};
+export const metadata = { title: "Comunidad" };
+export const dynamic = "force-dynamic";
 
 interface StaffRow {
   username: string;
@@ -15,7 +17,6 @@ interface StaffRow {
   rank_name: string | null;
   badge: string | null;
 }
-
 interface MemberRow {
   username: string;
   look: string;
@@ -26,10 +27,8 @@ async function loadStaff(): Promise<StaffRow[]> {
   try {
     return await query<StaffRow>(
       `SELECT u.username, u.look, u.rank, p.rank_name, p.badge
-         FROM users u
-         JOIN permissions p ON p.id = u.rank
-        WHERE u.rank >= :minRank
-        ORDER BY u.rank DESC`,
+         FROM users u JOIN permissions p ON p.id = u.rank
+        WHERE u.rank >= :minRank ORDER BY u.rank DESC`,
       { minRank: ADMIN_MIN_RANK },
     );
   } catch {
@@ -40,34 +39,7 @@ async function loadStaff(): Promise<StaffRow[]> {
 async function loadNewest(): Promise<MemberRow[]> {
   try {
     return await query<MemberRow>(
-      `SELECT username, look, motto
-         FROM users
-        ORDER BY id DESC
-        LIMIT 12`,
-    );
-  } catch {
-    return [];
-  }
-}
-
-interface EventItem {
-  id: number;
-  title: string;
-  description: string;
-  image: string;
-  location: string;
-  when_text: string | null;
-}
-
-async function loadEvents(): Promise<EventItem[]> {
-  try {
-    return await query<EventItem>(
-      `SELECT id, title, description, image, location,
-              DATE_FORMAT(event_date, '%d/%m/%Y · %H:%i') AS when_text
-         FROM cms_events
-        WHERE visible = 1 AND (event_date IS NULL OR event_date >= NOW())
-        ORDER BY (event_date IS NULL), event_date ASC
-        LIMIT 12`,
+      "SELECT username, look, motto FROM users WHERE username <> '[SYSTEM]' ORDER BY id DESC LIMIT 12",
     );
   } catch {
     return [];
@@ -75,98 +47,54 @@ async function loadEvents(): Promise<EventItem[]> {
 }
 
 export default async function CommunityPage() {
-  const [staff, members, events] = await Promise.all([
+  const [news, staff, members] = await Promise.all([
+    getPosts("news", 9),
     loadStaff(),
     loadNewest(),
-    loadEvents(),
   ]);
+  const promoBase = config.assets.promoImageUrl;
 
   return (
-    <div className="flex min-h-screen flex-1 flex-col">
+    <div className="flex min-h-screen flex-col">
       <SiteHeader />
-
-      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-10">
-        <header className="mb-8">
+      <main className="relative z-10 flex-1">
+        <header className="shell pt-10 md:pt-14">
           <h1 className="rt-display text-4xl" style={{ color: "var(--rt-brand)" }}>Comunidad</h1>
-          <p className="mt-2 font-semibold" style={{ color: "var(--ink-soft)" }}>
-            Conoce al equipo que mantiene el hotel y saluda a las caras nuevas.
+          <p className="mt-2 max-w-2xl font-semibold" style={{ color: "var(--ink-soft)" }}>
+            Novedades del hotel, el equipo que lo cuida y las caras nuevas que se unen cada día.
           </p>
         </header>
 
-        {/* Upcoming events */}
-        {events.length > 0 && (
-          <section className="mb-10">
-            <h2 className="rt-display mb-4 text-2xl" style={{ color: "var(--rt-brand)" }}>Próximos eventos</h2>
+        {/* Community news */}
+        {news.length > 0 && (
+          <section className="shell pt-8">
+            <SectionHead eyebrow="Novedades" title="Noticias de la comunidad" />
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {events.map((ev) => (
-                <Panel key={ev.id} className="flex flex-col gap-3">
-                  {ev.image && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={ev.image}
-                      alt=""
-                      style={{ width: "100%", height: "130px", objectFit: "cover", borderRadius: "10px" }}
-                    />
-                  )}
-                  <div>
-                    <div className="text-lg font-extrabold" style={{ color: "var(--ink)" }}>{ev.title}</div>
-                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs font-bold" style={{ color: "var(--cyan)" }}>
-                      {ev.when_text && <span>🗓 {ev.when_text}</span>}
-                      {ev.location && <span>📍 {ev.location}</span>}
-                    </div>
-                    {ev.description && (
-                      <p className="mt-2 text-sm font-semibold" style={{ color: "var(--ink-soft)" }}>
-                        {ev.description}
-                      </p>
-                    )}
-                  </div>
-                </Panel>
+              {news.map((p) => (
+                <PostCard key={p.id} post={p} promoBase={promoBase} full />
               ))}
             </div>
           </section>
         )}
 
-        {/* Staff team */}
-        <section className="mb-10">
-          <h2 className="rt-display mb-4 text-2xl" style={{ color: "var(--rt-brand)" }}>Equipo del hotel</h2>
+        {/* Staff */}
+        <section className="shell pt-12">
+          <SectionHead eyebrow="El equipo" title="Equipo del hotel" />
           {staff.length === 0 ? (
-            <Panel muted>
-              <p className="font-semibold" style={{ color: "var(--ink-soft)" }}>
-                El equipo está tomando un café. ¡Vuelve pronto!
-              </p>
-            </Panel>
+            <Panel muted><p className="font-semibold" style={{ color: "var(--ink-soft)" }}>El equipo está tomando un café. ¡Vuelve pronto!</p></Panel>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {staff.map((s) => (
                 <Panel key={s.username} className="flex items-center gap-4">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    className="rt-avatar"
-                    style={{ height: "90px", width: "auto" }}
-                    src={avatarImageUrl(s.look, { size: "m", headOnly: true })}
-                    alt={`${s.username}'s avatar`}
-                  />
+                  <img className="rt-avatar" style={{ height: "90px", width: "auto" }}
+                    src={avatarImageUrl(s.look, { size: "m", headOnly: true })} alt={s.username} />
                   <div className="min-w-0">
-                    <div className="truncate text-lg font-extrabold" style={{ color: "var(--ink)" }}>
-                      {s.username}
-                    </div>
+                    <div className="truncate text-lg font-extrabold" style={{ color: "var(--ink)" }}>{s.username}</div>
                     {s.rank_name && (
-                      <span
-                        className="rt-badge"
-                        style={{
-                          background: "rgba(52,225,212,0.14)",
-                          borderColor: "rgba(52,225,212,0.4)",
-                          color: "var(--cyan)",
-                        }}
-                      >
-                        {s.rank_name}
-                      </span>
+                      <span className="rt-badge" style={{ background: "rgba(0,163,224,0.12)", borderColor: "rgba(0,163,224,0.4)", color: "var(--cyan)" }}>{s.rank_name}</span>
                     )}
-                    {s.badge && (
-                      <div className="mt-1 text-xs font-bold" style={{ color: "var(--ink-dim)" }}>
-                        Placa: {s.badge}
-                      </div>
-                    )}
+                    {s.badge && <div className="mt-1 text-xs font-bold" style={{ color: "var(--ink-dim)" }}>Placa: {s.badge}</div>}
                   </div>
                 </Panel>
               ))}
@@ -175,40 +103,25 @@ export default async function CommunityPage() {
         </section>
 
         {/* Newest members */}
-        <section>
-          <h2 className="rt-display mb-4 text-2xl" style={{ color: "var(--rt-brand)" }}>Nuevos miembros</h2>
+        <section className="shell pt-12 pb-14">
+          <SectionHead eyebrow="Bienvenidos" title="Nuevos miembros" />
           {members.length === 0 ? (
-            <Panel muted>
-              <p className="font-semibold" style={{ color: "var(--ink-soft)" }}>
-                Aún no hay miembros — ¡sé el primero en unirte!
-              </p>
-            </Panel>
+            <Panel muted><p className="font-semibold" style={{ color: "var(--ink-soft)" }}>Aún no hay miembros — ¡sé el primero en unirte!</p></Panel>
           ) : (
             <div className="grid gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
               {members.map((m) => (
                 <Panel key={m.username} muted className="text-center">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    className="rt-avatar mx-auto"
-                    style={{ height: "110px", width: "auto" }}
-                    src={avatarImageUrl(m.look, { size: "l", direction: 2, headDirection: 2 })}
-                    alt={`${m.username}'s avatar`}
-                  />
-                  <div className="mt-2 truncate text-sm font-extrabold" style={{ color: "var(--ink)" }}>
-                    {m.username}
-                  </div>
-                  {m.motto && (
-                    <div className="mt-1 truncate text-xs font-semibold" style={{ color: "var(--ink-dim)" }}>
-                      {m.motto}
-                    </div>
-                  )}
+                  <img className="rt-avatar mx-auto" style={{ height: "110px", width: "auto" }}
+                    src={avatarImageUrl(m.look, { size: "l", direction: 2, headDirection: 2 })} alt={m.username} />
+                  <div className="mt-2 truncate text-sm font-extrabold" style={{ color: "var(--ink)" }}>{m.username}</div>
+                  {m.motto && <div className="mt-1 truncate text-xs font-semibold" style={{ color: "var(--ink-dim)" }}>{m.motto}</div>}
                 </Panel>
               ))}
             </div>
           )}
         </section>
       </main>
-
       <SiteFooter />
     </div>
   );
