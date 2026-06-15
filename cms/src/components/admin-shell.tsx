@@ -3,14 +3,17 @@ import { config } from "@/lib/config";
 import { getCurrentUser } from "@/lib/auth";
 import { avatarImageUrl } from "@/lib/habbo-imaging";
 import {
-  LayoutDashboard, Users, ShoppingBag, Shirt, Home, Star, ShieldAlert, Settings2,
+  LayoutDashboard, Users, ShoppingBag, Shirt, Home, Star, ShieldAlert, Settings2, Megaphone, Calendar, Sofa,
 } from "lucide-react";
 
 const NAV = [
   { href: "/admin", label: "Panel", icon: LayoutDashboard },
   { href: "/admin/users", label: "Usuarios", icon: Users },
   { href: "/admin/catalog", label: "Catálogo", icon: ShoppingBag },
+  { href: "/admin/furniture", label: "Mobiliario", icon: Sofa },
   { href: "/admin/clothing", label: "Ropa", icon: Shirt },
+  { href: "/admin/news", label: "Noticias", icon: Megaphone },
+  { href: "/admin/events", label: "Eventos", icon: Calendar },
   { href: "/admin/rooms", label: "Salas", icon: Home },
   { href: "/admin/ranks", label: "Rangos", icon: Star },
   { href: "/admin/moderation", label: "Moderación", icon: ShieldAlert },

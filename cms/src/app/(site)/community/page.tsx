@@ -50,8 +50,36 @@ async function loadNewest(): Promise<MemberRow[]> {
   }
 }
 
+interface EventItem {
+  id: number;
+  title: string;
+  description: string;
+  image: string;
+  location: string;
+  when_text: string | null;
+}
+
+async function loadEvents(): Promise<EventItem[]> {
+  try {
+    return await query<EventItem>(
+      `SELECT id, title, description, image, location,
+              DATE_FORMAT(event_date, '%d/%m/%Y · %H:%i') AS when_text
+         FROM cms_events
+        WHERE visible = 1 AND (event_date IS NULL OR event_date >= NOW())
+        ORDER BY (event_date IS NULL), event_date ASC
+        LIMIT 12`,
+    );
+  } catch {
+    return [];
+  }
+}
+
 export default async function CommunityPage() {
-  const [staff, members] = await Promise.all([loadStaff(), loadNewest()]);
+  const [staff, members, events] = await Promise.all([
+    loadStaff(),
+    loadNewest(),
+    loadEvents(),
+  ]);
 
   return (
     <div className="flex min-h-screen flex-1 flex-col">
@@ -64,6 +92,39 @@ export default async function CommunityPage() {
             Conoce al equipo que mantiene el hotel y saluda a las caras nuevas.
           </p>
         </header>
+
+        {/* Upcoming events */}
+        {events.length > 0 && (
+          <section className="mb-10">
+            <h2 className="rt-display mb-4 text-2xl" style={{ color: "var(--rt-brand)" }}>Próximos eventos</h2>
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {events.map((ev) => (
+                <Panel key={ev.id} className="flex flex-col gap-3">
+                  {ev.image && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={ev.image}
+                      alt=""
+                      style={{ width: "100%", height: "130px", objectFit: "cover", borderRadius: "10px" }}
+                    />
+                  )}
+                  <div>
+                    <div className="text-lg font-extrabold" style={{ color: "var(--ink)" }}>{ev.title}</div>
+                    <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs font-bold" style={{ color: "var(--cyan)" }}>
+                      {ev.when_text && <span>🗓 {ev.when_text}</span>}
+                      {ev.location && <span>📍 {ev.location}</span>}
+                    </div>
+                    {ev.description && (
+                      <p className="mt-2 text-sm font-semibold" style={{ color: "var(--ink-soft)" }}>
+                        {ev.description}
+                      </p>
+                    )}
+                  </div>
+                </Panel>
+              ))}
+            </div>
+          </section>
+        )}
 
         {/* Staff team */}
         <section className="mb-10">

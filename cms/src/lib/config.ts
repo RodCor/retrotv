@@ -44,6 +44,16 @@ export const config = {
     badgeUrl:
       process.env.NEXT_PUBLIC_BADGE_URL ??
       "http://127.0.0.1:8081/c_images/album1584",
+    // Hotel-view promo/news images (admin news previews). The hotelview_news
+    // `image` column stores paths like "web_promo_small/foo.png" relative here.
+    promoImageUrl:
+      process.env.NEXT_PUBLIC_PROMO_IMAGE_URL ?? "http://127.0.0.1:8080/images",
+  },
+  // Arcturus RCON endpoint (server-side only). Used to push live reloads
+  // (e.g. refresh the hotel-view news) without restarting the emulator.
+  rcon: {
+    host: process.env.RCON_HOST ?? "127.0.0.1",
+    port: Number(process.env.RCON_PORT ?? 3001),
   },
 } as const;
 

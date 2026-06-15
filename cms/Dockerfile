@@ -18,6 +18,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN addgroup -g 1001 -S nodejs && adduser -S nextjs -u 1001
 
+# docker-cli: only used by the optional CRM furni web-upload, which shells out to
+# the converter container via the Docker socket (opt-in in docker-compose.prod.yml).
+# Harmless when unused; enable the socket mount + group_add to activate it.
+RUN apk add --no-cache docker-cli
+
 # Standalone output bundles the minimal server + node_modules.
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./

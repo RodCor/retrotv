@@ -3,6 +3,14 @@
 import { revalidatePath } from "next/cache";
 import { execute, queryOne } from "@/lib/db";
 import { getSession, isStaff } from "@/lib/auth";
+import { reloadCatalog } from "@/lib/rcon";
+
+/** Note appended to success messages indicating live-reload state. */
+function catalogReloadNote(pushed: boolean): string {
+  return pushed
+    ? " El catálogo del hotel se recargó al instante."
+    : " Reinicia el emulador o usa :update_catalog para aplicarlo en el hotel.";
+}
 
 type ActionResult = { type: "error" | "success"; text: string };
 
@@ -71,8 +79,9 @@ export async function createCatalogPage(
     };
   }
 
+  const { pushed } = await reloadCatalog();
   revalidatePath("/admin/catalog");
-  return { type: "success", text: `Página "${caption}" creada.` };
+  return { type: "success", text: `Página "${caption}" creada.` + catalogReloadNote(pushed) };
 }
 
 export async function renameCatalogPage(id: number, formData: FormData): Promise<void> {
@@ -108,6 +117,7 @@ export async function togglePageVisible(id: number): Promise<void> {
      WHERE id = :id`,
     { id },
   );
+  await reloadCatalog();
   revalidatePath("/admin/catalog");
 }
 
@@ -117,6 +127,7 @@ export async function deleteCatalogPage(id: number): Promise<void> {
   if (!Number.isInteger(id)) return;
 
   await execute("DELETE FROM catalog_pages WHERE id = :id", { id });
+  await reloadCatalog();
   revalidatePath("/admin/catalog");
 }
 
@@ -179,8 +190,9 @@ export async function createCatalogItem(
     };
   }
 
+  const { pushed } = await reloadCatalog();
   revalidatePath("/admin/catalog");
-  return { type: "success", text: `Objeto "${catalogName}" creado.` };
+  return { type: "success", text: `Objeto "${catalogName}" creado.` + catalogReloadNote(pushed) };
 }
 
 export async function deleteCatalogItem(id: number): Promise<void> {
@@ -189,5 +201,6 @@ export async function deleteCatalogItem(id: number): Promise<void> {
   if (!Number.isInteger(id)) return;
 
   await execute("DELETE FROM catalog_items WHERE id = :id", { id });
+  await reloadCatalog();
   revalidatePath("/admin/catalog");
 }
