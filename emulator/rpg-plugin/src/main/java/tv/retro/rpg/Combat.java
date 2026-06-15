@@ -55,7 +55,8 @@ public class Combat {
         if (state != State.PENDING) return null;
         if (byUser(f.userId) != null) return null;
         fighters.add(f);
-        return f.name + " entra al combate. " + f.hpBar();
+        // HP lines are kept in a "NAME [bar] HP/MAX" shape so the client HUD can parse them.
+        return f.name + " " + f.hpBar() + " — entra al combate.";
     }
 
     /** Roll initiative and begin. Returns the announcement lines. */
@@ -85,7 +86,7 @@ public class Combat {
         target.hp -= dmg;
         log.add("⚔ " + attacker.name + " ataca a " + target.name + " — " + dmg
                 + " de daño (ATK " + attacker.atk + " + d6 " + roll + " - DEF " + target.def + ").");
-        log.add("   " + target.name + ": " + target.hpBar());
+        log.add(target.name + " " + target.hpBar());
         if (!target.alive()) {
             target.hp = 0;
             log.add("💀 " + target.name + " ha caído.");

@@ -94,3 +94,52 @@
   border-radius: 7px !important;
   font-weight: 700 !important;
 }
+
+/* ===========================================================================
+   RPG combat HUD overlay (rendered by retrotv-ui.js)
+   =========================================================================== */
+.rtv-rpg {
+  position: fixed; left: 14px; bottom: 78px; z-index: 600; width: 286px;
+  font-family: Ubuntu, "Segoe UI", sans-serif; color: #eaf2fb;
+  background: linear-gradient(180deg, #1d3a55 0%, #122537 100%);
+  border: 1px solid #5e9cbf; border-radius: 12px;
+  box-shadow: 0 14px 34px -10px rgba(0, 0, 0, 0.6);
+  overflow: hidden; user-select: none;
+}
+.rtv-rpg__head {
+  display: flex; align-items: center; gap: 8px; padding: 8px 10px;
+  background: linear-gradient(#dff1fc, #a9d6ef); color: #15405e;
+  border-bottom: 2px solid #5e9cbf; font-weight: 800;
+}
+.rtv-rpg__title { font-size: 0.92rem; }
+.rtv-rpg__turn { margin-left: auto; font-size: 0.7rem; font-weight: 700; opacity: 0.85; }
+.rtv-rpg__x {
+  width: 20px; height: 20px; line-height: 1; border: 0; border-radius: 5px; cursor: pointer;
+  background: rgba(255, 255, 255, 0.4); color: #15405e; font-size: 15px; font-weight: 900;
+}
+.rtv-rpg__x:hover { background: #fff; }
+.rtv-rpg__fighters { padding: 8px 10px 4px; display: flex; flex-direction: column; gap: 6px; }
+.rtv-rpg__empty { font-size: 0.74rem; opacity: 0.7; text-align: center; padding: 6px 0; }
+.rtv-f { display: grid; grid-template-columns: 1fr 84px auto; align-items: center; gap: 7px; font-size: 0.76rem; }
+.rtv-f__name { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rtv-f.is-turn .rtv-f__name { color: #ffd24a; }
+.rtv-f.is-dead { opacity: 0.45; }
+.rtv-f__bar { height: 9px; border-radius: 6px; background: rgba(0, 0, 0, 0.35); overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.4); }
+.rtv-f__bar > i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #74e35f, #3fae2a); transition: width 0.25s ease; }
+.rtv-f.is-dead .rtv-f__bar > i { background: #7a3a3a; }
+.rtv-f__hp { font-size: 0.66rem; opacity: 0.85; font-variant-numeric: tabular-nums; }
+.rtv-rpg__log {
+  margin: 4px 10px 8px; padding: 6px 8px; height: 88px; overflow-y: auto;
+  background: rgba(0, 0, 0, 0.25); border-radius: 8px; font-size: 0.68rem; line-height: 1.35; opacity: 0.92;
+}
+.rtv-rpg__log div { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rtv-rpg__actions, .rtv-rpg__targets { display: flex; flex-wrap: wrap; gap: 5px; padding: 0 10px 10px; }
+.rtv-rpg__targets { padding-top: 0; }
+.rtv-rpg button[data-cmd], .rtv-rpg__atk, .rtv-rpg__targets button {
+  flex: 1 1 auto; min-width: 52px; padding: 6px 8px; cursor: pointer;
+  border: 1px solid #5e9cbf; border-radius: 7px; font-weight: 700; font-size: 0.72rem;
+  background: linear-gradient(#6cc0f1, #2e93cf); color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+}
+.rtv-rpg__atk { background: linear-gradient(#ff9077, #e0543a); border-color: #b23b25; }
+.rtv-rpg__targets button { background: linear-gradient(#a9e35f, #6cb81c); border-color: #4f9410; color: #163b0a; }
+.rtv-rpg button:hover { filter: brightness(1.08); }
