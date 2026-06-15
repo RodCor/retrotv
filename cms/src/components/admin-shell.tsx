@@ -3,7 +3,7 @@ import { config } from "@/lib/config";
 import { getCurrentUser } from "@/lib/auth";
 import { avatarImageUrl } from "@/lib/habbo-imaging";
 import {
-  LayoutDashboard, Users, ShoppingBag, Shirt, Home, Star, ShieldAlert, Settings2, Megaphone, Calendar, Sofa, Newspaper,
+  LayoutDashboard, Users, ShoppingBag, Shirt, Home, Star, ShieldAlert, Settings2, Megaphone, Calendar, Sofa, Newspaper, Swords,
 } from "lucide-react";
 
 const NAV = [
@@ -15,6 +15,7 @@ const NAV = [
   { href: "/admin/posts", label: "Publicaciones", icon: Newspaper },
   { href: "/admin/news", label: "Noticias", icon: Megaphone },
   { href: "/admin/events", label: "Eventos", icon: Calendar },
+  { href: "/admin/rpg", label: "RPG", icon: Swords },
   { href: "/admin/rooms", label: "Salas", icon: Home },
   { href: "/admin/ranks", label: "Rangos", icon: Star },
   { href: "/admin/moderation", label: "Moderación", icon: ShieldAlert },
