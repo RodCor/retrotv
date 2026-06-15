@@ -15,14 +15,16 @@ public class Combat {
     public enum State { PENDING, ACTIVE, ENDED }
 
     public final int roomId;
+    public final int id;        // battle number, unique within the room (rooms can host several)
     public State state = State.PENDING;
     public final List<Fighter> fighters = new ArrayList<>();
     public int round = 0;
     public int turnIndex = 0;
     public long turnToken = 0; // bumped each turn; lets stale turn-timers no-op
 
-    public Combat(int roomId) {
+    public Combat(int roomId, int id) {
         this.roomId = roomId;
+        this.id = id;
     }
 
     private static int d(int sides) {
