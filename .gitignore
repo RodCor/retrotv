@@ -49,3 +49,7 @@ cms/shot-*.png
 database/backups/
 .tmp/
 tools/
+
+# Generated RPG imports + third-party rulebooks (reproducible via scripts/import-rpg.mjs)
+database/_generated/
+/rpg_docs/
