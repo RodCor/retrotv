@@ -1,25 +1,39 @@
 package tv.retro.rpg;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /** One combatant in a {@link Combat} session. */
 public class Fighter {
     public final int userId;
     public final String name;
     public int hp;
     public final int maxHp;
+    public int resource;
+    public final int maxResource;
     public final int atk;
     public final int def;
     public final int spd;
     public int initiative;
     public boolean acted;
+    /** Remaining cooldown (in this fighter's turns) per ability, keyed by lowercase name. */
+    public final Map<String, Integer> cooldowns = new HashMap<>();
 
-    public Fighter(int userId, String name, int hp, int atk, int def, int spd) {
+    public Fighter(int userId, String name, int hp, int resource, int atk, int def, int spd) {
         this.userId = userId;
         this.name = name;
         this.hp = hp;
         this.maxHp = hp;
+        this.resource = resource;
+        this.maxResource = resource;
         this.atk = atk;
         this.def = def;
         this.spd = spd;
+    }
+
+    public int cooldownOf(String abilityKey) {
+        Integer v = cooldowns.get(abilityKey);
+        return v == null ? 0 : v;
     }
 
     public boolean alive() {

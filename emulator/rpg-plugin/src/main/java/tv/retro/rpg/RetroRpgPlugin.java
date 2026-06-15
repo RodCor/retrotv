@@ -2,6 +2,7 @@ package tv.retro.rpg;
 
 import com.eu.habbo.Emulator;
 import com.eu.habbo.habbohotel.rooms.Room;
+import com.eu.habbo.habbohotel.rooms.RoomTile;
 import com.eu.habbo.habbohotel.users.Habbo;
 import com.eu.habbo.plugin.EventHandler;
 import com.eu.habbo.plugin.EventListener;
@@ -12,6 +13,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,11 +32,15 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RetroRpgPlugin extends HabboPlugin implements EventListener {
 
     private static final int TURN_SECONDS = 90;
+    private static final int RULESET = 1;
     private final Map<Integer, Combat> combats = new ConcurrentHashMap<>();
+    private Map<String, Ability> abilities = new HashMap<>();
 
     @Override public void onEnable() {
         Emulator.getPluginManager().registerEvents(this, this);
-        System.out.println("[RetroRPG] enabled — :rpg on|off, join, start, attack, pass, status, end");
+        abilities = Ability.load(RULESET);
+        System.out.println("[RetroRPG] enabled — combat + " + abilities.size()
+                + " abilities (:rpg cast <hab> <obj>)");
     }
     @Override public void onDisable() { combats.clear(); }
     @Override public boolean hasPermission(Habbo habbo, String key) { return false; }
@@ -71,6 +77,8 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
             case "join": case "entrar":  join(habbo, room); break;
             case "start": case "iniciar": start(habbo, room); break;
             case "attack": case "atacar": attack(habbo, room, parts); break;
+            case "cast": case "lanzar": cast(habbo, room, parts); break;
+            case "abilities": case "habilidades": case "habs": listAbilities(habbo); break;
             case "pass": case "next": case "pasar": pass(habbo, room); break;
             case "status": case "estado": status(habbo, room); break;
             case "end": case "fin": end(habbo, room); break;
@@ -129,6 +137,52 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
         }
     }
 
+    private void cast(Habbo habbo, Room room, String[] parts) {
+        Combat combat = combats.get(room.getId());
+        if (combat == null || combat.state != Combat.State.ACTIVE) { habbo.whisper("No hay combate activo."); return; }
+        if (parts.length < 4) { habbo.whisper("Uso: :rpg cast <habilidad> <objetivo>"); return; }
+        Ability ab = abilities.get(parts[2].toLowerCase());
+        if (ab == null) { habbo.whisper("Habilidad desconocida. Usa :rpg abilities."); return; }
+        synchronized (combat) {
+            Fighter me = combat.byUser(habbo.getHabboInfo().getId());
+            if (me == null || !me.alive()) { habbo.whisper("No estás en combate."); return; }
+            if (combat.current() != me) { habbo.whisper("No es tu turno."); return; }
+            if (me.cooldownOf(ab.key()) > 0) { habbo.whisper(ab.name + " en recarga (" + me.cooldownOf(ab.key()) + ")."); return; }
+            if (me.resource < ab.cost) { habbo.whisper("Recurso insuficiente (" + me.resource + "/" + ab.cost + ")."); return; }
+            Fighter target = combat.aliveByName(parts[3]);
+            if (target == null) { habbo.whisper("Objetivo no válido."); return; }
+            int[] cp = posOf(room, me.userId), tp = posOf(room, target.userId);
+            if (cp == null || tp == null) { habbo.whisper("No se pudo determinar la posición de los combatientes."); return; }
+            if (Grid.chebyshev(cp[0], cp[1], tp[0], tp[1]) > ab.range) {
+                habbo.whisper(ab.name + " fuera de alcance (rango " + ab.range + ")."); return;
+            }
+            List<Fighter> affected = new ArrayList<>();
+            for (Fighter f : combat.fighters) {
+                if (!f.alive() || f == me) continue;
+                int[] fp = posOf(room, f.userId);
+                if (fp != null && Grid.affects(ab.shape, cp[0], cp[1], tp[0], tp[1], ab.range, ab.areaSize, fp[0], fp[1]))
+                    affected.add(f);
+            }
+            broadcastAll(room, combat.castResolved(me, ab, affected));
+            if (combat.state == Combat.State.ACTIVE) scheduleTurnTimer(room, combat);
+            else combats.remove(room.getId());
+        }
+    }
+
+    private void listAbilities(Habbo habbo) {
+        habbo.whisper("— Habilidades —");
+        for (Ability a : abilities.values())
+            habbo.whisper(a.name + " · coste " + a.cost + " · rango " + a.range + " · " + a.shape
+                    + (a.areaSize > 0 ? "(" + a.areaSize + ")" : "") + " · CD " + a.cooldown);
+    }
+
+    private int[] posOf(Room room, int userId) {
+        Habbo h = room.getHabbo(userId);
+        if (h == null || h.getRoomUnit() == null) return null;
+        RoomTile t = h.getRoomUnit().getCurrentLocation();
+        return t == null ? null : new int[]{t.x, t.y};
+    }
+
     private void pass(Habbo habbo, Room room) {
         Combat combat = combats.get(room.getId());
         if (combat == null || combat.state != Combat.State.ACTIVE) { habbo.whisper("No hay combate activo."); return; }
@@ -160,6 +214,8 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
             ":rpg join      entra al combate",
             ":rpg start     (dueño) inicia el combate",
             ":rpg attack <nombre>   ataca en tu turno",
+            ":rpg abilities  lista tus habilidades",
+            ":rpg cast <hab> <objetivo>   lanza una habilidad (rango/área)",
             ":rpg pass      pasa tu turno",
             ":rpg status    muestra el estado",
             ":rpg end       (dueño) termina el combate",
@@ -203,16 +259,19 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
     private Fighter loadFighter(Habbo habbo) {
         int uid = habbo.getHabboInfo().getId();
         String name = habbo.getHabboInfo().getUsername();
-        int hp = 100, atk = 10, def = 10, spd = 10;
+        int hp = 100, res = 100, atk = 10, def = 10, spd = 10;
         try (Connection c = Emulator.getDatabase().getDataSource().getConnection();
              PreparedStatement st = c.prepareStatement(
-                 "SELECT max_hp, atk, def, spd FROM rpg_characters WHERE user_id = ? ORDER BY id LIMIT 1")) {
+                 "SELECT max_hp, max_resource, atk, def, spd FROM rpg_characters WHERE user_id = ? ORDER BY id LIMIT 1")) {
             st.setInt(1, uid);
             try (ResultSet rs = st.executeQuery()) {
-                if (rs.next()) { hp = rs.getInt(1); atk = rs.getInt(2); def = rs.getInt(3); spd = rs.getInt(4); }
+                if (rs.next()) {
+                    hp = rs.getInt(1); res = rs.getInt(2);
+                    atk = rs.getInt(3); def = rs.getInt(4); spd = rs.getInt(5);
+                }
             }
         } catch (Exception ignored) { }
-        return new Fighter(uid, name, hp, atk, def, spd);
+        return new Fighter(uid, name, hp, res, atk, def, spd);
     }
 
     private boolean isEnabled(int roomId) {

@@ -96,6 +96,33 @@ public class Combat {
         return log;
     }
 
+    /**
+     * Resolve an ability: spend resource, set cooldown, damage each affected
+     * fighter (caster excluded), then advance the turn. `affected` is computed by
+     * the plugin from real tile positions.
+     */
+    public synchronized List<String> castResolved(Fighter caster, Ability ab, List<Fighter> affected) {
+        List<String> log = new ArrayList<>();
+        caster.resource = Math.max(0, caster.resource - ab.cost);
+        caster.cooldowns.put(ab.key(), ab.cooldown);
+        log.add("✨ " + caster.name + " usa " + ab.name + "!");
+        int hits = 0;
+        for (Fighter t : affected) {
+            if (t == caster || !t.alive()) continue;
+            int roll = d(6);
+            int dmg = Math.max(1, caster.atk + ab.power + roll - t.def);
+            t.hp -= dmg;
+            hits++;
+            log.add("⚔ " + t.name + " recibe " + dmg + " de daño.");
+            log.add(t.name + " " + t.hpBar());
+            if (!t.alive()) { t.hp = 0; log.add("💀 " + t.name + " ha caído."); }
+        }
+        if (hits == 0) log.add("· " + ab.name + " no alcanzó a nadie.");
+        caster.acted = true;
+        log.addAll(advanceTurn());
+        return log;
+    }
+
     /** Current fighter passes without acting. */
     public synchronized List<String> pass(Fighter who) {
         List<String> log = new ArrayList<>();
@@ -118,6 +145,10 @@ public class Combat {
             if (turnIndex >= fighters.size()) { turnIndex = 0; round++; }
             if (fighters.get(turnIndex).alive()) break;
         }
+        // Start-of-turn upkeep for the new active fighter: tick cooldowns + regen.
+        Fighter cur = fighters.get(turnIndex);
+        cur.cooldowns.replaceAll((k, v) -> Math.max(0, v - 1));
+        cur.resource = Math.min(cur.maxResource, cur.resource + Math.max(5, cur.maxResource / 10));
         turnToken++;
         log.add(turnBanner());
         return log;
