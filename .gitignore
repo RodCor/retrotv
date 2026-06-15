@@ -48,3 +48,4 @@ cms/t-rename*.mjs
 cms/shot-*.png
 database/backups/
 .tmp/
+tools/

@@ -1,9 +1,9 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { ACard, ABtn, Field, FormMsg, Save, Shirt } from "@/components/admin-ui";
+import { ACard, ABtn, Field, FormMsg, Save, Shirt, Plus, Pencil, Check, X } from "@/components/admin-ui";
 import { avatarImageUrl } from "@/lib/habbo-imaging";
-import { saveUserLook } from "./actions";
+import { saveUserLook, createClothing, renameClothing } from "./actions";
 
 const DEFAULT_LOOK = "hr-100-0.hd-180-1.ch-210-66.lg-270-82.sh-290-80";
 
@@ -71,5 +71,49 @@ export function SetLookForm() {
         </div>
       </form>
     </ACard>
+  );
+}
+
+/** Create a new purchasable clothing entry (name + figure sets). */
+export function CreateClothingForm() {
+  const [state, action, pending] = useActionState(createClothing, null);
+  return (
+    <form action={action} className="space-y-3">
+      <Field label="Nombre" name="name" required maxLength={64} placeholder="Sombrero de fiesta" className="w-full" />
+      <Field label="Conjuntos de figura" name="setid" required placeholder="3030 o 3331,3334" className="w-full" />
+      <ABtn type="submit" variant="primary" disabled={pending}>
+        <Plus size={14} strokeWidth={2} />
+        {pending ? "Añadiendo…" : "Añadir"}
+      </ABtn>
+      <FormMsg message={state} />
+    </form>
+  );
+}
+
+/** Inline edit for a clothing row: pencil -> name + setid inputs + save/cancel. */
+export function EditClothingRow({ id, name, setid }: { id: number; name: string; setid: string }) {
+  const [editing, setEditing] = useState(false);
+  if (!editing) {
+    return (
+      <ABtn type="button" variant="default" size="xs" onClick={() => setEditing(true)} title="Editar">
+        <Pencil size={13} strokeWidth={2} />
+      </ABtn>
+    );
+  }
+  return (
+    <form action={renameClothing.bind(null, id)} className="flex items-center gap-1">
+      <input
+        name="name" defaultValue={name} autoFocus maxLength={64}
+        className="afield" style={{ width: 130, padding: "0.25rem 0.45rem", fontSize: "0.78rem" }}
+        placeholder="Nombre"
+      />
+      <input
+        name="setid" defaultValue={setid}
+        className="afield" style={{ width: 100, padding: "0.25rem 0.45rem", fontSize: "0.78rem" }}
+        placeholder="3030"
+      />
+      <ABtn type="submit" variant="primary" size="xs" title="Guardar"><Check size={13} strokeWidth={2} /></ABtn>
+      <ABtn type="button" variant="default" size="xs" onClick={() => setEditing(false)} title="Cancelar"><X size={13} strokeWidth={2} /></ABtn>
+    </form>
   );
 }

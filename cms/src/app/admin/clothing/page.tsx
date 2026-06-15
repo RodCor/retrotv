@@ -4,11 +4,14 @@ import { getSession, isStaff } from "@/lib/auth";
 import {
   PageHead,
   ACard,
+  ABtn,
   TableWrap,
   Shirt,
   ImageIcon,
+  Trash2,
 } from "@/components/admin-ui";
-import { SetLookForm } from "./forms";
+import { SetLookForm, CreateClothingForm, EditClothingRow } from "./forms";
+import { deleteClothing } from "./actions";
 import { MediaThumb } from "@/components/media-thumb";
 import { setTypeMap, buildClothingFigure } from "@/lib/figure-sets";
 import { avatarImageUrl } from "@/lib/habbo-imaging";
@@ -67,6 +70,12 @@ export default async function ClothingAdminPage() {
       <SetLookForm />
 
       <div className="mt-4">
+        <ACard title="Crear ropa" icon={<Shirt size={16} strokeWidth={2} />}>
+          <CreateClothingForm />
+        </ACard>
+      </div>
+
+      <div className="mt-4">
         <ACard
           title="Ropa comprable"
           icon={<Shirt size={16} strokeWidth={2} />}
@@ -89,6 +98,7 @@ export default async function ClothingAdminPage() {
                     <th className="num">ID</th>
                     <th className="cap">Nombre</th>
                     <th>Conjuntos de figura</th>
+                    <th>Acciones</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -100,6 +110,14 @@ export default async function ClothingAdminPage() {
                       <td className="num">{c.id}</td>
                       <td className="cap"><span className="ell">{c.name}</span></td>
                       <td><span className="idchip" title={c.setid}>{c.setid}</span></td>
+                      <td>
+                        <div className="flex flex-wrap items-center gap-1">
+                          <EditClothingRow id={c.id} name={c.name} setid={c.setid} />
+                          <form action={deleteClothing.bind(null, c.id)}>
+                            <ABtn type="submit" variant="danger" size="xs" title="Eliminar"><Trash2 size={13} strokeWidth={2} /></ABtn>
+                          </form>
+                        </div>
+                      </td>
                     </tr>
                     );
                   })}
