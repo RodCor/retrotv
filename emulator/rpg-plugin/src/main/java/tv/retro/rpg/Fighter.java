@@ -16,8 +16,16 @@ public class Fighter {
     public final int spd;
     public int initiative;
     public boolean acted;
+    /** Tile the fighter stood on when their current turn started (movement is measured from here). */
+    public int turnStartX = -1;
+    public int turnStartY = -1;
     /** Remaining cooldown (in this fighter's turns) per ability, keyed by lowercase name. */
     public final Map<String, Integer> cooldowns = new HashMap<>();
+
+    /** Tiles this fighter may move from its turn-start tile (chebyshev), from SPD. */
+    public int moveBudget() {
+        return Math.max(2, 2 + this.spd / 4);
+    }
 
     public Fighter(int userId, String name, int hp, int resource, int atk, int def, int spd) {
         this.userId = userId;

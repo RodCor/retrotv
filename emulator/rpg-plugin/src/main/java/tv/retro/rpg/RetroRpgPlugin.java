@@ -3,10 +3,12 @@ package tv.retro.rpg;
 import com.eu.habbo.Emulator;
 import com.eu.habbo.habbohotel.rooms.Room;
 import com.eu.habbo.habbohotel.rooms.RoomTile;
+import com.eu.habbo.habbohotel.rooms.RoomUnit;
 import com.eu.habbo.habbohotel.users.Habbo;
 import com.eu.habbo.plugin.EventHandler;
 import com.eu.habbo.plugin.EventListener;
 import com.eu.habbo.plugin.HabboPlugin;
+import com.eu.habbo.plugin.events.roomunit.RoomUnitSetGoalEvent;
 import com.eu.habbo.plugin.events.users.UserTalkEvent;
 
 import java.sql.Connection;
@@ -86,6 +88,31 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
         }
     }
 
+    /**
+     * Tactical movement: during active combat only the current fighter may walk,
+     * and only within their SPD-based tile budget from where their turn started.
+     * Cancelling the goal event aborts the walk (verified in RoomUnit.setGoalLocation).
+     * Non-combatants and rooms without active combat are never restricted.
+     */
+    @EventHandler
+    public void onMove(RoomUnitSetGoalEvent event) {
+        final Room room = event.room;
+        if (room == null) return;
+        final Combat combat = combats.get(room.getId());
+        if (combat == null || combat.state != Combat.State.ACTIVE) return;
+        final Habbo h = room.getHabbo(event.roomUnit);
+        if (h == null) return; // bot / pet → free
+        final Fighter f = combat.byUser(h.getHabboInfo().getId());
+        if (f == null) return; // spectator → free
+        if (combat.current() != f) { event.setCancelled(true); return; } // not your turn
+        final RoomTile goal = event.goal;
+        if (goal == null || f.turnStartX < 0) return;
+        if (Grid.chebyshev(f.turnStartX, f.turnStartY, goal.x, goal.y) > f.moveBudget()) {
+            event.setCancelled(true);
+            h.whisper("Fuera de tu alcance de movimiento (máx " + f.moveBudget() + " casillas).");
+        }
+    }
+
     /* ------------------------------- toggle ------------------------------- */
 
     private void toggle(Habbo habbo, Room room, boolean enable) {
@@ -116,7 +143,7 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
         synchronized (combat) {
             if (combat.fighters.size() < 2) { habbo.whisper("Hacen falta al menos 2 combatientes."); return; }
             broadcastAll(room, combat.start());
-            scheduleTurnTimer(room, combat);
+            onTurnAdvanced(room, combat);
         }
     }
 
@@ -132,7 +159,7 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
             if (target == null) { habbo.whisper("Objetivo no válido."); return; }
             if (target == me) { habbo.whisper("No puedes atacarte a ti mismo."); return; }
             broadcastAll(room, combat.attack(me, target));
-            if (combat.state == Combat.State.ACTIVE) scheduleTurnTimer(room, combat);
+            if (combat.state == Combat.State.ACTIVE) onTurnAdvanced(room, combat);
             else combats.remove(room.getId());
         }
     }
@@ -164,7 +191,7 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
                     affected.add(f);
             }
             broadcastAll(room, combat.castResolved(me, ab, affected));
-            if (combat.state == Combat.State.ACTIVE) scheduleTurnTimer(room, combat);
+            if (combat.state == Combat.State.ACTIVE) onTurnAdvanced(room, combat);
             else combats.remove(room.getId());
         }
     }
@@ -190,7 +217,7 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
             Fighter me = combat.byUser(habbo.getHabboInfo().getId());
             if (me == null || combat.current() != me) { habbo.whisper("No es tu turno."); return; }
             broadcastAll(room, combat.pass(me));
-            if (combat.state == Combat.State.ACTIVE) scheduleTurnTimer(room, combat);
+            if (combat.state == Combat.State.ACTIVE) onTurnAdvanced(room, combat);
             else combats.remove(room.getId());
         }
     }
@@ -223,7 +250,22 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
         for (String l : lines) habbo.whisper(l);
     }
 
-    /* ----------------------------- turn timer ----------------------------- */
+    /* --------------------------- turn lifecycle --------------------------- */
+
+    /** Called whenever the active fighter changes: capture their start tile + arm the timer. */
+    private void onTurnAdvanced(Room room, Combat combat) {
+        markTurnStart(room, combat);
+        scheduleTurnTimer(room, combat);
+    }
+
+    private void markTurnStart(Room room, Combat combat) {
+        Fighter cur = combat.current();
+        if (cur == null) return;
+        int[] p = posOf(room, cur.userId);
+        if (p != null) { cur.turnStartX = p[0]; cur.turnStartY = p[1]; }
+        Habbo h = room.getHabbo(cur.userId);
+        if (h != null) h.whisper("🦶 Tu turno: te puedes mover hasta " + cur.moveBudget() + " casillas.");
+    }
 
     private void scheduleTurnTimer(Room room, Combat combat) {
         final long token = combat.turnToken;
@@ -236,7 +278,7 @@ public class RetroRpgPlugin extends HabboPlugin implements EventListener {
                 log.add("⏱ Se acabó el tiempo de " + c.name + ".");
                 log.addAll(combat.pass(c));
                 broadcastAll(room, log);
-                if (combat.state == Combat.State.ACTIVE) scheduleTurnTimer(room, combat);
+                if (combat.state == Combat.State.ACTIVE) onTurnAdvanced(room, combat);
                 else combats.remove(room.getId());
             }
         }, TURN_SECONDS * 1000L);
