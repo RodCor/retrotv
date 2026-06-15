@@ -24,16 +24,24 @@ interface SheetInput {
   def: number;
   spd: number;
   maxResource: number;
+  level: number;
+  arma: number;
+  rango: string;
+  clase: string;
 }
 
 function parseSheet(formData: FormData): SheetInput {
   return {
     name: String(formData.get("name") ?? "").trim().slice(0, 80),
-    maxHp: clampInt(formData.get("max_hp"), 1, 9999, 100),
-    atk: clampInt(formData.get("atk"), 0, 999, 10),
-    def: clampInt(formData.get("def"), 0, 999, 10),
-    spd: clampInt(formData.get("spd"), 0, 999, 10),
-    maxResource: clampInt(formData.get("max_resource"), 0, 9999, 100),
+    maxHp: clampInt(formData.get("max_hp"), 1, 99999, 100),
+    atk: clampInt(formData.get("atk"), 0, 9999, 10),
+    def: clampInt(formData.get("def"), 0, 9999, 10),
+    spd: clampInt(formData.get("spd"), 0, 9999, 10),
+    maxResource: clampInt(formData.get("max_resource"), 0, 99999, 100),
+    level: clampInt(formData.get("level"), 1, 999, 1),
+    arma: clampInt(formData.get("arma"), 0, 9999, 0),
+    rango: String(formData.get("rango") ?? "D").trim().toUpperCase().slice(0, 4) || "D",
+    clase: String(formData.get("clase") ?? "").trim().slice(0, 48),
   };
 }
 
@@ -55,17 +63,26 @@ export async function saveCharacter(
 
   const s = parseSheet(formData);
   const name = s.name || user.username;
+  const rulesetId = clampInt(formData.get("ruleset_id"), 1, 999999, 1);
 
   try {
     await execute(
       `INSERT INTO rpg_characters
-         (user_id, ruleset_id, name, hp, max_hp, resource, max_resource, atk, def, spd)
-       VALUES (:uid, 1, :name, :maxHp, :maxHp, :maxResource, :maxResource, :atk, :def, :spd)
+         (user_id, ruleset_id, name, hp, max_hp, resource, max_resource, atk, def, spd,
+          level, arma, rango, clase)
+       VALUES (:uid, :ruleset, :name, :maxHp, :maxHp, :maxResource, :maxResource, :atk, :def, :spd,
+          :level, :arma, :rango, :clase)
        ON DUPLICATE KEY UPDATE
+         ruleset_id = VALUES(ruleset_id),
          name = VALUES(name), max_hp = VALUES(max_hp), hp = VALUES(max_hp),
          max_resource = VALUES(max_resource), resource = VALUES(max_resource),
-         atk = VALUES(atk), def = VALUES(def), spd = VALUES(spd)`,
-      { uid: user.id, name, maxHp: s.maxHp, maxResource: s.maxResource, atk: s.atk, def: s.def, spd: s.spd },
+         atk = VALUES(atk), def = VALUES(def), spd = VALUES(spd),
+         level = VALUES(level), arma = VALUES(arma), rango = VALUES(rango), clase = VALUES(clase)`,
+      {
+        uid: user.id, ruleset: rulesetId, name,
+        maxHp: s.maxHp, maxResource: s.maxResource, atk: s.atk, def: s.def, spd: s.spd,
+        level: s.level, arma: s.arma, rango: s.rango, clase: s.clase,
+      },
     );
   } catch (err) {
     return { type: "error", text: `No se pudo guardar: ${(err as Error).message}` };
@@ -85,13 +102,19 @@ export async function updateCharacter(
   if (!Number.isInteger(id) || id <= 0) return { type: "error", text: "Id no válido." };
 
   const s = parseSheet(formData);
+  const rulesetId = clampInt(formData.get("ruleset_id"), 1, 999999, 1);
   try {
     await execute(
       `UPDATE rpg_characters
-          SET name = :name, max_hp = :maxHp, hp = LEAST(hp, :maxHp),
-              max_resource = :maxResource, atk = :atk, def = :def, spd = :spd
+          SET ruleset_id = :ruleset, name = :name, max_hp = :maxHp, hp = LEAST(hp, :maxHp),
+              max_resource = :maxResource, atk = :atk, def = :def, spd = :spd,
+              level = :level, arma = :arma, rango = :rango, clase = :clase
         WHERE id = :id`,
-      { id, name: s.name, maxHp: s.maxHp, maxResource: s.maxResource, atk: s.atk, def: s.def, spd: s.spd },
+      {
+        id, ruleset: rulesetId, name: s.name,
+        maxHp: s.maxHp, maxResource: s.maxResource, atk: s.atk, def: s.def, spd: s.spd,
+        level: s.level, arma: s.arma, rango: s.rango, clase: s.clase,
+      },
     );
   } catch (err) {
     return { type: "error", text: `No se pudo actualizar: ${(err as Error).message}` };

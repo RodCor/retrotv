@@ -2,7 +2,7 @@
 
 import { useActionState, useState } from "react";
 import {
-  ACard, ABtn, Field, FormMsg, Tag,
+  ACard, ABtn, Field, Select, FormMsg, Tag,
   Save, Plus, Pencil, X, Trash2,
 } from "@/components/admin-ui";
 import { Swords, Heart, Shield, Zap, Sparkles } from "lucide-react";
@@ -10,35 +10,55 @@ import { Modal } from "@/components/modal";
 import { avatarImageUrl } from "@/lib/habbo-imaging";
 import { saveCharacter, updateCharacter, deleteCharacter } from "./actions";
 
+export interface RulesetOption { id: number; name: string }
+
 export interface CharacterRow {
   id: number;
   user_id: number;
   username: string;
   look: string;
   name: string;
+  ruleset_id: number;
   max_hp: number;
   atk: number;
   def: number;
   spd: number;
   max_resource: number;
+  level: number;
+  arma: number;
+  rango: string;
+  clase: string;
 }
 
-function StatFields({ d }: { d?: Partial<CharacterRow> }) {
+function StatFields({ d, rulesets }: { d?: Partial<CharacterRow>; rulesets: RulesetOption[] }) {
   return (
     <>
-      <Field label="Nombre del personaje" name="name" maxLength={80} defaultValue={d?.name} placeholder="(por defecto, el usuario)" className="w-full" />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Field label="Nombre del personaje" name="name" maxLength={80} defaultValue={d?.name} placeholder="(por defecto, el usuario)" className="w-full" />
+        <Select label="Ruleset" name="ruleset_id" defaultValue={String(d?.ruleset_id ?? rulesets[0]?.id ?? 1)}>
+          {rulesets.map((r) => <option key={r.id} value={r.id}>{r.name}</option>)}
+        </Select>
+      </div>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <Field label="HP" name="max_hp" type="number" min={1} max={9999} defaultValue={d?.max_hp ?? 100} />
-        <Field label="Ataque" name="atk" type="number" min={0} max={999} defaultValue={d?.atk ?? 10} />
-        <Field label="Defensa" name="def" type="number" min={0} max={999} defaultValue={d?.def ?? 10} />
-        <Field label="Velocidad" name="spd" type="number" min={0} max={999} defaultValue={d?.spd ?? 10} />
-        <Field label="Recurso" name="max_resource" type="number" min={0} max={9999} defaultValue={d?.max_resource ?? 100} />
+        <Field label="HP" name="max_hp" type="number" min={1} max={99999} defaultValue={d?.max_hp ?? 100} />
+        <Field label="Ataque" name="atk" type="number" min={0} max={9999} defaultValue={d?.atk ?? 10} />
+        <Field label="Defensa" name="def" type="number" min={0} max={9999} defaultValue={d?.def ?? 10} />
+        <Field label="Velocidad" name="spd" type="number" min={0} max={9999} defaultValue={d?.spd ?? 10} />
+        <Field label="Recurso" name="max_resource" type="number" min={0} max={99999} defaultValue={d?.max_resource ?? 100} />
+        <Field label="Nivel" name="level" type="number" min={1} max={999} defaultValue={d?.level ?? 1} />
+      </div>
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <Field label="Arma" name="arma" type="number" min={0} max={9999} defaultValue={d?.arma ?? 0} />
+        <Select label="Rango" name="rango" defaultValue={d?.rango ?? "D"}>
+          {["D", "C", "B", "A", "S"].map((r) => <option key={r} value={r}>{r}</option>)}
+        </Select>
+        <Field label="Clase" name="clase" maxLength={48} defaultValue={d?.clase} placeholder="Shinigami…" />
       </div>
     </>
   );
 }
 
-export function CreateCharacterModal() {
+export function CreateCharacterModal({ rulesets }: { rulesets: RulesetOption[] }) {
   const [open, setOpen] = useState(false);
   const [state, action, pending] = useActionState(saveCharacter, null);
   return (
@@ -49,7 +69,7 @@ export function CreateCharacterModal() {
       <Modal open={open} onClose={() => setOpen(false)} title="Ficha de personaje" subtitle="Stats RPG de un usuario" icon={<Swords size={18} strokeWidth={2} />} size="lg">
         <form action={action} className="space-y-4">
           <Field label="Usuario" name="username" required placeholder="AdminTest" className="w-full" />
-          <StatFields />
+          <StatFields rulesets={rulesets} />
           <div className="flex items-center justify-end gap-3 border-t pt-3" style={{ borderColor: "var(--line)" }}>
             <FormMsg message={state} />
             <ABtn type="submit" variant="primary" disabled={pending}>
@@ -66,9 +86,10 @@ function Stat({ icon, value }: { icon: React.ReactNode; value: number }) {
   return <span className="inline-flex items-center gap-1 text-xs font-semibold">{icon}{value}</span>;
 }
 
-export function CharacterCard({ character: c }: { character: CharacterRow }) {
+export function CharacterCard({ character: c, rulesets }: { character: CharacterRow; rulesets: RulesetOption[] }) {
   const [editing, setEditing] = useState(false);
   const [state, action, pending] = useActionState(updateCharacter, null);
+  const rulesetName = rulesets.find((r) => r.id === c.ruleset_id)?.name;
   return (
     <ACard>
       <div>
@@ -79,6 +100,9 @@ export function CharacterCard({ character: c }: { character: CharacterRow }) {
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-sm font-semibold">{c.name}</span>
               <Tag color="cyan">{c.username}</Tag>
+              {c.rango && <Tag color="amber">{c.rango}</Tag>}
+              {c.clase && <span className="text-xs adim">{c.clase}</span>}
+              {rulesetName && <span className="ml-auto text-xs adim">{rulesetName} · Nv {c.level}</span>}
             </div>
             <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1" style={{ color: "var(--ink-soft)" }}>
               <Stat icon={<Heart size={12} strokeWidth={2} className="text-rose-400" />} value={c.max_hp} />
@@ -98,7 +122,7 @@ export function CharacterCard({ character: c }: { character: CharacterRow }) {
         {editing && (
           <form action={action} className="news-edit-panel">
             <input type="hidden" name="id" value={c.id} />
-            <StatFields d={c} />
+            <StatFields d={c} rulesets={rulesets} />
             <div className="flex items-center gap-2">
               <ABtn type="submit" variant="primary" disabled={pending}><Save size={13} strokeWidth={2} />{pending ? "Guardando…" : "Guardar"}</ABtn>
               <ABtn type="button" variant="default" onClick={() => setEditing(false)}><X size={13} strokeWidth={2} /> Cerrar</ABtn>
