@@ -143,3 +143,11 @@
 .rtv-rpg__atk { background: linear-gradient(#ff9077, #e0543a); border-color: #b23b25; }
 .rtv-rpg__targets button { background: linear-gradient(#a9e35f, #6cb81c); border-color: #4f9410; color: #163b0a; }
 .rtv-rpg button:hover { filter: brightness(1.08); }
+.rtv-rpg__abilities { display: flex; flex-wrap: wrap; gap: 5px; padding: 0 10px 4px; }
+.rtv-rpg__abilities:empty { display: none; }
+.rtv-ab {
+  flex: 1 1 auto; min-width: 56px; padding: 5px 8px; cursor: pointer;
+  border: 1px solid #8a6fc7; border-radius: 7px; font-weight: 700; font-size: 0.72rem;
+  background: linear-gradient(#b79bf0, #7d5bc6); color: #fff; text-shadow: 0 1px 0 rgba(0,0,0,0.25);
+}
+.rtv-ab:hover { filter: brightness(1.08); }

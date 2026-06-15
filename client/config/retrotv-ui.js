@@ -54,8 +54,9 @@
 (function () {
   "use strict";
 
-  var state = { visible: false, ended: false, round: 0, turn: "", order: [], fighters: {}, log: [] };
+  var state = { visible: false, ended: false, round: 0, turn: "", order: [], fighters: {}, log: [], abilities: {} };
   var el = {}; // cached DOM nodes
+  var pendingCast = null; // ability key awaiting a target pick
 
   function key(n) { return (n || "").trim().toLowerCase(); }
 
@@ -73,7 +74,15 @@
   function parseLine(text) {
     if (!text) return false;
     var t = String(text).replace(/\s+/g, " ").trim();
-    var isCombat = /[⚔▶💀🏆⏱]/.test(t) || /\[[█░\s]*\]\s*-?\d+\s*\/\s*\d+/.test(t)
+
+    // Ability list line (from :rpg abilities): "Golpe · coste 0 · rango 1 · single · CD 0"
+    var ab = t.match(/([^\s·]+)\s*·\s*coste\s+(\d+)\s*·\s*rango\s+(\d+)\s*·\s*([a-záéíóúñ]+)/i);
+    if (ab) {
+      state.abilities[ab[1].toLowerCase()] = { name: ab[1], cost: +ab[2], range: +ab[3], shape: ab[4] };
+      state.visible = true; render(); return true;
+    }
+
+    var isCombat = /[⚔▶💀🏆⏱✨]/.test(t) || /\[[█░\s]*\]\s*-?\d+\s*\/\s*\d+/.test(t)
                 || /orden de turno/i.test(t) || /combate/i.test(t);
     if (!isCombat) return false;
 
@@ -135,10 +144,12 @@
       '<div class="rtv-rpg__head"><span class="rtv-rpg__title">⚔ Combate</span>' +
       '<span class="rtv-rpg__turn"></span><button class="rtv-rpg__x" title="Cerrar">×</button></div>' +
       '<div class="rtv-rpg__fighters"></div><div class="rtv-rpg__log"></div>' +
+      '<div class="rtv-rpg__abilities"></div>' +
       '<div class="rtv-rpg__actions">' +
       '<button data-cmd=":rpg join">Unirse</button>' +
       '<button data-cmd=":rpg start">Iniciar</button>' +
       '<button class="rtv-rpg__atk">Atacar</button>' +
+      '<button data-cmd=":rpg abilities">Hab.</button>' +
       '<button data-cmd=":rpg pass">Pasar</button>' +
       '<button data-cmd=":rpg status">Estado</button></div>' +
       '<div class="rtv-rpg__targets" style="display:none"></div>';
@@ -147,6 +158,7 @@
     el.turn = root.querySelector(".rtv-rpg__turn");
     el.fighters = root.querySelector(".rtv-rpg__fighters");
     el.log = root.querySelector(".rtv-rpg__log");
+    el.abilities = root.querySelector(".rtv-rpg__abilities");
     el.targets = root.querySelector(".rtv-rpg__targets");
 
     root.querySelector(".rtv-rpg__x").addEventListener("click", function () {
@@ -155,7 +167,24 @@
     root.querySelectorAll("[data-cmd]").forEach(function (b) {
       b.addEventListener("click", function () { sendChat(b.getAttribute("data-cmd")); });
     });
-    root.querySelector(".rtv-rpg__atk").addEventListener("click", showTargets);
+    root.querySelector(".rtv-rpg__atk").addEventListener("click", function () {
+      pendingCast = null; showTargets();
+    });
+  }
+
+  function renderAbilities() {
+    if (!el.abilities) return;
+    var keys = Object.keys(state.abilities);
+    el.abilities.innerHTML = keys.map(function (k) {
+      var a = state.abilities[k];
+      return '<button class="rtv-ab" data-ab="' + k + '" title="coste ' + a.cost +
+        " · rango " + a.range + " · " + a.shape + '">' + escapeHtml(a.name) + "</button>";
+    }).join("");
+    el.abilities.querySelectorAll(".rtv-ab").forEach(function (b) {
+      b.addEventListener("click", function () {
+        pendingCast = b.getAttribute("data-ab"); showTargets();
+      });
+    });
   }
 
   function showTargets() {
@@ -170,7 +199,8 @@
       var b = document.createElement("button");
       b.textContent = f.name;
       b.addEventListener("click", function () {
-        sendChat(":rpg attack " + f.name);
+        sendChat(pendingCast ? ":rpg cast " + pendingCast + " " + f.name : ":rpg attack " + f.name);
+        pendingCast = null;
         el.targets.style.display = "none";
       });
       el.targets.appendChild(b);
@@ -200,6 +230,7 @@
       return "<div>" + escapeHtml(l) + "</div>";
     }).join("");
     el.log.scrollTop = el.log.scrollHeight;
+    renderAbilities();
   }
 
   function escapeHtml(s) {
