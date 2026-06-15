@@ -43,6 +43,31 @@
 .chatstyles-anchor,
 .chatstyles-icon { display: none !important; }
 
+/* Remove the rainbow "wheel" (fortune-wheel) icon from the bottom toolbar. */
+.nitro-icon.icon-fortune-wheel,
+.tb-icon.icon-fortune-wheel { display: none !important; }
+
+/* --- Chat input box: classic 2015 white rounded pill --- */
+.nitro-chat-input-container {
+  border: 2px solid #5e93b5 !important;
+  border-radius: 18px !important;
+  background: linear-gradient(#ffffff 0%, #eef6fb 100%) !important;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12), inset 0 1px 0 #ffffff !important;
+}
+.nitro-chat-input-container input::placeholder { color: #7c98a8 !important; }
+
+/* --- Chat history ("logs"): slide in from the side, don't pop --- */
+/* The outer .draggable-window keeps its position; we animate the inner card so we
+   never fight React's inline drag transform on the window itself. */
+.retrotv-chatlog .nitro-card-shell {
+  animation: retrotv-chatlog-slide 260ms cubic-bezier(0.22, 0.61, 0.36, 1) both;
+  transform-origin: left center;
+}
+@keyframes retrotv-chatlog-slide {
+  from { transform: translateX(-340px); opacity: 0; }
+  to   { transform: translateX(0); opacity: 1; }
+}
+
 /* --- Buttons: classic Habbo green / blue gradients --- */
 .btn-success {
   background: linear-gradient(#a9e35f 0%, #6cb81c 100%) !important;

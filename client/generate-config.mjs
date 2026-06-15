@@ -69,17 +69,14 @@ patch("renderer-config.json", (rc) => {
   rc["external.texts.translation.url"] = `${CLIENT_URL}/configuration/UITexts_%locale%.json5?t=%timestamp%`;
 });
 
-// Point the hotel-view hotspots (lobby/pool/picnic/...) at our public rooms so
-// clicking a section of the landing screen enters a real room.
+// Hotel-view hotspots: clear any room mappings so the landing screen doesn't
+// point at removed public rooms. (Public rooms are parked until we import
+// proper builds; clicking a hotspot is simply inert in the meantime.)
 patch("ui-config.json", (uc) => {
   const hv = uc.hotelview || (uc.hotelview = {});
-  hv["room.lobby"] = "4";        // Recepción
-  hv["room.picnic"] = "8";       // El Picnic
-  hv["room.pool"] = "9";         // El Parque (outdoor)
-  hv["room.rooftop"] = "12";     // La Azotea
-  hv["room.rooftop.pool"] = "18"; // Azotea 2
-  hv["room.infobus"] = "13";     // Cibercafé
-  hv["room.peaceful"] = "16";    // Salón de Té
+  for (const k of Object.keys(hv)) {
+    if (k.startsWith("room.")) hv[k] = "";
+  }
 });
 
 // Inject the RetroTV UI override stylesheet into index.html (idempotent). This
@@ -88,16 +85,28 @@ try {
   const indexPath = `${DIR}/../index.html`;
   if (fs.existsSync(indexPath)) {
     let html = fs.readFileSync(indexPath, "utf8");
+    let changed = false;
     if (!html.includes("configuration/retrotv-ui.css")) {
       html = html.replace(
         "</head>",
         `  <link rel="stylesheet" href="configuration/retrotv-ui.css">\n</head>`,
       );
-      fs.writeFileSync(indexPath, html);
+      changed = true;
       console.log("[config] injected retrotv-ui.css");
     } else {
       console.log("[config] retrotv-ui.css already linked");
     }
+    if (!html.includes("configuration/retrotv-ui.js")) {
+      html = html.replace(
+        "</body>",
+        `  <script src="configuration/retrotv-ui.js"></script>\n</body>`,
+      );
+      changed = true;
+      console.log("[config] injected retrotv-ui.js");
+    } else {
+      console.log("[config] retrotv-ui.js already linked");
+    }
+    if (changed) fs.writeFileSync(indexPath, html);
   }
 } catch (err) {
   console.log(`[config] css inject failed: ${err.message}`);
