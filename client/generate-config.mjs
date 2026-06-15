@@ -74,12 +74,12 @@ patch("renderer-config.json", (rc) => {
 patch("ui-config.json", (uc) => {
   const hv = uc.hotelview || (uc.hotelview = {});
   hv["room.lobby"] = "4";        // Recepción
-  hv["room.picnic"] = "5";       // El Bar
-  hv["room.infobus"] = "6";      // Cine RetroTV
-  hv["room.pool"] = "7";         // Salón Lounge
-  hv["room.rooftop"] = "7";
-  hv["room.rooftop.pool"] = "7";
-  hv["room.peaceful"] = "4";
+  hv["room.picnic"] = "8";       // El Picnic
+  hv["room.pool"] = "9";         // El Parque (outdoor)
+  hv["room.rooftop"] = "12";     // La Azotea
+  hv["room.rooftop.pool"] = "18"; // Azotea 2
+  hv["room.infobus"] = "13";     // Cibercafé
+  hv["room.peaceful"] = "16";    // Salón de Té
 });
 
 // Inject the RetroTV UI override stylesheet into index.html (idempotent). This
