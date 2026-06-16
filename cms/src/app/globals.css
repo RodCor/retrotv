@@ -896,3 +896,13 @@ select.afield { appearance: none; cursor: pointer; }
 .habbo .site-foot { background: #ffffff; border-top: 1px solid var(--line); }
 .habbo .site-navlink { color: var(--ink-soft); font-weight: 600; }
 .habbo .site-navlink:hover { color: var(--amber-deep); }
+
+/* --- Multi-account play launcher --- */
+.play-launcher { margin-top: 1.5rem; }
+.play-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem; }
+.play-card { position: relative; display: flex; flex-direction: column; align-items: center; gap: .25rem;
+  padding: 1rem .5rem; border-radius: 12px; border: 2px solid rgba(0,0,0,.12); background: #fff; cursor: pointer; }
+.play-card-on { border-color: #34e1d4; box-shadow: 0 0 0 3px rgba(52,225,212,.25); }
+.play-name { font-weight: 700; }
+.play-check { position: absolute; top: .4rem; right: .6rem; color: #34e1d4; font-weight: 900; }
+.play-actions { display: flex; justify-content: center; margin-top: 1.25rem; }
