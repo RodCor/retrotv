@@ -1,6 +1,5 @@
 "use server";
 
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { queryOne, execute } from "@/lib/db";
 import {
@@ -8,27 +7,12 @@ import {
   createSessionToken,
   setSessionCookie,
 } from "@/lib/auth";
-import { config } from "@/lib/config";
+import { createAvatar } from "@/lib/owners";
 
 export type FormResult = { type: "error" | "success"; text: string };
 
 const USERNAME_RE = /^[A-Za-z0-9_]{3,20}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-// Every habbo joins with effectively-unlimited coins and permanent Habbo Club.
-const UNLIMITED_CREDITS = 1_000_000_000;
-// Arcturus stores subscription timestamps as SIGNED int and computes
-// (timestamp_start + duration) as an int, so the end must stay <= Integer.MAX
-// (2147483647) or it overflows on read and wraps negative (expiring HC).
-// duration = INT_MAX - now => HC lasts right up to that ceiling (~2038). "Forever".
-const SUB_INT_MAX = 2_147_483_647;
-
-async function clientIp(): Promise<string> {
-  const h = await headers();
-  const fwd = h.get("x-forwarded-for");
-  if (fwd) return fwd.split(",")[0].trim();
-  return "127.0.0.1";
-}
 
 export async function registerAction(
   _prev: FormResult | null,
@@ -40,10 +24,7 @@ export async function registerAction(
   const confirm = String(formData.get("confirm") ?? "");
 
   if (!USERNAME_RE.test(username)) {
-    return {
-      type: "error",
-      text: "El usuario debe tener 3–20 caracteres: letras, números o guiones bajos.",
-    };
+    return { type: "error", text: "El usuario debe tener 3–20 caracteres: letras, números o guiones bajos." };
   }
   if (!EMAIL_RE.test(email)) {
     return { type: "error", text: "Introduce un correo electrónico válido." };
@@ -55,60 +36,51 @@ export async function registerAction(
     return { type: "error", text: "Las contraseñas no coinciden." };
   }
 
-  const existing = await queryOne<{ id: number }>(
+  // Owner username and the first avatar share the chosen name; both must be free.
+  const ownerTaken = await queryOne<{ id: number }>(
+    "SELECT id FROM account_owners WHERE username = :u",
+    { u: username },
+  );
+  const avatarTaken = await queryOne<{ id: number }>(
     "SELECT id FROM users WHERE username = :u",
     { u: username },
   );
-  if (existing) {
+  if (ownerTaken || avatarTaken) {
     return { type: "error", text: "Ese nombre de usuario ya está en uso." };
   }
 
   const now = Math.floor(Date.now() / 1000);
-  const ip = await clientIp();
   const hashed = await hashPassword(password);
 
-  const result = await execute(
-    `INSERT INTO users
-       (username, real_name, password, mail, account_created, last_login,
-        last_online, motto, look, gender, rank, credits, pixels, points,
-        auth_ticket, ip_register, ip_current, home_room)
-     VALUES
-       (:username, :real_name, :password, :mail, :account_created, :last_login,
-        :last_online, :motto, :look, :gender, :rank, :credits, :pixels, :points,
-        :auth_ticket, :ip_register, :ip_current, :home_room)`,
-    {
-      username,
-      real_name: username,
-      password: hashed,
-      mail: email,
-      account_created: now,
-      last_login: now,
-      last_online: now,
-      motto: config.hotel.defaultMotto,
-      look: config.hotel.defaultLook,
-      gender: "M",
-      rank: 1,
-      credits: UNLIMITED_CREDITS,
-      pixels: config.hotel.startPixels,
-      points: config.hotel.startPoints,
-      auth_ticket: "",
-      ip_register: ip,
-      ip_current: ip,
-      home_room: 0,
-    },
+  // 1) Create the owner (website credential).
+  const ownerResult = await execute(
+    `INSERT INTO account_owners (username, email, password, created)
+     VALUES (:username, :email, :password, :now)`,
+    { username, email, password: hashed, now },
   );
+  const ownerId = ownerResult.insertId;
 
-  const userId = result.insertId;
+  // 2) Create its first avatar (cap not enforced — owner has none yet).
+  const avatar = await createAvatar(ownerId, username, "M", false);
+  if ("error" in avatar) {
+    // Roll back the orphan owner so the user can retry cleanly.
+    await execute("DELETE FROM account_owners WHERE id = :id", { id: ownerId });
+    return { type: "error", text: avatar.error };
+  }
 
-  // Grant permanent Habbo Club so every new habbo joins with HC forever.
+  // 3) Point the owner at its primary avatar.
   await execute(
-    `INSERT INTO users_subscriptions
-       (user_id, subscription_type, timestamp_start, duration, active)
-     VALUES (:userId, 'HABBO_CLUB', :now, :duration, 1)`,
-    { userId, now, duration: SUB_INT_MAX - now },
+    "UPDATE account_owners SET primary_user_id = :avatarId WHERE id = :ownerId",
+    { avatarId: avatar.id, ownerId },
   );
 
-  const token = await createSessionToken({ userId, username, rank: 1 });
+  const token = await createSessionToken({
+    ownerId,
+    ownerName: username,
+    userId: avatar.id,
+    username,
+    rank: 1,
+  });
   await setSessionCookie(token);
 
   redirect("/me");
