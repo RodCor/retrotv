@@ -40,6 +40,7 @@ export async function SiteHeader() {
             {session ? (
               <>
                 <Link href="/me" className="btn btn-ghost btn-sm ml-1">Mi cuenta</Link>
+                <Link href="/account" className="btn btn-ghost btn-sm">Mis avatares</Link>
                 {isStaff && (
                   <Link href="/admin" className="btn btn-ghost btn-sm">Panel</Link>
                 )}
