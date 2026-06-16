@@ -52,32 +52,44 @@ export async function registerAction(
   const now = Math.floor(Date.now() / 1000);
   const hashed = await hashPassword(password);
 
-  // 1) Create the owner (website credential).
-  const ownerResult = await execute(
-    `INSERT INTO account_owners (username, email, password, created)
-     VALUES (:username, :email, :password, :now)`,
-    { username, email, password: hashed, now },
-  );
-  const ownerId = ownerResult.insertId;
+  let ownerId: number | undefined;
+  let avatarId: number;
+  try {
+    // 1) Create the owner (website credential).
+    const ownerResult = await execute(
+      `INSERT INTO account_owners (username, email, password, created)
+       VALUES (:username, :email, :password, :now)`,
+      { username, email, password: hashed, now },
+    );
+    ownerId = ownerResult.insertId;
 
-  // 2) Create its first avatar (cap not enforced — owner has none yet).
-  const avatar = await createAvatar(ownerId, username, "M", false);
-  if ("error" in avatar) {
-    // Roll back the orphan owner so the user can retry cleanly.
-    await execute("DELETE FROM account_owners WHERE id = :id", { id: ownerId });
-    return { type: "error", text: avatar.error };
+    // 2) Create its first avatar (cap not enforced — owner has none yet).
+    const avatar = await createAvatar(ownerId, username, "M", false);
+    if ("error" in avatar) {
+      await execute("DELETE FROM account_owners WHERE id = :id", { id: ownerId });
+      return { type: "error", text: avatar.error };
+    }
+    avatarId = avatar.id;
+
+    // 3) Point the owner at its primary avatar.
+    await execute(
+      "UPDATE account_owners SET primary_user_id = :avatarId WHERE id = :ownerId",
+      { avatarId, ownerId },
+    );
+  } catch {
+    // Unexpected failure mid-creation: best-effort cleanup so the username is
+    // not permanently reserved by an orphan owner/avatar.
+    if (ownerId !== undefined) {
+      await execute("DELETE FROM users WHERE owner_id = :id", { id: ownerId }).catch(() => {});
+      await execute("DELETE FROM account_owners WHERE id = :id", { id: ownerId }).catch(() => {});
+    }
+    return { type: "error", text: "No se pudo completar el registro. Inténtalo de nuevo." };
   }
-
-  // 3) Point the owner at its primary avatar.
-  await execute(
-    "UPDATE account_owners SET primary_user_id = :avatarId WHERE id = :ownerId",
-    { avatarId: avatar.id, ownerId },
-  );
 
   const token = await createSessionToken({
     ownerId,
     ownerName: username,
-    userId: avatar.id,
+    userId: avatarId,
     username,
     rank: 1,
   });
