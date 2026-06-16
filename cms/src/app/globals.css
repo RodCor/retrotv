@@ -347,6 +347,36 @@ select.field { appearance: none; cursor: pointer; }
 /* pixel avatars stay crisp */
 .pixel-img { image-rendering: pixelated; }
 
+/* --- Multi-account avatar carousel --- */
+.account-page { max-width: 720px; margin: 0 auto; padding: 2rem 1rem; }
+.account-head h1 { font-size: 1.6rem; font-weight: 800; }
+.account-head p { opacity: .8; margin-top: .25rem; }
+.account-carousel { margin-top: 1.5rem; }
+.account-stage { display: flex; align-items: center; gap: 1rem; }
+.carousel-arrow { font-size: 2rem; line-height: 1; width: 2.5rem; height: 2.5rem; border-radius: 999px;
+  border: 1px solid rgba(0,0,0,.15); background: #fff; cursor: pointer; }
+.carousel-arrow:disabled { opacity: .3; cursor: default; }
+.avatar-slide { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; min-height: 320px; }
+.avatar-fullbody { height: 220px; image-rendering: pixelated; }
+.avatar-meta h2 { font-size: 1.25rem; font-weight: 800; display: flex; gap: .5rem; align-items: center; justify-content: center; }
+.avatar-motto { opacity: .7; font-style: italic; }
+.avatar-stats { opacity: .8; font-size: .9rem; margin-top: .25rem; }
+.avatar-actions { display: flex; gap: .5rem; flex-wrap: wrap; justify-content: center; margin-top: 1rem; }
+.pill { font-size: .7rem; padding: .1rem .5rem; border-radius: 999px; background: #ffd84d; color: #5a4500; }
+.pill-active { background: #34e1d4; color: #00312e; }
+.hbtn { padding: .45rem .9rem; border-radius: 8px; border: 1px solid rgba(0,0,0,.15); background: #fff; cursor: pointer; font-weight: 700; text-decoration: none; color: inherit; }
+.hbtn-primary { background: #34e1d4; border-color: #34e1d4; color: #00312e; }
+.hbtn:disabled { opacity: .4; cursor: default; }
+.avatar-create .create-form { display: flex; flex-direction: column; gap: .75rem; width: 100%; max-width: 320px; }
+.create-form label { display: flex; flex-direction: column; gap: .25rem; text-align: left; font-weight: 700; font-size: .85rem; }
+.create-form input, .create-form select { padding: .5rem; border-radius: 8px; border: 1px solid rgba(0,0,0,.2); }
+.carousel-dots { display: flex; gap: .4rem; justify-content: center; margin-top: 1rem; }
+.dot { width: .6rem; height: .6rem; border-radius: 999px; border: none; background: rgba(0,0,0,.2); cursor: pointer; }
+.dot-on { background: #34e1d4; }
+.cap-note { text-align: center; opacity: .6; font-size: .8rem; margin-top: .5rem; }
+.msg-error { color: #c0344d; font-size: .85rem; }
+.msg-ok { color: #1c8a4d; font-size: .85rem; }
+
 /* --------------------------------- motion --------------------------------- */
 @keyframes floaty {
   0%, 100% { transform: translateY(0); }
