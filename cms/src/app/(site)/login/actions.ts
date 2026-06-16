@@ -45,7 +45,7 @@ export async function loginAction(
   // Load the active avatar (the owner's primary, or its first avatar).
   const avatar = await queryOne<DbUser>(
     `SELECT * FROM users
-      WHERE id = COALESCE(:primary, 0) OR owner_id = :ownerId
+      WHERE owner_id = :ownerId
       ORDER BY (id = COALESCE(:primary, 0)) DESC, id ASC
       LIMIT 1`,
     { primary: owner.primary_user_id, ownerId: owner.id },
