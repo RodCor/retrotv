@@ -31,6 +31,12 @@ interface ChatRow {
   timestamp: number;
 }
 
+interface SiblingRow {
+  owner_id: number;
+  username: string;
+  banned: number;
+}
+
 /** Format a unix timestamp relative to now, e.g. "in 3 days" / "2 hours ago". */
 function relativeTime(unixSeconds: number): string {
   const now = Math.floor(Date.now() / 1000);
@@ -88,6 +94,22 @@ export default async function ModerationPage() {
     );
   } catch {
     bans = [];
+  }
+
+  // Sibling avatars of every owner that currently has a ban (owner-aware view).
+  let siblings: SiblingRow[] = [];
+  try {
+    siblings = await query<SiblingRow>(
+      `SELECT u.owner_id, u.username, o.banned
+         FROM users u JOIN account_owners o ON o.id = u.owner_id
+        WHERE u.owner_id IN (
+          SELECT u2.owner_id FROM bans b JOIN users u2 ON u2.id = b.user_id
+           WHERE u2.owner_id IS NOT NULL
+        )
+        ORDER BY u.owner_id, u.id`,
+    );
+  } catch {
+    siblings = [];
   }
 
   // Optional chatlogs viewer — table may not exist on every emulator build.
@@ -174,6 +196,34 @@ export default async function ModerationPage() {
             </TableWrap>
           )}
         </ACard>
+
+        {siblings.length > 0 && (
+          <ACard
+            title="Avatares por cuenta baneada"
+            icon={<UserX size={16} strokeWidth={2} />}
+            pad={false}
+          >
+            <div className="acard-pad flex flex-col gap-3">
+              {Array.from(
+                siblings.reduce((m, s) => {
+                  const arr = m.get(s.owner_id) ?? [];
+                  arr.push(s);
+                  m.set(s.owner_id, arr);
+                  return m;
+                }, new Map<number, SiblingRow[]>()),
+              ).map(([ownerId, rows]) => (
+                <div key={ownerId} className="flex flex-wrap items-center gap-2">
+                  <span style={{ color: "var(--ink-soft, #98a0b3)" }}>Cuenta #{ownerId}:</span>
+                  {rows.map((r) => (
+                    <Tag key={r.username} color={r.banned ? "red" : "gray"}>
+                      {r.username}
+                    </Tag>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </ACard>
+        )}
 
         {chatlogs !== null && (
           <ACard

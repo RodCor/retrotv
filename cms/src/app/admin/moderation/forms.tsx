@@ -13,7 +13,8 @@ async function banAction(
   const username = String(formData.get("username") ?? "");
   const reason = String(formData.get("reason") ?? "");
   const hours = Number(formData.get("hours") ?? 0);
-  return banUserByName(username, reason, hours);
+  const wholeOwner = formData.get("wholeOwner") === "on";
+  return banUserByName(username, reason, hours, wholeOwner);
 }
 
 /** Client form for banning a user, with inline validation messages. */
@@ -46,6 +47,10 @@ export function BanUserForm() {
           required
         />
       </div>
+      <label className="flex items-center gap-2 text-sm" style={{ color: "var(--ink-soft, #98a0b3)" }}>
+        <input type="checkbox" name="wholeOwner" defaultChecked />
+        Banear toda la cuenta (todos los avatares del mismo dueño)
+      </label>
       <div className="flex items-center gap-3">
         <ABtn type="submit" variant="danger" disabled={pending}>
           <Ban size={14} strokeWidth={2} />
