@@ -8,7 +8,9 @@ import { queryOne } from "./db";
 const secretKey = new TextEncoder().encode(config.session.secret);
 
 export interface SessionPayload {
-  userId: number;
+  ownerId: number;   // the logged-in identity (website account)
+  ownerName: string;
+  userId: number;    // the active avatar shown to the rest of the CMS
   username: string;
   rank: number;
   [key: string]: unknown;
@@ -109,4 +111,15 @@ export const ADMIN_MIN_RANK = Number(process.env.ADMIN_MIN_RANK ?? 5);
 
 export function isStaff(rank: number): boolean {
   return rank >= ADMIN_MIN_RANK;
+}
+
+/**
+ * Like getSession but guarantees an owner identity. Older cookies issued
+ * before multi-account lack ownerId; treat those as logged-out so the user
+ * re-authenticates into the owner model.
+ */
+export async function getOwnerSession(): Promise<SessionPayload | null> {
+  const session = await getSession();
+  if (!session || typeof session.ownerId !== "number") return null;
+  return session;
 }
