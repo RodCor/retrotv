@@ -135,9 +135,18 @@ export async function deleteBan(formData: FormData): Promise<void> {
   );
   await execute("DELETE FROM bans WHERE id = :id", { id });
   if (ban) {
+    // Only clear the owner-level flag once NO ban remains for any of the
+    // owner's avatars (a cascade ban must be lifted fully before the website
+    // login is re-enabled).
     await execute(
-      `UPDATE account_owners SET banned = 0, ban_reason = NULL
-        WHERE id = (SELECT owner_id FROM users WHERE id = :uid)`,
+      `UPDATE account_owners o
+          SET o.banned = 0, o.ban_reason = NULL
+        WHERE o.id = (SELECT owner_id FROM users WHERE id = :uid)
+          AND NOT EXISTS (
+            SELECT 1 FROM bans b
+              JOIN users u ON u.id = b.user_id
+             WHERE u.owner_id = o.id
+          )`,
       { uid: ban.user_id },
     );
   }
