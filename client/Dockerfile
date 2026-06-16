@@ -10,6 +10,10 @@ ARG CLIENT_REPO=https://github.com/duckietm/Nitro-V3.git
 RUN git clone --depth 1 "$RENDERER_REPO" Nitro_Render_V3 \
  && git clone --depth 1 "$CLIENT_REPO" Nitro-V3
 WORKDIR /src/Nitro-V3
+# RetroTV source patches applied before the build (fail-fast if upstream drifts):
+# send the in-hotel logout button to the website avatar selection.
+COPY patches/ /patches/
+RUN node /patches/logout-redirect.mjs /src/Nitro-V3
 # install.mjs: install + yarn-link the renderer, copy config examples, build dist/.
 # (URLs here are placeholders; the runtime entrypoint rewrites them from env.)
 RUN node install.mjs --non-interactive --json-mode=json5 \

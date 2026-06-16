@@ -16,6 +16,10 @@ const IMAGES_URL = e("IMAGES_URL", "http://127.0.0.1:8080/images");
 const CLIENT_URL = e("CLIENT_URL", "http://127.0.0.1:1080");
 const HOTEL_NAME = e("HOTEL_NAME", "RetroTV");
 const HOTEL_LANG = e("HOTEL_LANG", "es");
+// CMS website base + where the in-hotel logout button returns to (the avatar
+// selection). Override LOGOUT_REDIRECT_URL directly to point elsewhere.
+const WEBSITE_URL = e("WEBSITE_URL", "http://127.0.0.1:3010");
+const LOGOUT_REDIRECT_URL = e("LOGOUT_REDIRECT_URL", `${WEBSITE_URL}/account`);
 
 function patch(file, fn) {
   const p = `${DIR}/${file}`;
@@ -61,6 +65,8 @@ patch("renderer-config.json", (rc) => {
   rc["images.url"] = IMAGES_URL;
   rc["login.turnstile.enabled"] = false;
   rc["hotel.name"] = HOTEL_NAME;
+  // In-hotel logout button → website avatar selection (see PurseViews patch).
+  rc["logout.redirect.url"] = LOGOUT_REDIRECT_URL;
   // Serve UI texts from the client's own configuration folder.
   rc["external.texts.url"] = [
     `${GAMEDATA_URL}/ExternalTexts.json?t=%timestamp%`,

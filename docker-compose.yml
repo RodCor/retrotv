@@ -102,6 +102,7 @@ services:
       - HOF_FURNI_URL=${HOF_FURNI_URL:-http://127.0.0.1:8081/dcr/hof_furni}
       - IMAGES_URL=${IMAGES_URL:-http://127.0.0.1:8080/images}
       - CLIENT_URL=${CLIENT_URL:-http://127.0.0.1:1080}
+      - WEBSITE_URL=${WEBSITE_URL:-http://127.0.0.1:3010}
       - HOTEL_NAME=${HOTEL_NAME:-RetroTV}
       - HOTEL_LANG=${HOTEL_LANG:-es}
     ports:
