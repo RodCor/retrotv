@@ -189,6 +189,14 @@ server-side), but Nitro may share `localStorage` across tabs and clobber itself.
   confirm both stay connected.
 - **Fallback if it clobbers:** document "use separate browser profiles/windows
   for true simultaneous control"; single + sequential launch still works.
+- **Spike status (2026-06-16): PENDING a manual run.** The implementation is
+  complete and the server side is verified — each tab receives its own SSO ticket
+  (`/api/play-ticket`, ownership-checked, returns 401 unauthenticated), and
+  Arcturus already supports many concurrent *distinct* users. What remains untested
+  is the Nitro client's same-browser multi-tab behavior. To run: log in as an owner
+  with ≥2 avatars → `/play` → select two → **Jugar** → confirm both tabs reach the
+  hotel as different avatars. Record the observed outcome and the chosen fallback
+  here.
 
 ## Section 5 — Moderation & Owner-Ban Cascade
 
