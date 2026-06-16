@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getOwnerSession } from "@/lib/auth";
 import { getOwnerAvatars } from "@/lib/owners";
+import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { PlayLauncher, type LaunchAvatar } from "./launcher";
 
 export const dynamic = "force-dynamic";
@@ -26,15 +27,19 @@ export default async function PlayPage({
   }));
 
   return (
-    <main className="account-page">
-      <header className="account-head">
-        <h1>Entrar al hotel</h1>
-        <p>Elige uno o varios avatares. Cada uno se abre en su propia pestaña.</p>
-      </header>
-      <PlayLauncher
-        avatars={list}
-        preselectId={Number.isInteger(preselect) ? preselect : undefined}
-      />
-    </main>
+    <>
+      <SiteHeader />
+      <main className="account-page">
+        <header className="account-head">
+          <h1>Entrar al hotel</h1>
+          <p>Elige uno o varios avatares. Cada uno se abre en su propia pestaña.</p>
+        </header>
+        <PlayLauncher
+          avatars={list}
+          preselectId={Number.isInteger(preselect) ? preselect : undefined}
+        />
+      </main>
+      <SiteFooter />
+    </>
   );
 }

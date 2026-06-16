@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getOwnerSession } from "@/lib/auth";
 import { getOwnerById, getOwnerAvatars, effectiveCap } from "@/lib/owners";
+import { SiteHeader, SiteFooter } from "@/components/site-chrome";
 import { AccountCarousel, type AvatarCard } from "./carousel";
 
 export const dynamic = "force-dynamic";
@@ -25,17 +26,21 @@ export default async function AccountPage() {
   }));
 
   return (
-    <main className="account-page">
-      <header className="account-head">
-        <h1>Tus avatares</h1>
-        <p>Cuenta <strong>{owner.username}</strong> · elige uno para jugar o crea otro.</p>
-      </header>
-      <AccountCarousel
-        avatars={cards}
-        primaryId={owner.primary_user_id}
-        activeId={session.userId}
-        cap={cap}
-      />
-    </main>
+    <>
+      <SiteHeader />
+      <main className="account-page">
+        <header className="account-head">
+          <h1>Tus avatares</h1>
+          <p>Cuenta <strong>{owner.username}</strong> · elige uno para jugar o crea otro.</p>
+        </header>
+        <AccountCarousel
+          avatars={cards}
+          primaryId={owner.primary_user_id}
+          activeId={session.userId}
+          cap={cap}
+        />
+      </main>
+      <SiteFooter />
+    </>
   );
 }
